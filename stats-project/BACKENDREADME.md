@@ -27,7 +27,7 @@ This project is reliant on the following libraries to function:
 
 ## Configure the Database URI as an environment variable
 
-To ensure the app and API are able to connect to the database correctly, create a `.env` file within the `frontend` folder, with a variable named `DATABASE_URI`, a mySQL or PostGres URI to your database. If you are connecting to a cloudSQL database, be sure to run the proxy. If you intend to run this project within a docker container, ensure the URI uses a TCP connection, and if the URI needs to connect to a service on the host machine, replace part of the IP address (but not the port!) to host.docker.internal.
+To ensure the app and API are able to connect to the database correctly, create a `.env` file within the `backend` folder, with a variable named `DATABASE_URI`, a mySQL or PostGres URI to your database. If you are connecting to a cloudSQL database, be sure to run the proxy. If you intend to run this project within a docker container, ensure the URI uses a TCP connection, and if the URI needs to connect to a service on the host machine, replace part of the IP address (but not the port!) to host.docker.internal.
 
   
 
@@ -43,7 +43,7 @@ This should start the app which should be accessible on http://127.0.0.1:8080/ i
 
 ## Run with Docker
 
-There is a dockerfile provided in the root of the project. To build an image from it, navigate to the frontend folder within a command line terminal and build it using commands
+There is a dockerfile provided in the root of the project. To build an image from it, navigate to the backend folder within a command line terminal and build it using commands
 
 ```docker build -t arxiv-stats-api-image .``` and
 
