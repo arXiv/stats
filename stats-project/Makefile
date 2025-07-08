@@ -1,4 +1,4 @@
-.PHONY: build-api run-api stop-api clean-api
+.PHONY: up build-api run-api stop-api clean-api build-ui run-ui stop-ui clean-ui
 
 PYTHON_VERSION := $(shell cat backend/.python-version)
 BE_IMAGE_NAME := arxiv-stats-api
