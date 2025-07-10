@@ -38,21 +38,10 @@ Usage:
 """
 
 import os
-from sqlalchemy import create_engine, func, extract, text
-from sqlalchemy.orm import sessionmaker, scoped_session
-from dotenv import load_dotenv # Uncomment this line if needed
+from backend import engine, use_session
+from sqlalchemy import func, extract, text
 from models import get_model
 from add_old_data import inject_old_data
-
-# Load environment variables
-load_dotenv()  # Uncomment this line if needed
-DATABASE_URL = os.getenv("DATABASE_URI")
-
-# SQLAlchemy setup
-engine = create_engine(DATABASE_URL)
-SessionFactory = sessionmaker(bind=engine)
-Session = scoped_session(SessionFactory)
-
 
 def get_time_group_column(model, time_group):
     """
@@ -81,9 +70,9 @@ def get_time_group_column(model, time_group):
     else:
         raise ValueError(f"get_time_group_column recieved an invalid time group: {time_group}")
 
-
+@use_session
 def query_model(
-    model_name, group_by_column, second_group_by_column=None, time_group=None
+    session, model_name, group_by_column, second_group_by_column=None, time_group=None
 ):
     """
     Query the specified model to aggregate data by a given column, optionally grouped by year, month, day, or hour.
@@ -105,7 +94,6 @@ def query_model(
     if model is None:
         raise ValueError(f"Invalid model name: {model_name}")
 
-    session = Session()
     try:
         # Ensure the group_by column is valid
         group_by_attr = getattr(model, group_by_column, None)
@@ -172,11 +160,9 @@ def query_model(
 
     except Exception as e:
         raise
-    finally:
-        session.close()
 
-
-def query_global_sum(model_name, time_group):
+@use_session
+def query_global_sum(session, model_name, time_group):
     """
     Queries the total sum of data aggregated by time group.
 
@@ -194,7 +180,6 @@ def query_global_sum(model_name, time_group):
     if model is None:
         raise ValueError(f"Invalid model name: {model_name}")
 
-    session = Session()
     try:
         # Initialize the database query results
         columns = [func.sum(model.primary_count).label("total_sum")]
@@ -234,8 +219,6 @@ def query_global_sum(model_name, time_group):
 
     except Exception as e:
         raise
-    finally:
-        session.close()
 
 
 """ def query_todays_downloads():
@@ -275,7 +258,8 @@ def query_global_sum(model_name, time_group):
     finally:
         session.close() """
 
-def query_todays_downloads(timezone='UTC'):
+@use_session
+def query_todays_downloads(session, timezone='UTC'):
     """
     Queries for today's download statistics aggregated by hour in the specified timezone.
 
@@ -285,7 +269,6 @@ def query_todays_downloads(timezone='UTC'):
     Returns:
         formatted_result (list): A list of dicts, with keys 'hour' and 'total_primary'.
     """
-    session = Session()
     try:
         query = text(f"""
             SELECT 
@@ -308,6 +291,4 @@ def query_todays_downloads(timezone='UTC'):
 
     except Exception as e:
         raise
-    finally:
-        session.close()
 
