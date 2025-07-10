@@ -1,10 +1,14 @@
 import os
+import logging
 from functools import wraps
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
+logger = logging.getLogger(__name__)
+
 DATABASE_URL = os.getenv("DATABASE_URI")
 engine = create_engine(DATABASE_URL)
+logger.info("Database engine instantiated")
 
 session_factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Session = scoped_session(session_factory) # uses a scoped session for thread safety
