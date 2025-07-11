@@ -1,12 +1,17 @@
 import os
+import logging.config
+from config.logging import LOGGING_CONFIG
+# from flask.logging import default_handler
 from flask import Flask
 from flask_cors import CORS
-from config import config
+from config.app import config
 from api import api
 from routes.graph_routes import graph_routes
 
 
 def create_app(app_config="development"):
+    logging.config.dictConfig(LOGGING_CONFIG)
+    
     app = Flask(__name__)
 
     # Apply CORS
