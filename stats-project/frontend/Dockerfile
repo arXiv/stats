@@ -27,7 +27,7 @@ RUN sed -i 's|%REACT_APP_ENV%|'${REACT_APP_ENV}'|g' build/index.html
 # Install serve
 RUN npm install -g serve
 
-# Expose port 9000
+# Expose port
 EXPOSE 9000
 
 # Start the application
