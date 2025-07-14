@@ -38,7 +38,7 @@ Usage:
 """
 
 import os
-from backend import use_session
+from backend.utils.database import use_session
 from sqlalchemy import func, extract, text
 from models import get_model
 from add_old_data import inject_old_data
