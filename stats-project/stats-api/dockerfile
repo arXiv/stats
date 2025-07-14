@@ -3,18 +3,18 @@ ARG PYTHON_VERSION=3.10
 FROM python:${PYTHON_VERSION}
 
 # Set the working directory to /app
-WORKDIR /backend
+WORKDIR /stats-api
 
 # Copy the requirements file used for dependencies
-COPY requirements.txt /backend/
+COPY requirements.txt /stats-api/
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Copy the rest of the working directory contents into the container at /app
-COPY . /backend
+COPY . /stats-api
 
-ENV PYTHONPATH="/backend/"
+ENV PYTHONPATH="/stats-api/"
 ENV FLASK_APP=factory.py
 ENV FLASK_ENV=development
 ENV FLASK_RUN_HOST=0.0.0.0

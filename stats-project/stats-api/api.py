@@ -20,8 +20,8 @@ Functions:
 Modules:
     flask: Provides the Flask web framework.
     flask_cors: Provides Cross-Origin Resource Sharing (CORS) support for Flask.
-    browse.api_utils: Contains utility functions for querying and aggregating data.
-    browse.models: Contains the SQLAlchemy models for the application.
+    services.api_utils: Contains utility functions for querying and aggregating data.
+    models: Contains the SQLAlchemy models for the application.
 
 Usage:
     Import this module and register the Blueprint with your Flask app to enable the API endpoints.
@@ -29,7 +29,7 @@ Usage:
 
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
-from api_utils import query_model, query_global_sum, query_todays_downloads
+from services.api_utils import query_model, query_global_sum, query_todays_downloads
 from models import get_model
 
 # Setup Flask Blueprint and CORS
