@@ -56,7 +56,7 @@ This should start the app which should be accessible on http://127.0.0.1:8080/ i
 
 ## Frontend
 
-To be replaced with a react frontend within its own folder, for now there is a development "frontend" that serves some demo graphs within `browse/templates`:
+To be replaced with a react frontend within its own folder, for now there is a development "frontend" that serves some demo graphs within `stats-api/templates`:
 
 - archive_areagraph.html
 - category_areagraph.html

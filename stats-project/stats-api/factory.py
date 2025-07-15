@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from config.app import config
-from api import api
+from routes.api import api
 from routes.graph_routes import graph_routes
 
 
@@ -13,8 +13,8 @@ def create_app(app_config="development"):
     CORS(app)
 
     # Register blueprints
-    app.register_blueprint(graph_routes)  # Frontend routes
-    app.register_blueprint(api, url_prefix="/api")  # Backend API
+    app.register_blueprint(graph_routes)
+    app.register_blueprint(api, url_prefix="/api")
 
     return app
 

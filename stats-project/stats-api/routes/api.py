@@ -30,7 +30,7 @@ Usage:
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
 from services.api_utils import query_model, query_global_sum, query_todays_downloads
-from models import get_model
+from models.models import get_model
 
 # Setup Flask Blueprint and CORS
 api = Blueprint("api", __name__)

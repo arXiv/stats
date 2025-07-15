@@ -21,8 +21,8 @@ Modules:
     os: Provides a way of using operating system dependent functionality.
     sqlalchemy: SQL toolkit and Object-Relational Mapping (ORM) library.
     dotenv: Loads environment variables from a .env file.
-    browse.models: Contains the SQLAlchemy models for the application.
-    browse.add_old_data: Contains functions to inject old data into the results.
+    models: Contains the SQLAlchemy models for the application.
+    add_old_data: Contains functions to inject old data into the results.
 
 Environment Variables:
     PROD_DB_URL: The database URL for the production environment.
@@ -40,8 +40,8 @@ Usage:
 import os
 from utils.database import use_session
 from sqlalchemy import func, extract, text
-from models import get_model
-from add_old_data import inject_old_data
+from models.models import get_model
+from services.add_old_data import inject_old_data
 
 def get_time_group_column(model, time_group):
     """
