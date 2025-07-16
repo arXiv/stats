@@ -8,7 +8,7 @@ set -e
 echo "Starting MySQL and PostgreSQL containers..."
 
 # Start MySQL and PostgreSQL containers using Docker
-docker-compose -f docker-compose/docker-compose.yaml up -d
+docker-compose -f docker-compose.yaml up -d
 
 # Wait for databases to be ready
 echo "Giving Database containers 10 seconds to start..."

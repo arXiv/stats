@@ -24,7 +24,7 @@ dictConfig(
         },
         "loggers": {
             "root": {"level": "INFO", "handlers": ["wsgi"]},
-            "stats-api": {"handlers": ["default"], "level": "INFO", "propagate": False},
+            "stats_api": {"handlers": ["default"], "level": "INFO", "propagate": False},
             "__main__": {
                 "handlers": ["default"],
                 "level": "DEBUG",

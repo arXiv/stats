@@ -28,5 +28,5 @@ def use_session(func):
         except Exception as e:
             raise(e)
         finally:
-            session.remove()
+            session.close()
     return wrapper
