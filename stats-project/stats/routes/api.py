@@ -27,10 +27,13 @@ Usage:
     Import this module and register the Blueprint with your Flask app to enable the API endpoints.
 """
 
+import logging
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
-from services.api_utils import query_model, query_global_sum, query_todays_downloads
-from models.models import get_model
+from stats.services.api_utils import query_model, query_global_sum, query_todays_downloads
+from stats.models.models import get_model
+
+logger = logging.getLogger(__name__)
 
 # Setup Flask Blueprint and CORS
 api = Blueprint("api", __name__)
@@ -78,6 +81,7 @@ def get_data():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
+        logger.error(f"exception occurred when trying to call /get_data: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
 
@@ -103,6 +107,7 @@ def get_global_sum():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
+        logger.error(f"Exception occurred when trying to call /get_data: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
 
@@ -113,7 +118,7 @@ def get_todays_downloads():
         timezone = request.args.get("timezone", "UTC")
 
         # Only allow known safe timezones to prevent SQL injection or invalid queries
-        # TODO: Use more universal timezones / add more. 
+        # TODO: Use more universal timezones / add more.
         allowed_timezones = {
             "UTC",
             "America/New_York",
@@ -125,7 +130,7 @@ def get_todays_downloads():
             "Asia/Tokyo",
             "Asia/Shanghai",
             "Asia/Kolkata",
-            "Australia/Sydney"
+            "Australia/Sydney",
         }
 
         if timezone not in allowed_timezones:
@@ -134,5 +139,7 @@ def get_todays_downloads():
         data = query_todays_downloads(timezone)
         return jsonify(data)
 
-    except Exception:
+    except Exception as e:
+        logger.error(f"exception occurred when trying to call /get_todays_downloads: {e}")
+        print(e)
         return jsonify({"error": "Internal server error"}), 500
