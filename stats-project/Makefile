@@ -13,7 +13,7 @@ FE_DOCKERFILE := ./frontend/Dockerfile
 FE_BUILD_CONTEXT := ./frontend
 FE_PORT := 9000
 
-up: stop-ui stop-api clean-api build-api run-api clean-ui build-ui run-ui
+up: stop-ui clean-ui stop-api clean-api build-api run-api build-ui run-ui
 
 build-api:
 	docker build -f $(BE_DOCKERFILE) -t $(BE_IMAGE_NAME) $(BE_BUILD_CONTEXT) --progress=plain
@@ -22,7 +22,7 @@ run-api:
 	docker run -d --name $(BE_CONTAINER_NAME) -p ${BE_PORT}:${BE_PORT} --env-file stats/.env $(BE_IMAGE_NAME) 
 
 stop-api:
-	docker stop $(BE_CONTAINER_NAME)
+	docker stop $(BE_CONTAINER_NAME) || true
 
 clean-api:
 	docker rm $(BE_CONTAINER_NAME) || true
@@ -35,8 +35,11 @@ run-ui:
 	docker run -d --name $(FE_CONTAINER_NAME) -p ${FE_PORT}:${FE_PORT} $(FE_IMAGE_NAME)
 
 stop-ui:
-	docker stop $(FE_CONTAINER_NAME)
+	docker stop $(FE_CONTAINER_NAME) || true
 
 clean-ui:
 	docker rm $(FE_CONTAINER_NAME) || true
 	docker rmi $(FE_IMAGE_NAME) || true
+
+test-api:
+	poetry run pytest

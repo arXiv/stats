@@ -1,7 +1,7 @@
 [project]
 name = "stats"
 version = "0.1.0"
-description = "backend for the usage stats page on arxiv.org"
+description = "Flask backend for the usage stats page on arxiv.org"
 dynamic = ["requires-python", "dependencies"]
 
 [tool.poetry.dependencies]
@@ -11,7 +11,7 @@ flask-cors = "^6.0.1"
 flask-sqlalchemy = "^3.1.1"
 pg8000 = "^1.31.2"
 
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.group.test.dependencies]
 pytest = "^8.4.1"
 
 [build-system]

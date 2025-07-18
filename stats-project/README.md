@@ -17,7 +17,7 @@ Application for `/stats` pages on arxiv.org. `stats/` is the Flask backend, and 
 1. Create a file named `.env` in `stats/`
 2. Set the following variables
     ```
-    DATABASE_URI={database}+{driver}://{username}:{password}@{host}:{port}/{db_name}
+    SQLALCHEMY_DATABASE_URI={database}+{driver}://{username}:{password}@{host}:{port}/{db_name}
     ```
     You can find the database URI in GCP Secrets Manager.
 
@@ -36,4 +36,4 @@ Application for `/stats` pages on arxiv.org. `stats/` is the Flask backend, and 
 
 See `Makefile`. When developing, it is preferred to run both the backend and the frontend using Docker (rather than natively) as this mirrors production.
 
-After completing setup, `make up` will build (or `make reup` will rebuild) and run the application.
+After completing setup, `make up` will build (or rebuild) and run the application with Docker.
