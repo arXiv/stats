@@ -4,14 +4,14 @@ Application for `/stats` pages on arxiv.org. `stats/` is the Flask backend, and 
 
 ## Requirements
 #### To run stats natively:
-1. Python - see `pyproject.toml` for current version
-2. poetry - see `Dockerfile.api` for current version
+1. [Python](https://www.python.org/downloads/) - see `pyproject.toml` for current version
+2. [poetry](https://python-poetry.org/docs/#installation) - see `Dockerfile.api` for current version
 
 #### To run stats-ui natively:
-3. Node - see `package.json` for current version
+3. [Node](https://nodejs.org/en/download) - see `package.json` for current version
 
 #### To run with Docker:
-1. Docker
+1. [Docker](https://docs.docker.com/engine/install/)
 
 ## Environment variables
 1. Create a file named `.env` in `stats/`
