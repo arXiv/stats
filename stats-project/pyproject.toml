@@ -1,0 +1,19 @@
+[project]
+name = "stats"
+version = "0.1.0"
+description = "Flask backend for the usage stats page on arxiv.org"
+dynamic = ["requires-python", "dependencies"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+flask = "^3.1.1"
+flask-cors = "^6.0.1"
+flask-sqlalchemy = "^3.1.1"
+pg8000 = "^1.31.2"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.4.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

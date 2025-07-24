@@ -21,8 +21,8 @@ Modules:
     os: Provides a way of using operating system dependent functionality.
     sqlalchemy: SQL toolkit and Object-Relational Mapping (ORM) library.
     dotenv: Loads environment variables from a .env file.
-    browse.models: Contains the SQLAlchemy models for the application.
-    browse.add_old_data: Contains functions to inject old data into the results.
+    models: Contains the SQLAlchemy models for the application.
+    add_old_data: Contains functions to inject old data into the results.
 
 Environment Variables:
     PROD_DB_URL: The database URL for the production environment.
@@ -37,11 +37,14 @@ Usage:
     Ensure that the environment variables are properly set before using the functions.
 """
 
-import os
-from backend import engine, use_session
+import logging
+from stats.utils.database import db
 from sqlalchemy import func, extract, text
-from models import get_model
-from add_old_data import inject_old_data
+from stats.models.models import get_model
+from stats.services.add_old_data import inject_old_data
+
+logger = logging.getLogger(__name__)
+
 
 def get_time_group_column(model, time_group):
     """
@@ -68,11 +71,13 @@ def get_time_group_column(model, time_group):
             extract("day", model.start_dttm),
         ]
     else:
-        raise ValueError(f"get_time_group_column recieved an invalid time group: {time_group}")
+        raise ValueError(
+            f"get_time_group_column recieved an invalid time group: {time_group}"
+        )
 
-@use_session
+
 def query_model(
-    session, model_name, group_by_column, second_group_by_column=None, time_group=None
+    model_name, group_by_column, second_group_by_column=None, time_group=None
 ):
     """
     Query the specified model to aggregate data by a given column, optionally grouped by year, month, day, or hour.
@@ -98,7 +103,9 @@ def query_model(
         # Ensure the group_by column is valid
         group_by_attr = getattr(model, group_by_column, None)
         if not group_by_attr:
-            raise ValueError(f"Query_model recieved an invalid group_by column: {group_by_column}")
+            raise ValueError(
+                f"Query_model recieved an invalid group_by column: {group_by_column}"
+            )
 
         # Handle optional second grouping column
         second_group_by_attr = (
@@ -123,7 +130,7 @@ def query_model(
             group_by_columns.extend(time_extracts)
 
         # Construct and execute query
-        query = session.query(*columns).group_by(*group_by_columns)
+        query = db.session.query(*columns).group_by(*group_by_columns)
 
         result = query.all()
 
@@ -161,8 +168,8 @@ def query_model(
     except Exception as e:
         raise
 
-@use_session
-def query_global_sum(session, model_name, time_group):
+
+def query_global_sum(model_name, time_group):
     """
     Queries the total sum of data aggregated by time group.
 
@@ -187,7 +194,7 @@ def query_global_sum(session, model_name, time_group):
         columns.extend(group_by_columns)
 
         # Create the query to fetch database data
-        query = session.query(*columns).group_by(*group_by_columns)
+        query = db.session.query(*columns).group_by(*group_by_columns)
 
         # Execute the query and fetch results
         result = query.all()
@@ -204,7 +211,6 @@ def query_global_sum(session, model_name, time_group):
                     time_group_value = f"{time_values[0]}-{int(time_values[1]):02d}-01"
                 elif time_group == "day":
                     time_group_value = f"{time_values[0]}-{int(time_values[1]):02d}-{int(time_values[2]):02d}"
- 
 
             data["time_group"] = time_group_value
             final_result.append(data)
@@ -258,8 +264,8 @@ def query_global_sum(session, model_name, time_group):
     finally:
         session.close() """
 
-@use_session
-def query_todays_downloads(session, timezone='UTC'):
+
+def query_todays_downloads(timezone="UTC"):
     """
     Queries for today's download statistics aggregated by hour in the specified timezone.
 
@@ -270,7 +276,8 @@ def query_todays_downloads(session, timezone='UTC'):
         formatted_result (list): A list of dicts, with keys 'hour' and 'total_primary'.
     """
     try:
-        query = text(f"""
+        query = text(
+            f"""
             SELECT 
                 EXTRACT(HOUR FROM start_dttm AT TIME ZONE 'UTC' AT TIME ZONE :tz) AS local_hour,
                 SUM(primary_count) AS total_primary_count
@@ -283,12 +290,15 @@ def query_todays_downloads(session, timezone='UTC'):
                 local_hour
             ORDER BY 
                 local_hour;
-        """)
+        """
+        )
 
-        result = session.execute(query, {"tz": timezone}).fetchall()
-        formatted_result = [{"hour": int(row[0]), "total_primary": row[1]} for row in result]
+        result = db.session.execute(query, {"tz": timezone}).fetchall()
+        logger.info("query executed")
+        formatted_result = [
+            {"hour": int(row[0]), "total_primary": row[1]} for row in result
+        ]
         return formatted_result
 
     except Exception as e:
-        raise
-
+        raise (e)

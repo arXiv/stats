@@ -7,7 +7,7 @@
 set -e
 
 echo "Running the backend..."
-python ../backend/factory.py
+python ../stats/factory.py
 
 echo "Running test 01..."
-python -m unittest tests/test_01.py
+python -m unittest tests/test_api.py

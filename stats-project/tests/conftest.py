@@ -1,5 +1,5 @@
 import pytest
-from backend.factory import create_app
+from stats.factory import create_app
 
 @pytest.fixture
 def app():
