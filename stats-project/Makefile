@@ -15,8 +15,12 @@ FE_PORT := 9000
 
 up: stop-ui clean-ui stop-api clean-api build-api run-api build-ui run-ui
 
+up-api: stop-api clean-api build-api run-api
+
+up-ui: stop-ui clean-ui build-ui run-ui
+
 build-api:
-	docker build -f $(BE_DOCKERFILE) -t $(BE_IMAGE_NAME) $(BE_BUILD_CONTEXT) --progress=plain
+	docker build -f $(BE_DOCKERFILE) -t $(BE_IMAGE_NAME) $(BE_BUILD_CONTEXT) -D
 
 run-api:
 	docker run -d --name $(BE_CONTAINER_NAME) -p ${BE_PORT}:${BE_PORT} --env-file stats/.env $(BE_IMAGE_NAME) 

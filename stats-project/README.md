@@ -19,7 +19,7 @@ Application for `/stats` pages on arxiv.org. `stats/` is the Flask backend, and 
     ```
     SQLALCHEMY_DATABASE_URI={database}+{driver}://{username}:{password}@{host}:{port}/{db_name}
     ```
-    You can find the database URI in GCP Secrets Manager.
+    You can find the database URI in GCP Secret Manager.
 
 ## Database connection
 1. Authenticate to GCP
@@ -34,6 +34,6 @@ Application for `/stats` pages on arxiv.org. `stats/` is the Flask backend, and 
 
 ## Lifecycle commands
 
-See `Makefile`. When developing, it is preferred to run both the backend and the frontend using Docker (rather than natively) as this mirrors production.
+See `Makefile`.
 
 After completing setup, `make up` will build (or rebuild) and run the application with Docker.
