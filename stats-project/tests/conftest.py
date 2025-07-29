@@ -4,7 +4,7 @@ from stats.factory import create_app
 @pytest.fixture
 def app():
     """Fixture to create a test Flask app."""
-    app = create_app("testing")
+    app = create_app()
     app.config["TESTING"] = True
     return app
 
