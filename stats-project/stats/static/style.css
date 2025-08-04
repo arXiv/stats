@@ -16,8 +16,8 @@ body {
 .header img {
   height: 100px;
   margin-left: 20px;
-  margin-right: 20px; 
-  object-fit: contain; 
+  margin-right: 20px;
+  object-fit: contain;
 }
 
 .container {
@@ -104,11 +104,11 @@ body {
 }
 
 #map {
-    width: 100%;
-    height: 600px;
-    display: none; /* Hide map until data is loaded */
-  }
-  
+  width: 100%;
+  height: 600px;
+  display: none; /* Hide map until data is loaded */
+}
+
 /* Spinner CSS */
 .spinner {
   position: fixed;

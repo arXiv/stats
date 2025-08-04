@@ -6,11 +6,10 @@ BE_DOCKERFILE := Dockerfile.api
 BE_BUILD_CONTEXT := .
 BE_PORT := 8080
 
-NODE_VERSION := $(shell cat frontend/.nvmrc | cut -c 2-)
 FE_IMAGE_NAME := arxiv-stats-ui
 FE_CONTAINER_NAME := arxiv-stats-ui
-FE_DOCKERFILE := ./frontend/Dockerfile
-FE_BUILD_CONTEXT := ./frontend
+FE_DOCKERFILE := Dockerfile.ui
+FE_BUILD_CONTEXT := .
 FE_PORT := 9000
 
 up: stop-ui clean-ui stop-api clean-api build-api run-api build-ui run-ui
