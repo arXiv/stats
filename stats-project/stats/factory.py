@@ -8,7 +8,7 @@ from stats.routes.api import api
 from stats.routes.graph_routes import graph_routes
 
 
-def create_app(app_config="development"):
+def create_app():
     configure_logging()
 
     app = Flask(__name__)
