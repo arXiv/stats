@@ -5,7 +5,6 @@ WORKDIR /app
 
 # Copy all files
 COPY stats-ui/ .
-COPY package-lock.json package.json .
 
 # Set build arguments
 ARG REACT_APP_API_URL
