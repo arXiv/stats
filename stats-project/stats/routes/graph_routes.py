@@ -51,9 +51,11 @@ def render_downloads_by_category():
 def render_downloads_by_archive():
     return render_template("stats/downloads_by_archive.html")
 
+
 @graph_routes.route("/category_areagraph", methods=["GET"])
 def render_category_areagraph():
     return render_template("stats/category_areagraph.html")
+
 
 @graph_routes.route("/archive_areagraph", methods=["GET"])
 def render_archive_areagraph():

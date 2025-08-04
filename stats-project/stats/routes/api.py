@@ -30,7 +30,11 @@ Usage:
 import logging
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
-from stats.services.api_utils import query_model, query_global_sum, query_todays_downloads
+from stats.services.api_utils import (
+    query_model,
+    query_global_sum,
+    query_todays_downloads,
+)
 from stats.models.models import get_model
 
 logger = logging.getLogger(__name__)
@@ -140,6 +144,8 @@ def get_todays_downloads():
         return jsonify(data)
 
     except Exception as e:
-        logger.error(f"exception occurred when trying to call /get_todays_downloads: {e}")
+        logger.error(
+            f"exception occurred when trying to call /get_todays_downloads: {e}"
+        )
         print(e)
         return jsonify({"error": "Internal server error"}), 500

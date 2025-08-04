@@ -11,6 +11,7 @@ Modules:
     json: JSON encoder and decoder.
     os: Miscellaneous operating system interfaces.
 """
+
 import json
 import os
 
@@ -28,7 +29,7 @@ def inject_old_data(final_result, time_group):
         base_dir, "static", "old_data", f"{time_group}_data.json"
     )
     print(json_file_path)
-    #print(f"Looking for {json_file_path}...")
+    # print(f"Looking for {json_file_path}...")
 
     try:
         with open(json_file_path, "r", encoding="utf-8") as f:

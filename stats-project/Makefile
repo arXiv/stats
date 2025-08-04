@@ -1,4 +1,4 @@
-.PHONY: up build-api run-api stop-api clean-api build-ui run-ui stop-ui clean-ui venv clean-venv
+.PHONY: up up-api up-ui build-api run-api stop-api clean-api build-ui run-ui stop-ui clean-ui test-api
 
 BE_IMAGE_NAME := arxiv-stats
 BE_CONTAINER_NAME := arxiv-stats
@@ -47,3 +47,6 @@ clean-ui:
 
 test-api:
 	poetry run pytest
+
+format-api:
+	poetry run black stats/
