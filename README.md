@@ -1,34 +1,60 @@
-# stats-project
+# stats
 
-Application for `/stats` pages on arxiv.org. `stats/` is the Flask backend, and `stats-ui/` is the React frontend.
+Application for public usage statistics pages on arXiv.org. `stats/` contains the Flask backend and `stats-ui/` contains the React frontend.
 
-## Requirements
+## Docker setup (preferred)
 
-#### To run stats natively:
+1. Install [Docker](https://docs.docker.com/engine/install/)
+2. [Set environment variables](#environment-variables)
+3. [Set database connection](#database-connection)
+4. Run `make up` to build and run both `stats` and `stats-ui`. See `Makefile` for additional lifecycle commands.
 
-1. [Python](https://www.python.org/downloads/) - see `pyproject.toml` for current version
-2. [poetry](https://python-poetry.org/docs/#installation) - see `Dockerfile.api` for current version
+## Native setup
 
-#### To run stats-ui natively:
-
-3. [Node](https://nodejs.org/en/download) - see `package.json` for current version
-
-#### To run with Docker:
-
-1. [Docker](https://docs.docker.com/engine/install/)
+1. Install [Python](https://www.python.org/downloads/) - see `pyproject.toml` for current version
+2. Install [poetry](https://python-poetry.org/docs/#installation) - see `Dockerfile.api` for current version
+3. Install [Node](https://nodejs.org/en/download) - see `package.json` for current version
+4. [Set environment variables](#environment-variables)
+5. [Set database connection](#database-connection)
+6. Install and run `stats`
+   ```
+   cd stats
+   poetry install
+   poetry run python factory.py
+   ```
+7. Install and run `stats-ui`
+   ```
+   cd ../stats-ui
+   npm install
+   npm run start
+   ```
 
 ## Environment variables
 
+NOTE: If you would like to use different ports and are running via Docker, make sure you also update the `FE_PORT` and `BE_PORT` in the `Makefile`. 
+
 1. Create a file named `.env` in `stats/`
-2. Set the following variables
+2. Set the following variables. 
    ```
-   SQLALCHEMY_DATABASE_URI={database}+{driver}://{username}:{password}@{host}:{port}/{db_name}
+   HOST=0.0.0.0
+   PORT=8080 
+   SQLALCHEMY_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
    ```
-   You can find the database URI in GCP Secret Manager.
+   If running locally, these may also be set in your shell or terminal session. If running with Docker, these must be set in an `.env` file.
+
+   Get the username and password from the database URI for the `latexml-db` database found in GCP Secret Manager. 
+   
+   The host you set in the URI should point to your local database proxy. If running via Docker, set the host to
+   `host.docker.internal`.
+3. Create a file named `.env` in `stats-ui/`
+4. Set the following variables.
+   ```
+   PORT=9000
+   ```
 
 ## Database connection
 
-1. Authenticate to GCP
+1. Authenticate to GCP (only needed once)
    ```
    gcloud auth login
    ```
@@ -37,9 +63,3 @@ Application for `/stats` pages on arxiv.org. `stats/` is the Flask backend, and 
    cloud-sql-proxy --address {host} --port {port} {account}:{region}:{db_name}
    ```
    Your host address will be this network (`0.0.0.0`) or localhost (`127.0.0.1`). Choose any open port.
-
-## Lifecycle commands
-
-See `Makefile`.
-
-After completing setup, `make up` will build (or rebuild) and run the application with Docker.
