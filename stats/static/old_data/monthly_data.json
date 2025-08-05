@@ -1,0 +1,1438 @@
+[
+  {
+    "time_group": "1994-01-01",
+    "total_sum": 0
+  },
+  {
+    "time_group": "1994-02-01",
+    "total_sum": 1863
+  },
+  {
+    "time_group": "1994-03-01",
+    "total_sum": 7048
+  },
+  {
+    "time_group": "1994-04-01",
+    "total_sum": 6814
+  },
+  {
+    "time_group": "1994-05-01",
+    "total_sum": 9601
+  },
+  {
+    "time_group": "1994-06-01",
+    "total_sum": 11007
+  },
+  {
+    "time_group": "1994-07-01",
+    "total_sum": 9488
+  },
+  {
+    "time_group": "1994-08-01",
+    "total_sum": 10789
+  },
+  {
+    "time_group": "1994-09-01",
+    "total_sum": 12872
+  },
+  {
+    "time_group": "1994-10-01",
+    "total_sum": 16260
+  },
+  {
+    "time_group": "1994-11-01",
+    "total_sum": 22392
+  },
+  {
+    "time_group": "1994-12-01",
+    "total_sum": 20070
+  },
+  {
+    "time_group": "1995-01-01",
+    "total_sum": 24801
+  },
+  {
+    "time_group": "1995-02-01",
+    "total_sum": 28607
+  },
+  {
+    "time_group": "1995-03-01",
+    "total_sum": 35418
+  },
+  {
+    "time_group": "1995-04-01",
+    "total_sum": 34109
+  },
+  {
+    "time_group": "1995-05-01",
+    "total_sum": 35232
+  },
+  {
+    "time_group": "1995-06-01",
+    "total_sum": 52415
+  },
+  {
+    "time_group": "1995-07-01",
+    "total_sum": 68341
+  },
+  {
+    "time_group": "1995-08-01",
+    "total_sum": 95848
+  },
+  {
+    "time_group": "1995-09-01",
+    "total_sum": 114550
+  },
+  {
+    "time_group": "1995-10-01",
+    "total_sum": 146524
+  },
+  {
+    "time_group": "1995-11-01",
+    "total_sum": 151624
+  },
+  {
+    "time_group": "1995-12-01",
+    "total_sum": 132908
+  },
+  {
+    "time_group": "1996-01-01",
+    "total_sum": 160742
+  },
+  {
+    "time_group": "1996-02-01",
+    "total_sum": 186528
+  },
+  {
+    "time_group": "1996-03-01",
+    "total_sum": 193169
+  },
+  {
+    "time_group": "1996-04-01",
+    "total_sum": 198175
+  },
+  {
+    "time_group": "1996-05-01",
+    "total_sum": 221716
+  },
+  {
+    "time_group": "1996-06-01",
+    "total_sum": 213072
+  },
+  {
+    "time_group": "1996-07-01",
+    "total_sum": 230395
+  },
+  {
+    "time_group": "1996-08-01",
+    "total_sum": 222063
+  },
+  {
+    "time_group": "1996-09-01",
+    "total_sum": 251249
+  },
+  {
+    "time_group": "1996-10-01",
+    "total_sum": 287532
+  },
+  {
+    "time_group": "1996-11-01",
+    "total_sum": 263905
+  },
+  {
+    "time_group": "1996-12-01",
+    "total_sum": 225928
+  },
+  {
+    "time_group": "1997-01-01",
+    "total_sum": 250816
+  },
+  {
+    "time_group": "1997-02-01",
+    "total_sum": 230357
+  },
+  {
+    "time_group": "1997-03-01",
+    "total_sum": 239669
+  },
+  {
+    "time_group": "1997-04-01",
+    "total_sum": 258302
+  },
+  {
+    "time_group": "1997-05-01",
+    "total_sum": 267683
+  },
+  {
+    "time_group": "1997-06-01",
+    "total_sum": 261706
+  },
+  {
+    "time_group": "1997-07-01",
+    "total_sum": 270550
+  },
+  {
+    "time_group": "1997-08-01",
+    "total_sum": 239698
+  },
+  {
+    "time_group": "1997-09-01",
+    "total_sum": 287158
+  },
+  {
+    "time_group": "1997-10-01",
+    "total_sum": 326150
+  },
+  {
+    "time_group": "1997-11-01",
+    "total_sum": 296375
+  },
+  {
+    "time_group": "1997-12-01",
+    "total_sum": 288487
+  },
+  {
+    "time_group": "1998-01-01",
+    "total_sum": 321044
+  },
+  {
+    "time_group": "1998-02-01",
+    "total_sum": 337514
+  },
+  {
+    "time_group": "1998-03-01",
+    "total_sum": 407658
+  },
+  {
+    "time_group": "1998-04-01",
+    "total_sum": 384583
+  },
+  {
+    "time_group": "1998-05-01",
+    "total_sum": 409663
+  },
+  {
+    "time_group": "1998-06-01",
+    "total_sum": 404232
+  },
+  {
+    "time_group": "1998-07-01",
+    "total_sum": 412267
+  },
+  {
+    "time_group": "1998-08-01",
+    "total_sum": 382223
+  },
+  {
+    "time_group": "1998-09-01",
+    "total_sum": 444628
+  },
+  {
+    "time_group": "1998-10-01",
+    "total_sum": 510790
+  },
+  {
+    "time_group": "1998-11-01",
+    "total_sum": 537888
+  },
+  {
+    "time_group": "1998-12-01",
+    "total_sum": 474617
+  },
+  {
+    "time_group": "1999-01-01",
+    "total_sum": 508224
+  },
+  {
+    "time_group": "1999-02-01",
+    "total_sum": 464452
+  },
+  {
+    "time_group": "1999-03-01",
+    "total_sum": 511665
+  },
+  {
+    "time_group": "1999-04-01",
+    "total_sum": 510014
+  },
+  {
+    "time_group": "1999-05-01",
+    "total_sum": 536821
+  },
+  {
+    "time_group": "1999-06-01",
+    "total_sum": 547141
+  },
+  {
+    "time_group": "1999-07-01",
+    "total_sum": 544712
+  },
+  {
+    "time_group": "1999-08-01",
+    "total_sum": 491688
+  },
+  {
+    "time_group": "1999-09-01",
+    "total_sum": 568449
+  },
+  {
+    "time_group": "1999-10-01",
+    "total_sum": 582934
+  },
+  {
+    "time_group": "1999-11-01",
+    "total_sum": 665411
+  },
+  {
+    "time_group": "1999-12-01",
+    "total_sum": 627284
+  },
+  {
+    "time_group": "2000-01-01",
+    "total_sum": 640945
+  },
+  {
+    "time_group": "2000-02-01",
+    "total_sum": 725616
+  },
+  {
+    "time_group": "2000-03-01",
+    "total_sum": 751154
+  },
+  {
+    "time_group": "2000-04-01",
+    "total_sum": 697884
+  },
+  {
+    "time_group": "2000-05-01",
+    "total_sum": 785650
+  },
+  {
+    "time_group": "2000-06-01",
+    "total_sum": 745325
+  },
+  {
+    "time_group": "2000-07-01",
+    "total_sum": 728494
+  },
+  {
+    "time_group": "2000-08-01",
+    "total_sum": 721467
+  },
+  {
+    "time_group": "2000-09-01",
+    "total_sum": 724899
+  },
+  {
+    "time_group": "2000-10-01",
+    "total_sum": 828870
+  },
+  {
+    "time_group": "2000-11-01",
+    "total_sum": 925260
+  },
+  {
+    "time_group": "2000-12-01",
+    "total_sum": 844998
+  },
+  {
+    "time_group": "2001-01-01",
+    "total_sum": 935314
+  },
+  {
+    "time_group": "2001-02-01",
+    "total_sum": 972075
+  },
+  {
+    "time_group": "2001-03-01",
+    "total_sum": 1055737
+  },
+  {
+    "time_group": "2001-04-01",
+    "total_sum": 1013386
+  },
+  {
+    "time_group": "2001-05-01",
+    "total_sum": 1059624
+  },
+  {
+    "time_group": "2001-06-01",
+    "total_sum": 902582
+  },
+  {
+    "time_group": "2001-07-01",
+    "total_sum": 846039
+  },
+  {
+    "time_group": "2001-08-01",
+    "total_sum": 865395
+  },
+  {
+    "time_group": "2001-09-01",
+    "total_sum": 834963
+  },
+  {
+    "time_group": "2001-10-01",
+    "total_sum": 969584
+  },
+  {
+    "time_group": "2001-11-01",
+    "total_sum": 966553
+  },
+  {
+    "time_group": "2001-12-01",
+    "total_sum": 1145430
+  },
+  {
+    "time_group": "2002-01-01",
+    "total_sum": 1034782
+  },
+  {
+    "time_group": "2002-02-01",
+    "total_sum": 982129
+  },
+  {
+    "time_group": "2002-03-01",
+    "total_sum": 1175829
+  },
+  {
+    "time_group": "2002-04-01",
+    "total_sum": 1321376
+  },
+  {
+    "time_group": "2002-05-01",
+    "total_sum": 1423935
+  },
+  {
+    "time_group": "2002-06-01",
+    "total_sum": 1236836
+  },
+  {
+    "time_group": "2002-07-01",
+    "total_sum": 1348311
+  },
+  {
+    "time_group": "2002-08-01",
+    "total_sum": 1270201
+  },
+  {
+    "time_group": "2002-09-01",
+    "total_sum": 1516847
+  },
+  {
+    "time_group": "2002-10-01",
+    "total_sum": 1675586
+  },
+  {
+    "time_group": "2002-11-01",
+    "total_sum": 1515041
+  },
+  {
+    "time_group": "2002-12-01",
+    "total_sum": 1343960
+  },
+  {
+    "time_group": "2003-01-01",
+    "total_sum": 1588531
+  },
+  {
+    "time_group": "2003-02-01",
+    "total_sum": 1572793
+  },
+  {
+    "time_group": "2003-03-01",
+    "total_sum": 1711279
+  },
+  {
+    "time_group": "2003-04-01",
+    "total_sum": 1620843
+  },
+  {
+    "time_group": "2003-05-01",
+    "total_sum": 1703389
+  },
+  {
+    "time_group": "2003-06-01",
+    "total_sum": 1601569
+  },
+  {
+    "time_group": "2003-07-01",
+    "total_sum": 1586144
+  },
+  {
+    "time_group": "2003-08-01",
+    "total_sum": 1504793
+  },
+  {
+    "time_group": "2003-09-01",
+    "total_sum": 1820701
+  },
+  {
+    "time_group": "2003-10-01",
+    "total_sum": 2117036
+  },
+  {
+    "time_group": "2003-11-01",
+    "total_sum": 2033657
+  },
+  {
+    "time_group": "2003-12-01",
+    "total_sum": 2119846
+  },
+  {
+    "time_group": "2004-01-01",
+    "total_sum": 2109079
+  },
+  {
+    "time_group": "2004-02-01",
+    "total_sum": 2293511
+  },
+  {
+    "time_group": "2004-03-01",
+    "total_sum": 2221885
+  },
+  {
+    "time_group": "2004-04-01",
+    "total_sum": 2100595
+  },
+  {
+    "time_group": "2004-05-01",
+    "total_sum": 2301904
+  },
+  {
+    "time_group": "2004-06-01",
+    "total_sum": 2036838
+  },
+  {
+    "time_group": "2004-07-01",
+    "total_sum": 1986919
+  },
+  {
+    "time_group": "2004-08-01",
+    "total_sum": 1997330
+  },
+  {
+    "time_group": "2004-09-01",
+    "total_sum": 2191867
+  },
+  {
+    "time_group": "2004-10-01",
+    "total_sum": 1927789
+  },
+  {
+    "time_group": "2004-11-01",
+    "total_sum": 1978766
+  },
+  {
+    "time_group": "2004-12-01",
+    "total_sum": 1767095
+  },
+  {
+    "time_group": "2005-01-01",
+    "total_sum": 1804435
+  },
+  {
+    "time_group": "2005-02-01",
+    "total_sum": 1803019
+  },
+  {
+    "time_group": "2005-03-01",
+    "total_sum": 2068684
+  },
+  {
+    "time_group": "2005-04-01",
+    "total_sum": 2251800
+  },
+  {
+    "time_group": "2005-05-01",
+    "total_sum": 2136947
+  },
+  {
+    "time_group": "2005-06-01",
+    "total_sum": 1951444
+  },
+  {
+    "time_group": "2005-07-01",
+    "total_sum": 1852432
+  },
+  {
+    "time_group": "2005-08-01",
+    "total_sum": 1852131
+  },
+  {
+    "time_group": "2005-09-01",
+    "total_sum": 2120662
+  },
+  {
+    "time_group": "2005-10-01",
+    "total_sum": 2346256
+  },
+  {
+    "time_group": "2005-11-01",
+    "total_sum": 2406316
+  },
+  {
+    "time_group": "2005-12-01",
+    "total_sum": 2360494
+  },
+  {
+    "time_group": "2006-01-01",
+    "total_sum": 1701784
+  },
+  {
+    "time_group": "2006-02-01",
+    "total_sum": 1737794
+  },
+  {
+    "time_group": "2006-03-01",
+    "total_sum": 2298683
+  },
+  {
+    "time_group": "2006-04-01",
+    "total_sum": 1997694
+  },
+  {
+    "time_group": "2006-05-01",
+    "total_sum": 2214161
+  },
+  {
+    "time_group": "2006-06-01",
+    "total_sum": 1801721
+  },
+  {
+    "time_group": "2006-07-01",
+    "total_sum": 1401479
+  },
+  {
+    "time_group": "2006-08-01",
+    "total_sum": 1629104
+  },
+  {
+    "time_group": "2006-09-01",
+    "total_sum": 1768658
+  },
+  {
+    "time_group": "2006-10-01",
+    "total_sum": 1982461
+  },
+  {
+    "time_group": "2006-11-01",
+    "total_sum": 1930368
+  },
+  {
+    "time_group": "2006-12-01",
+    "total_sum": 1663348
+  },
+  {
+    "time_group": "2007-01-01",
+    "total_sum": 2029217
+  },
+  {
+    "time_group": "2007-02-01",
+    "total_sum": 2066818
+  },
+  {
+    "time_group": "2007-03-01",
+    "total_sum": 2134854
+  },
+  {
+    "time_group": "2007-04-01",
+    "total_sum": 1979950
+  },
+  {
+    "time_group": "2007-05-01",
+    "total_sum": 2224762
+  },
+  {
+    "time_group": "2007-06-01",
+    "total_sum": 2224194
+  },
+  {
+    "time_group": "2007-07-01",
+    "total_sum": 2051276
+  },
+  {
+    "time_group": "2007-08-01",
+    "total_sum": 1822372
+  },
+  {
+    "time_group": "2007-09-01",
+    "total_sum": 1998723
+  },
+  {
+    "time_group": "2007-10-01",
+    "total_sum": 2446094
+  },
+  {
+    "time_group": "2007-11-01",
+    "total_sum": 2531762
+  },
+  {
+    "time_group": "2007-12-01",
+    "total_sum": 2159429
+  },
+  {
+    "time_group": "2008-01-01",
+    "total_sum": 2665839
+  },
+  {
+    "time_group": "2008-02-01",
+    "total_sum": 2557077
+  },
+  {
+    "time_group": "2008-03-01",
+    "total_sum": 2848757
+  },
+  {
+    "time_group": "2008-04-01",
+    "total_sum": 2810180
+  },
+  {
+    "time_group": "2008-05-01",
+    "total_sum": 2958761
+  },
+  {
+    "time_group": "2008-06-01",
+    "total_sum": 2706793
+  },
+  {
+    "time_group": "2008-07-01",
+    "total_sum": 2730226
+  },
+  {
+    "time_group": "2008-08-01",
+    "total_sum": 2450019
+  },
+  {
+    "time_group": "2008-09-01",
+    "total_sum": 3278451
+  },
+  {
+    "time_group": "2008-10-01",
+    "total_sum": 2937969
+  },
+  {
+    "time_group": "2008-11-01",
+    "total_sum": 3066092
+  },
+  {
+    "time_group": "2008-12-01",
+    "total_sum": 2638793
+  },
+  {
+    "time_group": "2009-01-01",
+    "total_sum": 2598159
+  },
+  {
+    "time_group": "2009-02-01",
+    "total_sum": 2644797
+  },
+  {
+    "time_group": "2009-03-01",
+    "total_sum": 3104692
+  },
+  {
+    "time_group": "2009-04-01",
+    "total_sum": 2837273
+  },
+  {
+    "time_group": "2009-05-01",
+    "total_sum": 2877553
+  },
+  {
+    "time_group": "2009-06-01",
+    "total_sum": 2792334
+  },
+  {
+    "time_group": "2009-07-01",
+    "total_sum": 2667955
+  },
+  {
+    "time_group": "2009-08-01",
+    "total_sum": 2538405
+  },
+  {
+    "time_group": "2009-09-01",
+    "total_sum": 2907441
+  },
+  {
+    "time_group": "2009-10-01",
+    "total_sum": 3167801
+  },
+  {
+    "time_group": "2009-11-01",
+    "total_sum": 2912668
+  },
+  {
+    "time_group": "2009-12-01",
+    "total_sum": 2723394
+  },
+  {
+    "time_group": "2010-01-01",
+    "total_sum": 3116867
+  },
+  {
+    "time_group": "2010-02-01",
+    "total_sum": 2992581
+  },
+  {
+    "time_group": "2010-03-01",
+    "total_sum": 3459004
+  },
+  {
+    "time_group": "2010-04-01",
+    "total_sum": 3292459
+  },
+  {
+    "time_group": "2010-05-01",
+    "total_sum": 3293995
+  },
+  {
+    "time_group": "2010-06-01",
+    "total_sum": 3335937
+  },
+  {
+    "time_group": "2010-07-01",
+    "total_sum": 3098569
+  },
+  {
+    "time_group": "2010-08-01",
+    "total_sum": 2879133
+  },
+  {
+    "time_group": "2010-09-01",
+    "total_sum": 3144001
+  },
+  {
+    "time_group": "2010-10-01",
+    "total_sum": 3684560
+  },
+  {
+    "time_group": "2010-11-01",
+    "total_sum": 3829250
+  },
+  {
+    "time_group": "2010-12-01",
+    "total_sum": 3775736
+  },
+  {
+    "time_group": "2011-01-01",
+    "total_sum": 3439915
+  },
+  {
+    "time_group": "2011-02-01",
+    "total_sum": 3339054
+  },
+  {
+    "time_group": "2011-03-01",
+    "total_sum": 4117851
+  },
+  {
+    "time_group": "2011-04-01",
+    "total_sum": 3659749
+  },
+  {
+    "time_group": "2011-05-01",
+    "total_sum": 3997359
+  },
+  {
+    "time_group": "2011-06-01",
+    "total_sum": 3707592
+  },
+  {
+    "time_group": "2011-07-01",
+    "total_sum": 3771042
+  },
+  {
+    "time_group": "2011-08-01",
+    "total_sum": 3774913
+  },
+  {
+    "time_group": "2011-09-01",
+    "total_sum": 4973988
+  },
+  {
+    "time_group": "2011-10-01",
+    "total_sum": 5563412
+  },
+  {
+    "time_group": "2011-11-01",
+    "total_sum": 4962036
+  },
+  {
+    "time_group": "2011-12-01",
+    "total_sum": 4433059
+  },
+  {
+    "time_group": "2012-01-01",
+    "total_sum": 4796243
+  },
+  {
+    "time_group": "2012-02-01",
+    "total_sum": 5078432
+  },
+  {
+    "time_group": "2012-03-01",
+    "total_sum": 5516536
+  },
+  {
+    "time_group": "2012-04-01",
+    "total_sum": 5423005
+  },
+  {
+    "time_group": "2012-05-01",
+    "total_sum": 5067807
+  },
+  {
+    "time_group": "2012-06-01",
+    "total_sum": 5073183
+  },
+  {
+    "time_group": "2012-07-01",
+    "total_sum": 5624113
+  },
+  {
+    "time_group": "2012-08-01",
+    "total_sum": 6040066
+  },
+  {
+    "time_group": "2012-09-01",
+    "total_sum": 5372689
+  },
+  {
+    "time_group": "2012-10-01",
+    "total_sum": 5904272
+  },
+  {
+    "time_group": "2012-11-01",
+    "total_sum": 5373061
+  },
+  {
+    "time_group": "2012-12-01",
+    "total_sum": 4549990
+  },
+  {
+    "time_group": "2013-01-01",
+    "total_sum": 5665096
+  },
+  {
+    "time_group": "2013-02-01",
+    "total_sum": 5136321
+  },
+  {
+    "time_group": "2013-03-01",
+    "total_sum": 6121433
+  },
+  {
+    "time_group": "2013-04-01",
+    "total_sum": 5552584
+  },
+  {
+    "time_group": "2013-05-01",
+    "total_sum": 6184081
+  },
+  {
+    "time_group": "2013-06-01",
+    "total_sum": 5033496
+  },
+  {
+    "time_group": "2013-07-01",
+    "total_sum": 5251361
+  },
+  {
+    "time_group": "2013-08-01",
+    "total_sum": 4985314
+  },
+  {
+    "time_group": "2013-09-01",
+    "total_sum": 5319428
+  },
+  {
+    "time_group": "2013-10-01",
+    "total_sum": 6146267
+  },
+  {
+    "time_group": "2013-11-01",
+    "total_sum": 5953050
+  },
+  {
+    "time_group": "2013-12-01",
+    "total_sum": 5464673
+  },
+  {
+    "time_group": "2014-01-01",
+    "total_sum": 6701768
+  },
+  {
+    "time_group": "2014-02-01",
+    "total_sum": 6175371
+  },
+  {
+    "time_group": "2014-03-01",
+    "total_sum": 7371741
+  },
+  {
+    "time_group": "2014-04-01",
+    "total_sum": 7207160
+  },
+  {
+    "time_group": "2014-05-01",
+    "total_sum": 6814576
+  },
+  {
+    "time_group": "2014-06-01",
+    "total_sum": 6650843
+  },
+  {
+    "time_group": "2014-07-01",
+    "total_sum": 6934640
+  },
+  {
+    "time_group": "2014-08-01",
+    "total_sum": 6368537
+  },
+  {
+    "time_group": "2014-09-01",
+    "total_sum": 7129287
+  },
+  {
+    "time_group": "2014-10-01",
+    "total_sum": 9150599
+  },
+  {
+    "time_group": "2014-11-01",
+    "total_sum": 10771479
+  },
+  {
+    "time_group": "2014-12-01",
+    "total_sum": 9877539
+  },
+  {
+    "time_group": "2015-01-01",
+    "total_sum": 10211128
+  },
+  {
+    "time_group": "2015-02-01",
+    "total_sum": 10375127
+  },
+  {
+    "time_group": "2015-03-01",
+    "total_sum": 12826855
+  },
+  {
+    "time_group": "2015-04-01",
+    "total_sum": 11289672
+  },
+  {
+    "time_group": "2015-05-01",
+    "total_sum": 11182540
+  },
+  {
+    "time_group": "2015-06-01",
+    "total_sum": 12568030
+  },
+  {
+    "time_group": "2015-07-01",
+    "total_sum": 9585300
+  },
+  {
+    "time_group": "2015-08-01",
+    "total_sum": 9180739
+  },
+  {
+    "time_group": "2015-09-01",
+    "total_sum": 10741431
+  },
+  {
+    "time_group": "2015-10-01",
+    "total_sum": 13882451
+  },
+  {
+    "time_group": "2015-11-01",
+    "total_sum": 14200441
+  },
+  {
+    "time_group": "2015-12-01",
+    "total_sum": 10286698
+  },
+  {
+    "time_group": "2016-01-01",
+    "total_sum": 16227193
+  },
+  {
+    "time_group": "2016-02-01",
+    "total_sum": 14547141
+  },
+  {
+    "time_group": "2016-03-01",
+    "total_sum": 16144490
+  },
+  {
+    "time_group": "2016-04-01",
+    "total_sum": 14330220
+  },
+  {
+    "time_group": "2016-05-01",
+    "total_sum": 14042457
+  },
+  {
+    "time_group": "2016-06-01",
+    "total_sum": 14344946
+  },
+  {
+    "time_group": "2016-07-01",
+    "total_sum": 12885660
+  },
+  {
+    "time_group": "2016-08-01",
+    "total_sum": 11795801
+  },
+  {
+    "time_group": "2016-09-01",
+    "total_sum": 13958435
+  },
+  {
+    "time_group": "2016-10-01",
+    "total_sum": 11202303
+  },
+  {
+    "time_group": "2016-11-01",
+    "total_sum": 11492492
+  },
+  {
+    "time_group": "2016-12-01",
+    "total_sum": 12136801
+  },
+  {
+    "time_group": "2017-01-01",
+    "total_sum": 12150875
+  },
+  {
+    "time_group": "2017-02-01",
+    "total_sum": 12870204
+  },
+  {
+    "time_group": "2017-03-01",
+    "total_sum": 14319435
+  },
+  {
+    "time_group": "2017-04-01",
+    "total_sum": 15628477
+  },
+  {
+    "time_group": "2017-05-01",
+    "total_sum": 14894937
+  },
+  {
+    "time_group": "2017-06-01",
+    "total_sum": 14372378
+  },
+  {
+    "time_group": "2017-07-01",
+    "total_sum": 14808475
+  },
+  {
+    "time_group": "2017-08-01",
+    "total_sum": 15915733
+  },
+  {
+    "time_group": "2017-09-01",
+    "total_sum": 16999890
+  },
+  {
+    "time_group": "2017-10-01",
+    "total_sum": 19433648
+  },
+  {
+    "time_group": "2017-11-01",
+    "total_sum": 18885644
+  },
+  {
+    "time_group": "2017-12-01",
+    "total_sum": 17361253
+  },
+  {
+    "time_group": "2018-01-01",
+    "total_sum": 18445580
+  },
+  {
+    "time_group": "2018-02-01",
+    "total_sum": 17704444
+  },
+  {
+    "time_group": "2018-03-01",
+    "total_sum": 20149872
+  },
+  {
+    "time_group": "2018-04-01",
+    "total_sum": 19709932
+  },
+  {
+    "time_group": "2018-05-01",
+    "total_sum": 19710718
+  },
+  {
+    "time_group": "2018-06-01",
+    "total_sum": 18088369
+  },
+  {
+    "time_group": "2018-07-01",
+    "total_sum": 18132320
+  },
+  {
+    "time_group": "2018-08-01",
+    "total_sum": 17906302
+  },
+  {
+    "time_group": "2018-09-01",
+    "total_sum": 17418053
+  },
+  {
+    "time_group": "2018-10-01",
+    "total_sum": 19443085
+  },
+  {
+    "time_group": "2018-11-01",
+    "total_sum": 23040835
+  },
+  {
+    "time_group": "2018-12-01",
+    "total_sum": 18694165
+  },
+  {
+    "time_group": "2019-01-01",
+    "total_sum": 19281479
+  },
+  {
+    "time_group": "2019-02-01",
+    "total_sum": 18464161
+  },
+  {
+    "time_group": "2019-03-01",
+    "total_sum": 23035822
+  },
+  {
+    "time_group": "2019-04-01",
+    "total_sum": 24714027
+  },
+  {
+    "time_group": "2019-05-01",
+    "total_sum": 28369333
+  },
+  {
+    "time_group": "2019-06-01",
+    "total_sum": 26431370
+  },
+  {
+    "time_group": "2019-07-01",
+    "total_sum": 24649611
+  },
+  {
+    "time_group": "2019-08-01",
+    "total_sum": 23253802
+  },
+  {
+    "time_group": "2019-09-01",
+    "total_sum": 22675580
+  },
+  {
+    "time_group": "2019-10-01",
+    "total_sum": 26477122
+  },
+  {
+    "time_group": "2019-11-01",
+    "total_sum": 26854393
+  },
+  {
+    "time_group": "2019-12-01",
+    "total_sum": 28106757
+  },
+  {
+    "time_group": "2020-01-01",
+    "total_sum": 29444249
+  },
+  {
+    "time_group": "2020-02-01",
+    "total_sum": 25985297
+  },
+  {
+    "time_group": "2020-03-01",
+    "total_sum": 30286098
+  },
+  {
+    "time_group": "2020-04-01",
+    "total_sum": 31218379
+  },
+  {
+    "time_group": "2020-05-01",
+    "total_sum": 30300778
+  },
+  {
+    "time_group": "2020-06-01",
+    "total_sum": 31206551
+  },
+  {
+    "time_group": "2020-07-01",
+    "total_sum": 19829608
+  },
+  {
+    "time_group": "2020-08-01",
+    "total_sum": 17697542
+  },
+  {
+    "time_group": "2020-09-01",
+    "total_sum": 28471175
+  },
+  {
+    "time_group": "2020-10-01",
+    "total_sum": 30226706
+  },
+  {
+    "time_group": "2020-11-01",
+    "total_sum": 29911811
+  },
+  {
+    "time_group": "2020-12-01",
+    "total_sum": 30014368
+  },
+  {
+    "time_group": "2021-01-01",
+    "total_sum": 29637684
+  },
+  {
+    "time_group": "2021-02-01",
+    "total_sum": 32439267
+  },
+  {
+    "time_group": "2021-03-01",
+    "total_sum": 34910269
+  },
+  {
+    "time_group": "2021-04-01",
+    "total_sum": 28886634
+  },
+  {
+    "time_group": "2021-05-01",
+    "total_sum": 33829224
+  },
+  {
+    "time_group": "2021-06-01",
+    "total_sum": 30476766
+  },
+  {
+    "time_group": "2021-07-01",
+    "total_sum": 29629185
+  },
+  {
+    "time_group": "2021-08-01",
+    "total_sum": 27613405
+  },
+  {
+    "time_group": "2021-09-01",
+    "total_sum": 33231906
+  },
+  {
+    "time_group": "2021-10-01",
+    "total_sum": 35609138
+  },
+  {
+    "time_group": "2021-11-01",
+    "total_sum": 31854391
+  },
+  {
+    "time_group": "2021-12-01",
+    "total_sum": 30505794
+  },
+  {
+    "time_group": "2022-01-01",
+    "total_sum": 33664234
+  },
+  {
+    "time_group": "2022-02-01",
+    "total_sum": 29260308
+  },
+  {
+    "time_group": "2022-03-01",
+    "total_sum": 33861836
+  },
+  {
+    "time_group": "2022-04-01",
+    "total_sum": 30959401
+  },
+  {
+    "time_group": "2022-05-01",
+    "total_sum": 32309606
+  },
+  {
+    "time_group": "2022-06-01",
+    "total_sum": 28620869
+  },
+  {
+    "time_group": "2022-07-01",
+    "total_sum": 26242411
+  },
+  {
+    "time_group": "2022-08-01",
+    "total_sum": 26048943
+  },
+  {
+    "time_group": "2022-09-01",
+    "total_sum": 29102721
+  },
+  {
+    "time_group": "2022-10-01",
+    "total_sum": 31276808
+  },
+  {
+    "time_group": "2022-11-01",
+    "total_sum": 33003805
+  },
+  {
+    "time_group": "2022-12-01",
+    "total_sum": 33537181
+  },
+  {
+    "time_group": "2023-01-01",
+    "total_sum": 30819961
+  },
+  {
+    "time_group": "2023-02-01",
+    "total_sum": 35435847
+  },
+  {
+    "time_group": "2023-03-01",
+    "total_sum": 45607706
+  },
+  {
+    "time_group": "2023-04-01",
+    "total_sum": 40326961
+  },
+  {
+    "time_group": "2023-05-01",
+    "total_sum": 44627177
+  },
+  {
+    "time_group": "2023-06-01",
+    "total_sum": 41187196
+  },
+  {
+    "time_group": "2023-07-01",
+    "total_sum": 42797669
+  },
+  {
+    "time_group": "2023-08-01",
+    "total_sum": 49778539
+  },
+  {
+    "time_group": "2023-09-01",
+    "total_sum": 50671320
+  },
+  {
+    "time_group": "2023-10-01",
+    "total_sum": 52198907
+  },
+  {
+    "time_group": "2023-11-01",
+    "total_sum": 54750448
+  }
+]
