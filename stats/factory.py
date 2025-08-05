@@ -8,7 +8,7 @@ from stats.routes.api import api
 from stats.routes.graph_routes import graph_routes
 
 
-def create_app(app_config="development"):
+def create_app():
     configure_logging()
 
     app = Flask(__name__)
@@ -28,4 +28,8 @@ def create_app(app_config="development"):
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=True)
+    app.run(
+        host=os.environ.get("HOST", "0.0.0.0"),
+        port=os.environ.get("PORT", 8080),
+        debug=os.environ.get("DEBUG", False),
+    )

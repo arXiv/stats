@@ -19,7 +19,7 @@ up-api: stop-api clean-api build-api run-api
 up-ui: stop-ui clean-ui build-ui run-ui
 
 build-api:
-	docker build $(BE_BUILD_CONTEXT) -t $(BE_IMAGE_NAME) -f $(BE_DOCKERFILE) --progress plain
+	docker build $(BE_BUILD_CONTEXT) --build-arg PORT=$(BE_PORT) -f $(BE_DOCKERFILE) -t $(BE_IMAGE_NAME) --progress plain
 
 run-api:
 	docker run -d --name $(BE_CONTAINER_NAME) -p ${BE_PORT}:${BE_PORT} --env-file stats/.env $(BE_IMAGE_NAME) 
@@ -32,7 +32,7 @@ clean-api:
 	docker rmi $(BE_IMAGE_NAME) || true
 
 build-ui:
-	docker build --build-arg NODE_VERSION=$(NODE_VERSION) -f $(FE_DOCKERFILE) -t $(FE_IMAGE_NAME) $(FE_BUILD_CONTEXT) --progress=plain
+	docker build $(FE_BUILD_CONTEXT) --build-arg PORT=$(FE_PORT) -f $(FE_DOCKERFILE) -t $(FE_IMAGE_NAME)  --progress=plain
 
 run-ui:
 	docker run -d --name $(FE_CONTAINER_NAME) -p ${FE_PORT}:${FE_PORT} $(FE_IMAGE_NAME)

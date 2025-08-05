@@ -1,3 +1,5 @@
+ARG PORT
+
 # Node image to use
 FROM node:24
 
@@ -27,7 +29,8 @@ RUN sed -i 's|%REACT_APP_ENV%|'${REACT_APP_ENV}'|g' build/index.html
 RUN npm install -g serve
 
 # Expose port
-EXPOSE 9000
+EXPOSE ${PORT}
 
 # Start the application
-CMD ["serve", "-s", "build", "-l", "9000"]
+# CMD ["serve", "-s", "build", "-l", "9000"]
+CMD ["npm", "run", "start"]

@@ -20,7 +20,7 @@ Application for public usage statistics pages on arXiv.org. `stats/` contains th
    ```
    cd stats
    poetry install
-   poetry run python stats/factory.py
+   poetry run python factory.py
    ```
 7. Install and run `stats-ui`
    ```
@@ -31,17 +31,26 @@ Application for public usage statistics pages on arXiv.org. `stats/` contains th
 
 ## Environment variables
 
+NOTE: If you would like to use different ports and are running via Docker, make sure you also update the `FE_PORT` and `BE_PORT` in the `Makefile`. 
+
 1. Create a file named `.env` in `stats/`
 2. Set the following variables. 
-
+   ```
+   HOST=0.0.0.0
+   PORT=8080 
+   SQLALCHEMY_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
+   ```
    If running locally, these may also be set in your shell or terminal session. If running with Docker, these must be set in an `.env` file.
-   ```
-   SQLALCHEMY_DATABASE_URI={database}+{driver}://{username}:{password}@{host}:{port}/{db_name}
-   ```
-   Use the database URI for the `latexml-db` database found in GCP Secret Manager. Your host address should point to your local database proxy. 
+
+   Get the username and password from the database URI for the `latexml-db` database found in GCP Secret Manager. 
    
-   If running via Docker, set the host to
+   The host you set in the URI should point to your local database proxy. If running via Docker, set the host to
    `host.docker.internal`.
+3. Create a file named `.env` in `stats-ui/`
+4. Set the following variables.
+   ```
+   PORT=9000
+   ```
 
 ## Database connection
 
