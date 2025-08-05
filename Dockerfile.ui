@@ -8,14 +8,6 @@ WORKDIR /app
 # Copy all files
 COPY stats-ui/ .
 
-# Set build arguments
-ARG REACT_APP_API_URL
-ARG REACT_APP_ENV
-
-# Set environment variables
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
-ENV REACT_APP_ENV=$REACT_APP_ENV
-
 # Install dependencies
 RUN npm install
 
@@ -32,5 +24,4 @@ RUN npm install -g serve
 EXPOSE ${PORT}
 
 # Start the application
-# CMD ["serve", "-s", "build", "-l", "9000"]
 CMD ["npm", "run", "start"]
