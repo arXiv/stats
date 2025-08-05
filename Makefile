@@ -19,7 +19,7 @@ up-api: stop-api clean-api build-api run-api
 up-ui: stop-ui clean-ui build-ui run-ui
 
 build-api:
-	docker build $(BE_BUILD_CONTEXT) -f $(BE_DOCKERFILE) --progress plain
+	docker build $(BE_BUILD_CONTEXT) -t $(BE_IMAGE_NAME) -f $(BE_DOCKERFILE) --progress plain
 
 run-api:
 	docker run -d --name $(BE_CONTAINER_NAME) -p ${BE_PORT}:${BE_PORT} --env-file stats/.env $(BE_IMAGE_NAME) 
