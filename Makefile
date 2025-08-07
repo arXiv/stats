@@ -4,7 +4,7 @@ TARGET := production
 
 BE_IMAGE_NAME := arxiv-stats
 BE_CONTAINER_NAME := arxiv-stats
-BE_DOCKERFILE := Dockerfile.multistage
+BE_DOCKERFILE := Dockerfile.api
 BE_BUILD_CONTEXT := .
 BE_PORT := 8080
 
