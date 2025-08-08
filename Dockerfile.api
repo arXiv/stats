@@ -22,7 +22,7 @@ RUN poetry config virtualenvs.in-project true && \
     poetry install --no-interaction --no-ansi \
     --without test
 
-################ test build ################
+################ with test ################
 FROM builder AS with-test
 
 ENV PATH="/opt/poetry/bin:$PATH"
@@ -44,8 +44,8 @@ ENV PATH="/opt/poetry/bin:$PATH"
 WORKDIR /home
 RUN poetry run pytest
 
-################ production ################
-FROM base AS production
+################ final ################
+FROM base AS final
 COPY --from=builder /opt/poetry /opt/poetry
 COPY --from=builder /home /home
 

@@ -1,0 +1,58 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  DOCKERFILE: "Dockerfile.api"
+  IMAGE_NAME: "arxiv-stats"
+  PORT: "8080"
+  TARGET: "final"
+
+steps:
+# docker pull latest image
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker pull gcr.io/$PROJECT_ID/stats:latest']
+    id: Latest
+# docker build, caching from latest
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '.'
+      - '--build-arg'
+      - 'PORT=${PORT}'
+      - '-f'
+      - '${DOCKERFILE}'
+      - '--target'
+      - '${TARGET}'
+      - '--cache-from'
+      - 'gcr.io/$PROJECT_ID/${IMAGE_NAME}:latest'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${IMAGE_NAME}:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${IMAGE_NAME}:latest'
+    id: Build
+# docker push to gcloud artifact registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - '--all-tags'
+      - 'gcr.io/$PROJECT_ID/${IMAGE_NAME}'
+    id: Push
+# gcloud run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - run
+      - services
+      - update
+      - $_SERVICE_NAME
+      - '--platform=managed'
+      - >-
+        --image=gcr.io/$PROJECT_ID/${IMAGE_NAME}:$COMMIT_SHA
+      - >-
+        --labels=commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
+      - '--region=$_DEPLOY_REGION'
+      - '--quiet'
+    id: Deploy
+    entrypoint: gcloud
+images: ['gcr.io/$PROJECT_ID/${IMAGE_NAME}:latest', 'gcr.io/$PROJECT_ID/${IMAGE_NAME}:$COMMIT_SHA']
+
