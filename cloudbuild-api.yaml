@@ -21,9 +21,10 @@ steps:
   # docker build, caching from latest
   - name: "gcr.io/cloud-builders/docker"
     args:
+      - "DOCKER_BUILDKIT=1"
       - "build"
       - "--target"
-      - "final"
+      - "${_TARGET}"
       - "--build-arg"
       - "PORT=${_PORT}"
       - "-f"
