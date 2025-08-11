@@ -1,6 +1,6 @@
 .PHONY: up up-api up-ui build-api run-api stop-api clean-api build-ui run-ui stop-ui clean-ui test-api format-api
 
-TARGET := production
+TARGET := final
 
 BE_IMAGE_NAME := arxiv-stats
 BE_CONTAINER_NAME := arxiv-stats

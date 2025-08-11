@@ -7,6 +7,11 @@ substitutions:
   _PORT: "8080"
   _TARGET: "final"
 
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_ID/secrets/latexml_db_uri/versions/latest
+    env: 'SQLALCHEMY_DATABASE_URI'
+
 steps:
 # docker pull latest image
   # - name: 'gcr.io/cloud-builders/docker'
@@ -30,6 +35,7 @@ steps:
       - 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA'
       - '-t'
       - 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest'
+    secretEnv: ['SQLALCHEMY_DATABASE_URI']
     id: Build
 # docker push to gcloud artifact registry
   - name: 'gcr.io/cloud-builders/docker'
