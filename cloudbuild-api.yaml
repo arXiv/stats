@@ -35,7 +35,6 @@ steps:
       - 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA'
       - '-t'
       - 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest'
-    secretEnv: ['SQLALCHEMY_DATABASE_URI']
     id: Build
 # docker push to gcloud artifact registry
   - name: 'gcr.io/cloud-builders/docker'
@@ -58,6 +57,7 @@ steps:
         --labels=commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
       - '--region=$_DEPLOY_REGION'
       - '--quiet'
+    secretEnv: ['SQLALCHEMY_DATABASE_URI']
     id: Deploy
     entrypoint: gcloud
 images: ['gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest', 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA']
