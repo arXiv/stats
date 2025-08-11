@@ -9,56 +9,59 @@ substitutions:
 
 availableSecrets:
   secretManager:
-  - versionName: projects/$PROJECT_ID/secrets/latexml_db_uri/versions/latest
-    env: 'SQLALCHEMY_DATABASE_URI'
+    - versionName: projects/$PROJECT_ID/secrets/latexml_db_uri/versions/latest
+      env: "SQLALCHEMY_DATABASE_URI"
 
 steps:
-# docker pull latest image
+  # docker pull latest image
   # - name: 'gcr.io/cloud-builders/docker'
   #   entrypoint: 'bash'
   #   args: ['-c', 'docker pull gcr.io/$PROJECT_ID/stats:latest']
   #   id: Latest
-# docker build, caching from latest
-  - name: 'gcr.io/cloud-builders/docker'
+  # docker build, caching from latest
+  - name: "gcr.io/cloud-builders/docker"
     args:
-      - 'build'
-      - '.'
-      - '--build-arg'
-      - 'PORT=${_PORT}'
-      - '-f'
-      - '${_DOCKERFILE}'
-      - '--target'
-      - '${_TARGET}'
+      - "build"
+      - "."
+      - "--build-arg"
+      - "PORT=${_PORT}"
+      - "-f"
+      - "${_DOCKERFILE}"
+      - "--target"
+      - "${_TARGET}"
       # - '--cache-from'
       # - 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest'
+      - "-t"
+      - "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest"
     id: Build
-# docker push to gcloud artifact registry
-  - name: 'gcr.io/cloud-builders/docker'
+  # docker push to gcloud artifact registry
+  - name: "gcr.io/cloud-builders/docker"
     args:
       - push
-      - '--all-tags'
-      - 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}'
+      - "--all-tags"
+      - "gcr.io/$PROJECT_ID/${_IMAGE_NAME}"
     id: Push
-# gcloud run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+  # gcloud run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
     args:
       - run
       - services
       - update
       - $_SERVICE_NAME
-      - '--platform=managed'
+      - "--platform=managed"
       - >-
         --image=gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA
       - >-
         --labels=commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
-      - '--region=$_DEPLOY_REGION'
-      - '--quiet'
-    secretEnv: ['SQLALCHEMY_DATABASE_URI']
+      - "--region=$_DEPLOY_REGION"
+      - "--quiet"
+    secretEnv: ["SQLALCHEMY_DATABASE_URI"]
     id: Deploy
     entrypoint: gcloud
-images: ['gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest', 'gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA']
-
+images:
+  [
+    "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest",
+    "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA",
+  ]
