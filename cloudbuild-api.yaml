@@ -23,7 +23,7 @@ steps:
     args:
       - "build"
       - "--target"
-      - "${_TARGET}"
+      - "final"
       - "--build-arg"
       - "PORT=${_PORT}"
       - "-f"
