@@ -31,13 +31,18 @@ Application for public usage statistics pages on arXiv.org. `stats/` contains th
 
 ## Environment variables
 
-NOTE: If you would like to use different ports and are running via Docker, make sure you also update the `FE_PORT` and `BE_PORT` in the `Makefile`. 
+NOTE: If you would like to use different ports and are running via Docker, make sure you also update the `FE_PORT` and `BE_PORT` in the `Makefile`.
 
-Non-sensitive constants are declared in `stats.config`. Other variables may be set in a `.env` file or in your local environment (i.e. your shell or terminal session). If running locally with Docker, other variables must be set in an `.env` file. In remote environments, both non-sensitive and sensitive variables are declared in `cloudbuild.yaml` and injected at runtime.
+Non-sensitive constants are declared in `stats.config`. The appropriate config is chosen based on the value of the `ENV` environment variable - `TEST`, `DEV`, or `PROD`.
+
+Other variables may be set in a `.env` file or in your local environment (i.e. your shell or terminal session). If running locally with Docker, other variables must be set in an `.env` file. 
+
+In remote environments, both non-sensitive and sensitive variables are declared in `cloudbuild.yaml` and injected at runtime.
 
 1. If using a `.env` file, create a file named `.env` in `stats/`
 2. Set the following variables in that file or in your local environment 
    ```
+   ENV={environment}
    DEV_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
    PROD_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
    ```
