@@ -22,6 +22,18 @@ RUN poetry config virtualenvs.in-project true && \
     poetry install --no-interaction --no-ansi \
     --without test
 
+################ runtime ################
+FROM base AS runtime
+COPY --from=builder /opt/poetry /opt/poetry
+COPY --from=builder /home /home
+
+ENV PATH="/opt/poetry/bin:$PATH"
+
+EXPOSE ${PORT}
+
+WORKDIR /home
+ENTRYPOINT ["poetry", "run", "python", "stats/factory.py"]
+
 ################ with test ################
 FROM builder AS with-test
 
@@ -46,15 +58,3 @@ ENV PATH="/opt/poetry/bin:$PATH" \
 # TODO: add integration tests
 WORKDIR /home
 RUN poetry run pytest
-
-################ runtime ################
-FROM base AS runtime
-COPY --from=builder /opt/poetry /opt/poetry
-COPY --from=builder /home /home
-
-ENV PATH="/opt/poetry/bin:$PATH"
-
-EXPOSE ${PORT}
-
-WORKDIR /home
-ENTRYPOINT ["poetry", "run", "python", "stats/factory.py"]
