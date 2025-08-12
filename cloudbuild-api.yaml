@@ -5,7 +5,7 @@ substitutions:
   _DOCKERFILE: "Dockerfile.api"
   _IMAGE_NAME: "arxiv-stats"
   _PORT: "8080"
-  _TARGET: "final"
+  _TARGET: "runtime"
 
 availableSecrets:
   secretManager:
