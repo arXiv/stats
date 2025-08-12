@@ -57,6 +57,8 @@ steps:
         --labels=commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
       - "--region=$_DEPLOY_REGION"
       - "--quiet"
+    env:
+      - "ENV=$_ENV"
     secretEnv: ["SQLALCHEMY_DATABASE_URI"]
     id: Deploy
     entrypoint: gcloud

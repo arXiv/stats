@@ -28,6 +28,7 @@ FROM builder AS with-test
 ENV PATH="/opt/poetry/bin:$PATH"
 
 # install test dependencies
+# TODO: add integration tests
 WORKDIR /home
 RUN poetry config virtualenvs.in-project true && \
     poetry install --no-interaction --no-ansi
@@ -38,9 +39,11 @@ COPY tests ./tests/
 ################ test ################
 FROM with-test AS test
 
-ENV PATH="/opt/poetry/bin:$PATH"
+ENV PATH="/opt/poetry/bin:$PATH" \
+    ENV="TEST"
 
-# run tests
+# run any tests that have dependencies
+# TODO: add integration tests
 WORKDIR /home
 RUN poetry run pytest
 
