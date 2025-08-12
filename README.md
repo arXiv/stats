@@ -33,16 +33,15 @@ Application for public usage statistics pages on arXiv.org. `stats/` contains th
 
 NOTE: If you would like to use different ports and are running via Docker, make sure you also update the `FE_PORT` and `BE_PORT` in the `Makefile`. 
 
-1. Create a file named `.env` in `stats/`
-2. Set the following variables. 
-   ```
-   HOST=0.0.0.0
-   PORT=8080 
-   SQLALCHEMY_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
-   ```
-   If running locally, these may also be set in your shell or terminal session. If running with Docker, these must be set in an `.env` file.
+Non-sensitive constants are declared in `stats.config`. Other variables may be set in a `.env` file or in your local environment (i.e. your shell or terminal session). If running locally with Docker, other variables must be set in an `.env` file. In remote environments, both non-sensitive and sensitive variables are declared in `cloudbuild.yaml` and injected at runtime.
 
-   Get the username and password from the database URI for the `latexml-db` database found in GCP Secret Manager. 
+1. If using a `.env` file, create a file named `.env` in `stats/`
+2. Set the following variables in that file or in your local environment 
+   ```
+   DEV_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
+   PROD_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
+   ```
+   The database URIs for the development and production `latexml-db` database can be found in GCP Secret Manager.
    
    The host you set in the URI should point to your local database proxy. If running via Docker, set the host to
    `host.docker.internal`.
