@@ -6,6 +6,7 @@ substitutions:
   _IMAGE_NAME: "arxiv-stats"
   _PORT: "8080"
   _TARGET: "runtime"
+  _SERVICE_NAME: "arxiv-stats"
 
 availableSecrets:
   secretManager:
@@ -46,15 +47,13 @@ steps:
   # gcloud run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
     args:
-      - run
-      - services
-      - update
-      - $_SERVICE_NAME
+      - "run"
+      - "services"
+      - "update"
+      - "$_SERVICE_NAME"
       - "--platform=managed"
-      - >-
-        --image=gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA
-      - >-
-        --labels=commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
+      - "--image=gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA"
+      - "--labels=commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID"
       - "--region=$_DEPLOY_REGION"
       - "--quiet"
     env:
