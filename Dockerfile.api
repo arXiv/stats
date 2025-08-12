@@ -44,8 +44,8 @@ ENV PATH="/opt/poetry/bin:$PATH"
 WORKDIR /home
 RUN poetry run pytest
 
-################ final ################
-FROM base AS final
+################ runtime ################
+FROM base AS runtime
 COPY --from=builder /opt/poetry /opt/poetry
 COPY --from=builder /home /home
 
