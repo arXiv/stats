@@ -49,7 +49,7 @@ steps:
       - "run"
       - "services"
       - "replace"
-      - "service-api.yaml"
+      - "$_SERVICE_DEFINITION_FILE"
       - "--project"
       - "$PROJECT_ID"
       - "--region"
