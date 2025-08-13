@@ -1,0 +1,17 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: arxiv-stats
+spec:
+  template:
+    spec:
+      containers:
+        - image: gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA
+          env:
+            - name: ENV
+              value: ${_ENV}
+            - name: ENV_VAR
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: latexml_db_uri
