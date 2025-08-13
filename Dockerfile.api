@@ -57,4 +57,4 @@ ENV PATH="/opt/poetry/bin:$PATH" \
 # run any tests that have dependencies
 # TODO: add integration tests
 WORKDIR /home
-RUN poetry run pytest
+ENTRYPOINT ["poetry", "run", "pytest"]
