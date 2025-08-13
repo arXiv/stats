@@ -43,10 +43,9 @@ In remote environments, both non-sensitive and sensitive variables are declared 
 2. Set the following variables in that file or in your local environment 
    ```
    ENV={environment}
-   DEV_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
-   PROD_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
+   SQLALCHEMY_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
    ```
-   The database URIs for the development and production `latexml-db` database can be found in GCP Secret Manager.
+   The database URI for the development `latexml-db` database can be found in GCP Secret Manager.
    
    The host you set in the URI should point to your local database proxy. If running via Docker, set the host to
    `host.docker.internal`.
