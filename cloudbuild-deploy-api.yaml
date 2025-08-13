@@ -49,7 +49,7 @@ steps:
       - "run"
       - "services"
       - "replace"
-      - "$_SERVICE_DEFINITION_FILE"
+      - "$_SERVICE_DEFINITION"
       - "--project"
       - "$PROJECT_ID"
       - "--region"
