@@ -43,7 +43,7 @@ In remote environments, both non-sensitive and sensitive variables are declared 
 2. Set the following variables in that file or in your local environment 
    ```
    ENV={environment}
-   SQLALCHEMY_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
+   DEV_DATABASE_URI=postgresql+pg8000://{username}:{password}@{host}:{port}/latexmldb
    ```
    The database URI for the development `latexml-db` database can be found in GCP Secret Manager.
    
