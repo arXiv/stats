@@ -52,7 +52,7 @@ In remote environments, both non-sensitive and sensitive variables are declared 
 3. Create a file named `.env` in `stats-ui/`
 4. Set the following variables.
    ```
-   PORT=9000
+   FE_PORT=9000
    ```
 
 ## Database connection

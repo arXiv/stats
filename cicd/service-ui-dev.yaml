@@ -8,5 +8,5 @@ spec:
       containers:
         - image: gcr.io/arxiv-development/arxiv-stats-ui:latest
           env:
-            - name: PORT
+            - name: FE_PORT
               value: "9000"
