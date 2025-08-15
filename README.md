@@ -49,11 +49,6 @@ In remote environments, both non-sensitive and sensitive variables are declared 
    
    The host you set in the URI should point to your local database proxy. If running via Docker, set the host to
    `host.docker.internal`.
-3. Create a file named `.env` in `stats-ui/`
-4. Set the following variables.
-   ```
-   FE_PORT=9000
-   ```
 
 ## Database connection
 

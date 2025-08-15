@@ -12,7 +12,7 @@ FE_IMAGE_NAME := arxiv-stats-ui
 FE_CONTAINER_NAME := arxiv-stats-ui
 FE_DOCKERFILE := Dockerfile.ui
 FE_BUILD_CONTEXT := .
-FE_PORT := 9000
+FE_PORT := 3000
 
 up: stop-ui clean-ui stop-api clean-api build-api run-api build-ui run-ui
 

@@ -7,9 +7,3 @@ spec:
     spec:
       containers:
         - image: gcr.io/arxiv-development/arxiv-stats-ui:latest
-          env:
-            - name: FE_PORT
-              value: "9000"
-          resources:
-            limits:
-              memory: 2G

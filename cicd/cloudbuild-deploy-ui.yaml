@@ -5,7 +5,7 @@ options:
 substitutions:
   _DOCKERFILE: "Dockerfile.ui"
   _IMAGE_NAME: "arxiv-stats-ui"
-  _PORT: "9000"
+  _PORT: "3000"
 
 steps:
   # docker pull latest image
