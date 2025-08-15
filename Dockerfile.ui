@@ -24,4 +24,4 @@ RUN npm install -g serve
 EXPOSE ${PORT}
 
 # Start the application
-CMD ["npm", "run", "start"]
+ENTRYPOINT ["serve", "-s", "build"]

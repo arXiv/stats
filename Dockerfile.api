@@ -1,27 +1,60 @@
 ARG PORT
 
-FROM python:3.10
+################ base ################
+FROM python:3.10 AS base
 
-ENV POETRY_VERSION=2.1.3
+################ builder ################
+FROM base AS builder
 
 # install poetry in its own environment
-ENV POETRY_ENV=/opt/poetry
-RUN python -m venv $POETRY_ENV
-ENV PATH="$POETRY_ENV/bin:$PATH"
-RUN pip install -U pip "poetry==$POETRY_VERSION"
+ENV POETRY_VERSION=2.1.3 \
+    POETRY_HOME=/opt/poetry
+RUN python -m venv $POETRY_HOME && \
+    $POETRY_HOME/bin/pip install -U pip poetry==$POETRY_VERSION
 
-WORKDIR /app
-ADD stats /app/stats
+ENV PATH="/opt/poetry/bin:$PATH"
 
 # install dependencies in their own environment
+WORKDIR /home
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-interaction --no-ansi \
-    --without test,dev
+COPY stats ./stats/
+RUN poetry config virtualenvs.in-project true && \
+    poetry install --no-interaction --no-ansi \
+    --without test
 
-ENV PATH="/app:${PATH}"
+################ runtime ################
+FROM base AS runtime
+COPY --from=builder /opt/poetry /opt/poetry
+COPY --from=builder /home /home
 
-ENV PYTHONPATH="/app/stats"
+ENV PATH="/opt/poetry/bin:$PATH"
 
 EXPOSE ${PORT}
 
+WORKDIR /home
 ENTRYPOINT ["poetry", "run", "python", "stats/factory.py"]
+
+################ with test ################
+FROM builder AS with-test
+
+ENV PATH="/opt/poetry/bin:$PATH"
+
+# install test dependencies
+# TODO: add integration tests
+WORKDIR /home
+RUN poetry config virtualenvs.in-project true && \
+    poetry install --no-interaction --no-ansi
+
+# copy tests
+COPY tests ./tests/
+
+################ test ################
+FROM with-test AS test
+
+ENV PATH="/opt/poetry/bin:$PATH" \
+    ENV="TEST"
+
+# run any tests that have dependencies
+# TODO: add integration tests
+WORKDIR /home
+ENTRYPOINT ["poetry", "run", "pytest"]
