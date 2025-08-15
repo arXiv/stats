@@ -1,0 +1,60 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+  automapSubstitutions: true
+
+substitutions:
+  _DOCKERFILE: "Dockerfile.ui"
+  _IMAGE_NAME: "arxiv-stats-ui"
+  _PORT: "9000"
+
+steps:
+  # docker pull latest image
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - "docker"
+      - "pull"
+      - "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest"
+    id: Latest
+  # docker build, caching from latest
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "--build-arg"
+      - "PORT=${_PORT}"
+      - "-f"
+      - "${_DOCKERFILE}"
+      - "--cache-from"
+      - "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest"
+      - "."
+    id: Build
+  # docker push to gcloud artifact registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - push
+      - "--all-tags"
+      - "gcr.io/$PROJECT_ID/${_IMAGE_NAME}"
+    id: Push
+  # gcloud run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    args:
+      - "run"
+      - "services"
+      - "replace"
+      - "$_SERVICE_DEFINITION"
+      - "--project"
+      - "$PROJECT_ID"
+      - "--region"
+      - "$_DEPLOY_REGION"
+    id: Deploy
+    entrypoint: gcloud
+images:
+  [
+    "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:latest",
+    "gcr.io/$PROJECT_ID/${_IMAGE_NAME}:$COMMIT_SHA",
+  ]
