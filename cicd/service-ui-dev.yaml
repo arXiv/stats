@@ -9,4 +9,4 @@ spec:
         - image: gcr.io/arxiv-development/arxiv-stats-ui:latest
           env:
             - name: PORT
-              value: 9000
+              value: "9000"
