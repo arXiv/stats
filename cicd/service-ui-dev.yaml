@@ -7,3 +7,6 @@ spec:
     spec:
       containers:
         - image: gcr.io/arxiv-development/arxiv-stats-ui:latest
+          env:
+            - name: PORT
+              value: 9000
