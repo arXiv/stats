@@ -34,7 +34,7 @@ clean-api:
 	docker rmi $(BE_IMAGE_NAME) || true
 
 build-ui:
-	docker build $(FE_BUILD_CONTEXT) --build-arg PORT=$(FE_PORT) -f $(FE_DOCKERFILE) -t $(FE_IMAGE_NAME)  --progress=plain
+	docker build $(FE_BUILD_CONTEXT) --build-arg PORT=$(FE_PORT) -f $(FE_DOCKERFILE) -t $(FE_IMAGE_NAME)  --progress plain
 
 run-ui:
 	docker run -d --name $(FE_CONTAINER_NAME) -p ${FE_PORT}:${FE_PORT} $(FE_IMAGE_NAME)

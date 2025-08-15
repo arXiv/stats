@@ -17,9 +17,6 @@ RUN npm run build
 # Use environment substitution in the built index.html
 RUN sed -i 's|%REACT_APP_ENV%|'${REACT_APP_ENV}'|g' build/index.html
 
-# Install serve
-RUN npm install -g serve
-
 # Expose port
 EXPOSE ${PORT}
 

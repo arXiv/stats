@@ -10,3 +10,6 @@ spec:
           env:
             - name: FE_PORT
               value: "9000"
+          resources:
+            limits:
+              memory: 1GiB
