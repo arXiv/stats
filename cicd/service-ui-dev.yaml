@@ -12,4 +12,4 @@ spec:
               value: "9000"
           resources:
             limits:
-              memory: 1G
+              memory: 2G
