@@ -13,4 +13,5 @@ spec:
             - name: DEV_DATABASE_URI
               valueFrom:
                 secretKeyRef:
+                  key: latest
                   name: latexml_db_uri
