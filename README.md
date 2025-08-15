@@ -37,7 +37,7 @@ Non-sensitive constants are declared in `stats.config`. The appropriate config i
 
 Other variables may be set in a `.env` file or in your local environment (i.e. your shell or terminal session). If running locally with Docker, other variables must be set in an `.env` file. 
 
-In remote environments, both non-sensitive and sensitive variables are declared in `cloudbuild.yaml` and injected at runtime.
+In remote environments, both non-sensitive and sensitive variables are declared in the `service.yaml` and injected at runtime.
 
 1. If using a `.env` file, create a file named `.env` in `stats/`
 2. Set the following variables in that file or in your local environment 
