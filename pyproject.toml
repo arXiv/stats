@@ -6,7 +6,7 @@ dynamic = ["requires-python", "dependencies"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-flask = "^3.1.1"
+flask = "^3.1.2"
 flask-cors = "^6.0.1"
 flask-sqlalchemy = "^3.1.1"
 pg8000 = "^1.31.4"
