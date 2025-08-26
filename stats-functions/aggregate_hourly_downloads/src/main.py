@@ -25,7 +25,6 @@ from sqlalchemy import (
     Enum,
     PrimaryKeyConstraint,
     Row,
-    tuple_,
 )
 from sqlalchemy.orm import sessionmaker, aliased, declarative_base
 
@@ -100,7 +99,8 @@ class PaperCategories:
             self.primary = canon
             self.crosses.discard(
                 canon
-            )  # removes from crosses if present, the same category cant be both primary and cross. This is relevant because an alternate name may be listed as a cross list
+            )  # removes from crosses if present, the same category cant be both primary and cross.
+            # This is relevant because an alternate name may be listed as a cross list
 
     def add_cross(self, cat: str):
         catgory = CATEGORIES[cat]
