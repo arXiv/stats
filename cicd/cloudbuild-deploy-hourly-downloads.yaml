@@ -16,7 +16,7 @@ steps:
         "functions",
         "deploy",
         "${_FUNCTION_NAME}",
-        "--retry",
+        # "--retry",
         "--gen2",
         "--source",
         "${_PATH_TO_SOURCE}",
