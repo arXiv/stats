@@ -1,6 +1,11 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
+substitutions:
+  _ENTRY_POINT: "aggregate_hourly_downloads"
+  _PUBSUB_NAME: "papers-downloaded-by-id-recently"
+  _PATH_TO_SOURCE: "stats-functions/aggregate_hourly_downloads/src"
+
 steps:
   # Deploy to Cloud Run
   - name: "google/cloud-sdk"
@@ -10,15 +15,15 @@ steps:
       [
         "functions",
         "deploy",
-        "${_FUNCTION_NAME}",
+        "${_ENTRY_POINT}",
         "--retry",
         "--gen2",
         "--source",
-        "${_SRCDIR}",
+        "${_PATH_TO_SOURCE}",
         "--runtime",
         "python311",
         "--region",
-        "${_REGION}",
+        "${_DEPLOY_REGION}",
         "--trigger-topic",
         "${_PUBSUB_NAME}",
         "--entry-point",
@@ -26,6 +31,6 @@ steps:
         "--service-account",
         "${_RUN_ACCOUNT}",
         "--env-vars-file",
-        "${_ROOTDIR}/cicd/env.${_FUNCTION_NAME}.${_PROJECT_ID}.yaml",
+        "cicd/env.${_FUNCTION_NAME}.${PROJECT_ID}.yaml",
         "--allow-unauthenticated",
       ]
