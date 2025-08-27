@@ -26,6 +26,7 @@ steps:
         "${_DEPLOY_REGION}",
         # "--trigger-topic",
         # "${_PUBSUB_NAME}",
+        --trigger-http,
         "--entry-point",
         "${_FUNCTION_NAME}",
         "--env-vars-file",
