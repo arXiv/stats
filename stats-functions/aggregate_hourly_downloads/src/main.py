@@ -470,8 +470,8 @@ def insert_into_database(
     # set up table
     Base = declarative_base()
 
-    class HourlyDownloadData(Base):
-        __tablename__ = "hourly_download_data"
+    class HourlyDownloads(Base):
+        __tablename__ = "hourly_downloads"
         country = Column(String(255), primary_key=True)
         download_type = Column(
             String(16),
@@ -488,7 +488,7 @@ def insert_into_database(
         )
 
     data_to_insert = [
-        HourlyDownloadData(
+        HourlyDownloads(
             country=key.country,
             download_type=key.download_type,
             archive=key.archive,
@@ -507,8 +507,8 @@ def insert_into_database(
     session = Session()
 
     # remove previous data for the time period
-    session.query(HourlyDownloadData).filter(
-        HourlyDownloadData.start_dttm.in_(time_periods)
+    session.query(HourlyDownloads).filter(
+        HourlyDownloads.start_dttm.in_(time_periods)
     ).delete(synchronize_session=False)
 
     # add data
