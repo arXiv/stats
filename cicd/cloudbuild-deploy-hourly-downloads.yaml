@@ -2,7 +2,7 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 substitutions:
-  _ENTRY_POINT: "aggregate_hourly_downloads"
+  _FUNCTION_NAME: "aggregate_hourly_downloads"
   _PUBSUB_NAME: "papers-downloaded-by-id-recently"
   _PATH_TO_SOURCE: "stats-functions/aggregate_hourly_downloads/src"
 
@@ -15,7 +15,7 @@ steps:
       [
         "functions",
         "deploy",
-        "${_ENTRY_POINT}",
+        "${_FUNCTION_NAME}",
         "--retry",
         "--gen2",
         "--source",
@@ -27,7 +27,7 @@ steps:
         "--trigger-topic",
         "${_PUBSUB_NAME}",
         "--entry-point",
-        "${_ENTRY_POINT}",
+        "${_FUNCTION_NAME}",
         "--service-account",
         "${_RUN_ACCOUNT}",
         "--env-vars-file",
