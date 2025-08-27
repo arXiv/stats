@@ -28,8 +28,6 @@ steps:
         "${_PUBSUB_NAME}",
         "--entry-point",
         "${_FUNCTION_NAME}",
-        "--service-account",
-        "${_RUN_ACCOUNT}",
         "--env-vars-file",
         "cicd/env.${_FUNCTION_NAME}.${PROJECT_ID}.yaml",
         "--allow-unauthenticated",
