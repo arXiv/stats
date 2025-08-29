@@ -55,7 +55,7 @@ resource "google_cloudfunctions2_function" "function" {
   service_config {
     min_instance_count    = 1
     available_memory      = "2G"
-    timeout_seconds       = 3600
+    timeout_seconds       = 60
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
@@ -91,9 +91,9 @@ resource "google_storage_bucket" "bucket" {
 }
 
 resource "google_storage_bucket_object" "object" {
-  name   = "aggregate-hourly-downloads-source.zip"
+  name   = "aggregate-hourly-downloads-src.zip"
   bucket = google_storage_bucket.bucket.name
-  source = "aggregate-hourly-downloads-source.zip"
+  source = "src.zip"
 }
 
 ### scheduled pubsub ###
