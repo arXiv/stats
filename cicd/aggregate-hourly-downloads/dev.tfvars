@@ -1,5 +1,5 @@
 gcp_project_id       = "arxiv-development"
-gcp_region = "us-central1"
+gcp_region           = "us-central1"
 env                  = "DEV"
 log_level            = "INFO"
 read_db_secret_name  = "readonly-arxiv-db-uri"

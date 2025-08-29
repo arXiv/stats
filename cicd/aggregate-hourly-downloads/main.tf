@@ -38,7 +38,7 @@ resource "google_secret_manager_secret_iam_member" "write_db" {
 
 resource "google_cloudfunctions2_function" "function" {
   name        = "stats-aggregate-hourly-downloads" # name should use kebab-case so generated Cloud Run service name will be the same
-  location    = var.gcp_region               # needs to be explicitly declared for Cloud Run
+  location    = var.gcp_region                     # needs to be explicitly declared for Cloud Run
   description = "Cloud function to parse download data from logs and persist to a database"
 
   build_config {
@@ -103,16 +103,16 @@ resource "google_pubsub_topic" "topic" {
 }
 
 resource "google_cloud_scheduler_job" "invoke_cloud_function" {
-  name        = "invoke-aggregate-hourly-downloads"
+  name        = "invoke-stats-aggregate-hourly-downloads"
   description = "Publish an hourly message to invoke the aggregate-hourly-downloads cloud function"
   schedule    = "1 * * * *" # every hour at one minute past
   time_zone   = "UTC"
 
   pubsub_target {
     topic_name = google_pubsub_topic.topic.name
-    data = base64encode("invoke")
+    data       = base64encode("invoke")
     attributes = {
-      source     = "invoke-aggregate-hourly-downloads"
+      source     = "invoke-stats-aggregate-hourly-downloads"
       event_type = "scheduled_data_processing"
     }
   }
