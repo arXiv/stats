@@ -37,7 +37,7 @@ resource "google_secret_manager_secret_iam_member" "write_db" {
 ### cloud function ###
 
 resource "google_cloudfunctions2_function" "function" {
-  name        = "aggregate-hourly-downloads" # name should use kebab-case so generated Cloud Run service name will be the same
+  name        = "stats-aggregate-hourly-downloads" # name should use kebab-case so generated Cloud Run service name will be the same
   location    = var.gcp_region               # needs to be explicitly declared for Cloud Run
   description = "Cloud function to parse download data from logs and persist to a database"
 
