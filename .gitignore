@@ -16,3 +16,9 @@
 
 # node packages
 **/node_modules/
+
+# terraform
+**/.terraform/*
+*.tfoverride
+*.tfstate
+*.tfstate.backup
