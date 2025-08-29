@@ -352,12 +352,12 @@ def aggregate_hourly_downloads(cloud_event: CloudEvent):
             f"Missing enviroment variable(s): ENVIRONMENT:{enviro}, WRITE_TABLE: {write_table}"
         )
         return  # dont bother retrying
-    elif enviro == "PRODUCTION":
+    elif enviro == "PROD":
         if "development" in write_table:
             logging.warning(
                 f"Referencing development project in production! Write_table: {write_table}"
             )
-    elif enviro == "DEVELOPMENT":
+    elif enviro == "DEV":
         if "production" in write_table:
             logging.warning(
                 f"Referencing production project in development! Write table: {write_table}"

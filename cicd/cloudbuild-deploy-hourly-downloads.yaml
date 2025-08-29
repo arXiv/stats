@@ -2,7 +2,7 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 substitutions:
-  _FUNCTION_NAME: "aggregate_hourly_downloads"
+  _FUNCTION_NAME: "aggregate-hourly-downloads"
   _PUBSUB_NAME: "papers-downloaded-by-id-recently"
   _PATH_TO_SOURCE: "stats-functions/aggregate_hourly_downloads/src"
 

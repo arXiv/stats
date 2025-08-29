@@ -9,8 +9,8 @@ spec:
         - name: worker
           image: us-central1-docker.pkg.dev/arxiv-production/gcf-artifacts/arxiv--production__us--central1__aggregate__hourly__downloads:version_1
           env:
-            - name: ENVIRONMENT
-              value: PRODUCTION
+            - name: ENV
+              value: PROD
             - name: LOG_LEVEL
               value: INFO
             - name: LOG_EXECUTION_ID
