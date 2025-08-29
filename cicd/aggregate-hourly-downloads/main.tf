@@ -6,7 +6,7 @@ provider "google" {
 ### service account ###
 
 resource "google_service_account" "account" {
-  account_id   = "stats-aggregate-hourly-downloads"
+  account_id   = "stats-downloads"
   display_name = "Service account to deploy aggregate-hourly-downloads cloud function"
 }
 
@@ -103,19 +103,17 @@ resource "google_pubsub_topic" "topic" {
 }
 
 resource "google_cloud_scheduler_job" "invoke_cloud_function" {
-  name        = "publish-aggregate-hourly-downloads"
-  description = "Publish an hourly message for the aggregate-hourly-downloads cloud function"
+  name        = "invoke-aggregate-hourly-downloads"
+  description = "Publish an hourly message to invoke the aggregate-hourly-downloads cloud function"
   schedule    = "1 * * * *" # every hour at one minute past
   time_zone   = "UTC"
 
   pubsub_target {
     topic_name = google_pubsub_topic.topic.name
-    data = jsonencode({
-      action = "aggregate-hourly-downloads"
-    })
-    attributes = jsonencode({
-      source     = "invoke_cloud_function",
+    data = base64encode("invoke")
+    attributes = {
+      source     = "invoke-aggregate-hourly-downloads"
       event_type = "scheduled_data_processing"
-    })
+    }
   }
 }
