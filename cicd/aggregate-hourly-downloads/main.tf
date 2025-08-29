@@ -1,6 +1,6 @@
 provider "google" {
   project = var.gcp_project_id # default inherited by all resources
-  region  = var.gcp_region # default inherited by all resources
+  region  = var.gcp_region     # default inherited by all resources
 }
 
 ### service account ###
@@ -17,28 +17,28 @@ resource "google_cloudfunctions2_function_iam_member" "invoker" {
 }
 
 resource "google_cloud_run_service_iam_member" "cloud_run_invoker" {
-  service  = google_cloudfunctions2_function.function.name
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.account.email}"
+  service = google_cloudfunctions2_function.function.name
+  role    = "roles/run.invoker"
+  member  = "serviceAccount:${google_service_account.account.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "read_db" {
   secret_id = var.read_db_secret_name
   role      = "roles/secretmanager.secretAccessor"
-  member     = "serviceAccount:${google_service_account.account.email}"
+  member    = "serviceAccount:${google_service_account.account.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "write_db" {
   secret_id = var.write_db_secret_name
   role      = "roles/secretmanager.secretAccessor"
-  member     = "serviceAccount:${google_service_account.account.email}"
+  member    = "serviceAccount:${google_service_account.account.email}"
 }
 
 ### cloud function ###
 
 resource "google_cloudfunctions2_function" "function" {
   name        = "aggregate-hourly-downloads" # name should use kebab-case so generated Cloud Run service name will be the same
-  location    = var.gcp_region # needs to be explicitly declared for Cloud Run
+  location    = var.gcp_region               # needs to be explicitly declared for Cloud Run
   description = "Cloud function to parse download data from logs and persist to a database"
 
   build_config {
@@ -56,10 +56,10 @@ resource "google_cloudfunctions2_function" "function" {
     min_instance_count    = 1
     available_memory      = "2G"
     timeout_seconds       = 3600
-    ingress_settings = "ALLOW_INTERNAL_ONLY"
+    ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
-      ENV = var.env
+      ENV       = var.env
       LOG_LEVEL = var.log_level
     }
     secret_environment_variables {
@@ -78,9 +78,9 @@ resource "google_cloudfunctions2_function" "function" {
 
   event_trigger {
     trigger_region = "us-central1"
-    event_type = "google.cloud.pubsub.topic.v1.messagePublished"
-    pubsub_topic = google_pubsub_topic.topic.id
-    retry_policy = "RETRY_POLICY_RETRY"
+    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic   = google_pubsub_topic.topic.id
+    retry_policy   = "RETRY_POLICY_RETRY"
   }
 }
 
@@ -99,22 +99,22 @@ resource "google_storage_bucket_object" "object" {
 ### scheduled pubsub ###
 
 resource "google_pubsub_topic" "topic" {
-  name    = "stats-aggregate-hourly-downloads"
+  name = "stats-aggregate-hourly-downloads"
 }
 
 resource "google_cloud_scheduler_job" "invoke_cloud_function" {
   name        = "publish-aggregate-hourly-downloads"
   description = "Publish an hourly message for the aggregate-hourly-downloads cloud function"
   schedule    = "1 * * * *" # every hour at one minute past
-  time_zone = "UTC"
+  time_zone   = "UTC"
 
   pubsub_target {
     topic_name = google_pubsub_topic.topic.name
-    data       = jsonencode({
+    data = jsonencode({
       action = "aggregate-hourly-downloads"
     })
     attributes = jsonencode({
-      source = "invoke_cloud_function",
+      source     = "invoke_cloud_function",
       event_type = "scheduled_data_processing"
     })
   }

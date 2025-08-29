@@ -5,7 +5,7 @@ variable "gcp_project_id" {
 
 variable "gcp_region" {
   description = ""
-  type = string
+  type        = string
 }
 
 variable "env" {
