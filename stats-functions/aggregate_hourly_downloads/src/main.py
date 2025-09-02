@@ -338,23 +338,17 @@ def aggregate_hourly_downloads(cloud_event: CloudEvent):
     pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(tzinfo=timezone.utc)
 
     # get and check enviroment data
-    enviro = os.environ.get("ENVIRONMENT")
+    enviro = os.environ.get("ENV")
     write_table = os.environ.get("WRITE_TABLE")
     if any(v is None for v in (enviro, write_table)):
-        logging.critical(
-            f"Missing enviroment variable(s): ENVIRONMENT:{enviro}, WRITE_TABLE: {write_table}"
-        )
+        logging.critical(f"Missing enviroment variable(s)")
         return  # dont bother retrying
     elif enviro == "PROD":
         if "development" in write_table:
-            logging.warning(
-                f"Referencing development project in production! Write_table: {write_table}"
-            )
+            logging.warning(f"Referencing development project in production!")
     elif enviro == "DEV":
         if "production" in write_table:
-            logging.warning(
-                f"Referencing production project in development! Write table: {write_table}"
-            )
+            logging.warning(f"Referencing production project in development!")
     else:
         logging.error(f"Unknown Enviroment: {enviro}")
         return  # dont bother retrying
