@@ -109,11 +109,7 @@ resource "google_cloud_scheduler_job" "invoke_cloud_function" {
   time_zone   = "UTC"
 
   pubsub_target {
-    topic_name = "projects/${var.gcp_project_id}/topics/${google_pubsub_topic.topic.name}"
+    topic_name = google_pubsub_topic.topic.id
     data       = base64encode("invoke")
-    attributes = {
-      source     = "invoke-stats-aggregate-hourly-downloads"
-      event_type = "scheduled_data_processing"
-    }
   }
 }
