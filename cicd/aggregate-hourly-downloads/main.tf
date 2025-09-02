@@ -34,10 +34,16 @@ resource "google_secret_manager_secret_iam_member" "write_db" {
   member    = "serviceAccount:${google_service_account.account.email}"
 }
 
-resource "google_project_iam_member" "bq_jobs_create" {
+resource "google_project_iam_member" "bq_jobs_user" {
   project = var.gcp_project_id
   role    = "roles/bigquery.jobUser"
   member  = "serviceAccount:${google_service_account.account.email}"
+}
+
+resource "google_bigquery_dataset_iam_member" "viewer" {
+  dataset_id = arxiv-development.arxiv_logs._AllLogs
+  role       = "roles/bigquery.dataViewer"
+  member     = "serviceAccount:${google_service_account.account.email}"
 }
 
 ### cloud function ###
