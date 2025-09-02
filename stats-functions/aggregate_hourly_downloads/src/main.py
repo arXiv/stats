@@ -335,13 +335,6 @@ def perform_aggregation(
 @functions_framework.cloud_event
 def aggregate_hourly_downloads(cloud_event: CloudEvent):
     """get downloads data and aggregate but category country and download type"""
-    data = json.loads(
-        base64.b64decode(cloud_event.get_data()["message"]["data"]).decode()
-    )
-    state = data.get("state", "")
-    if state != "SUCCEEDED":
-        logging.warning(f"recieved state other than SUCCEEDED: {state}")
-        return
     pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(tzinfo=timezone.utc)
 
     # get and check enviroment data
