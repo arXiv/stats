@@ -41,9 +41,24 @@ resource "google_project_iam_member" "bq_jobs_user" {
 }
 
 resource "google_bigquery_dataset_iam_member" "viewer" {
-  dataset_id = arxiv-development.arxiv_logs._AllLogs
+  dataset_id = google_bigquery_dataset.dataset.dataset_id
   role       = "roles/bigquery.dataViewer"
   member     = "serviceAccount:${google_service_account.account.email}"
+}
+
+### existing bigquery table ###
+
+import {
+  to = google_bigquery_dataset.dataset
+  id = "arxiv-development.arxiv_logs"
+}
+
+resource "google_bigquery_dataset" "dataset" {
+  dataset_id = "arxiv-development.arxiv_logs"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 ### cloud function ###
