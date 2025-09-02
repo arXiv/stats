@@ -34,6 +34,12 @@ resource "google_secret_manager_secret_iam_member" "write_db" {
   member    = "serviceAccount:${google_service_account.account.email}"
 }
 
+resource "google_project_iam_member" "bq_jobs_create" {
+  project = var.gcp_project_id
+  role    = "roles/bigquery.jobs.create"
+  member  = "serviceAccount:${google_service_account.account.email}"
+}
+
 ### cloud function ###
 
 resource "google_cloudfunctions2_function" "function" {

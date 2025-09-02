@@ -44,8 +44,9 @@ log_level = getattr(logging, log_level_str.upper(), logging.INFO)
 logging.basicConfig(level=log_level)
 
 # Initialize BigQuery client
+project = "arxiv-production" if os.getenv("ENV") == "PROD" else "arxiv-development"
 bq_client = bigquery.Client(
-    project="arxiv-production"
+    project=project
 )  # fastly download logs live in production project
 
 DownloadType = Literal["pdf", "html", "src"]
