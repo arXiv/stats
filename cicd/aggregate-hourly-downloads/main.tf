@@ -36,7 +36,7 @@ resource "google_secret_manager_secret_iam_member" "write_db" {
 
 resource "google_project_iam_member" "bq_jobs_create" {
   project = var.gcp_project_id
-  role    = "roles/bigquery.jobs.create"
+  role    = "roles/bigquery.jobUser"
   member  = "serviceAccount:${google_service_account.account.email}"
 }
 
