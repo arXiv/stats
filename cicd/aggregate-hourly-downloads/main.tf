@@ -50,14 +50,14 @@ resource "google_bigquery_dataset_iam_member" "viewer" {
 
 import {
   to = google_bigquery_dataset.dataset
-  id = "arxiv-development.arxiv_logs"
+  id = "arxiv_logs"
 }
 
 resource "google_bigquery_dataset" "dataset" {
-  dataset_id = "arxiv-development.arxiv_logs"
+  dataset_id = "arxiv_logs"
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = true # IMPORTANT: block destroy on dataset, use --target to destroy other resources
   }
 }
 
@@ -90,13 +90,13 @@ resource "google_cloudfunctions2_function" "function" {
       LOG_LEVEL = var.log_level
     }
     secret_environment_variables {
-      key        = "CLASSIC_DB_URI"
+      key        = "READ_DB_URI"
       project_id = var.gcp_project_id
       secret     = var.read_db_secret_name # wouldn't have to pass this in as a var if we had consistent secret naming across envs
       version    = "latest"
     }
     secret_environment_variables {
-      key        = "WRITE_TABLE"
+      key        = "WRITE_DB_URI"
       project_id = var.gcp_project_id
       secret     = var.write_db_secret_name
       version    = "latest"

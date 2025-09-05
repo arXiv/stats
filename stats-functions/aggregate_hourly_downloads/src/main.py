@@ -7,8 +7,7 @@ from dateutil import parser
 
 from arxiv.taxonomy.category import Category
 from arxiv.taxonomy.definitions import CATEGORIES
-from arxiv.db import Session
-from arxiv.db.models import Metadata, DocumentCategory
+
 from arxiv.identifier import Identifier, IdentifierException
 
 import functions_framework
@@ -26,13 +25,17 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     Row,
 )
-from sqlalchemy.orm import sessionmaker, aliased, declarative_base
+from sqlalchemy.orm import (
+    Session,
+    aliased,
+    declarative_base,
+)
 
 MAX_QUERY_TO_WRITE = 1000  # the latexmldb we write to has a stack size limit
 HOUR_DELAY = 3  # how many hours back to run the hourly query, gives time for logs to make it to gcp
 
-# logging setup
-if not (os.environ.get("LOG_LOCALLY")):
+# setup logging
+if not (os.environ.get("LOG_LOCALLY", False)):
     import google.cloud.logging
 
     client = google.cloud.logging.Client()
@@ -43,7 +46,7 @@ log_level_str = os.getenv("LOG_LEVEL", "INFO")
 log_level = getattr(logging, log_level_str.upper(), logging.INFO)
 logging.basicConfig(level=log_level)
 
-# Initialize BigQuery client
+# setup BigQuery client
 project = "arxiv-production" if os.getenv("ENV") == "PROD" else "arxiv-development"
 bq_client = bigquery.Client(
     project=project
@@ -76,6 +79,53 @@ QUERY_END = """
     )
     GROUP BY 1,2,3,4
 """
+
+# setup read and write databases
+ReadBase = declarative_base()
+WriteBase = declarative_base()
+
+
+class DocumentCategory(ReadBase):
+    __tablename__ = "arXiv_document_category"
+
+    document_id = Column(Integer, primary_key=True, nullable=False, index=True)
+    category = Column(String, primary_key=True, nullable=False, index=True)
+    is_primary = Column(Integer, nullable=False)
+
+
+class Metadata(ReadBase):
+    __tablename__ = "arXiv_metadata"
+
+    metadata_id = Column(Integer, primary_key=True)
+    document_id = Column(Integer, nullable=False, index=True)
+    paper_id = Column(String(64), nullable=False)
+    is_current = Column(Integer)
+
+
+class HourlyDownloads(WriteBase):
+    __tablename__ = "hourly_downloads"
+    country = Column(String(255), primary_key=True)
+    download_type = Column(
+        String(16),
+        Enum("pdf", "html", "src", name="download_type_enum"),
+        primary_key=True,
+    )
+    archive = Column(String(16))
+    category = Column(String(32), primary_key=True)
+    primary_count = Column(Integer)
+    cross_count = Column(Integer)
+    start_dttm = Column(DateTime, primary_key=True)
+    __table_args__ = (
+        PrimaryKeyConstraint("country", "download_type", "category", "start_dttm"),
+    )
+
+
+# instantiate db connections
+read_engine = create_engine(os.getenv("READ_DB_URI"))
+ReadBase.metadata.create_all(read_engine)
+
+write_engine = create_engine(os.getenv("WRITE_DB_URI"))
+WriteBase.metadata.create_all(write_engine)
 
 
 class PaperCategories:
@@ -293,7 +343,7 @@ def process_table_rows(
 
 
 def perform_aggregation(
-    rows: Union[RowIterator, _EmptyRowIterator], write_table: str
+    rows: Union[RowIterator, _EmptyRowIterator],
 ) -> AggregationResult:
     """performs the entire aggregation process for a set of data recieved from bigquery"""
     # process and store returned data
@@ -321,7 +371,7 @@ def perform_aggregation(
     aggregated_data = aggregate_data(download_data, paper_categories)
 
     # write all_data to tables
-    add_count = insert_into_database(aggregated_data, write_table, time_periods)
+    add_count = insert_into_database(aggregated_data, time_periods)
     result = AggregationResult(
         time_period_str,
         add_count,
@@ -334,21 +384,26 @@ def perform_aggregation(
 
 
 @functions_framework.cloud_event
-def aggregate_hourly_downloads(cloud_event: CloudEvent):
+def aggregate_hourly_downloads(
+    # cloud_event: CloudEvent
+):
     """get downloads data and aggregate but category country and download type"""
-    pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(tzinfo=timezone.utc)
+    # pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(tzinfo=timezone.utc)
+    date_string = "2025-09-02 18:42:00"
+    format_string = "%Y-%m-%d %H:%M:%S"
+    pubsub_timestamp = datetime.strptime(date_string, format_string)
 
     # get and check enviroment data
     enviro = os.environ.get("ENV")
-    write_table = os.environ.get("WRITE_TABLE")
-    if any(v is None for v in (enviro, write_table)):
+    write_db_uri = os.environ.get("WRITE_DB_URI")
+    if any(v is None for v in (enviro, write_db_uri)):
         logging.critical(f"Missing enviroment variable(s)")
         return  # dont bother retrying
     elif enviro == "PROD":
-        if "development" in write_table:
+        if "development" in write_db_uri:
             logging.warning(f"Referencing development project in production!")
     elif enviro == "DEV":
-        if "production" in write_table:
+        if "production" in write_db_uri:
             logging.warning(f"Referencing production project in development!")
     else:
         logging.error(f"Unknown Enviroment: {enviro}")
@@ -358,7 +413,7 @@ def aggregate_hourly_downloads(cloud_event: CloudEvent):
         hours=HOUR_DELAY
     )  # give some time for logs to make it to gcp
     time_selection = f"and timestamp between TIMESTAMP('{active_hour.strftime('%Y-%m-%d %H')}:00:00') and TIMESTAMP('{active_hour.strftime('%Y-%m-%d %H')}:59:59')"
-    result = process_an_hour(time_selection, write_table)
+    result = process_an_hour(time_selection, write_db_uri)
     logging.info(result.single_run_str())
 
 
@@ -366,8 +421,14 @@ def get_paper_categories(paper_ids: Set[str]) -> Dict[str, PaperCategories]:
     # get the category data for papers
     meta = aliased(Metadata)
     dc = aliased(DocumentCategory)
+
+    # Setup database connection
+    # read_db_uri = os.getenv("READ_DB_URI")
+    # engine = create_engine(read_db_uri)
+    session = Session(bind=engine)
+
     paper_cats = (
-        Session.query(meta.paper_id, dc.category, dc.is_primary)
+        session.query(meta.paper_id, dc.category, dc.is_primary)
         .join(meta, dc.document_id == meta.document_id)
         .filter(meta.paper_id.in_(paper_ids))
         .filter(meta.is_current == 1)
@@ -444,7 +505,6 @@ def aggregate_data(
 
 def insert_into_database(
     aggregated_data: Dict[DownloadKey, DownloadCounts],
-    db_uri: str,
     time_periods: List[datetime],
 ) -> int:
     """adds the data from an hour of downloads into the database
@@ -455,26 +515,6 @@ def insert_into_database(
     data with duplicate keys will be overwritten to allow for reruns with updates
     returns the number of rows added and updated
     """
-    # set up table
-    Base = declarative_base()
-
-    class HourlyDownloads(Base):
-        __tablename__ = "hourly_downloads"
-        country = Column(String(255), primary_key=True)
-        download_type = Column(
-            String(16),
-            Enum("pdf", "html", "src", name="download_type_enum"),
-            primary_key=True,
-        )
-        archive = Column(String(16))
-        category = Column(String(32), primary_key=True)
-        primary_count = Column(Integer)
-        cross_count = Column(Integer)
-        start_dttm = Column(DateTime, primary_key=True)
-        __table_args__ = (
-            PrimaryKeyConstraint("country", "download_type", "category", "start_dttm"),
-        )
-
     data_to_insert = [
         HourlyDownloads(
             country=key.country,
@@ -488,106 +528,23 @@ def insert_into_database(
         for key, counts in aggregated_data.items()
     ]
 
-    # Setup database connection
-    engine = create_engine(db_uri)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
     # remove previous data for the time period
-    session.query(HourlyDownloads).filter(
+    write_session.query(HourlyDownloads).filter(
         HourlyDownloads.start_dttm.in_(time_periods)
     ).delete(synchronize_session=False)
 
     # add data
     for i in range(0, len(data_to_insert), MAX_QUERY_TO_WRITE):
-        session.bulk_save_objects(data_to_insert[i : i + MAX_QUERY_TO_WRITE])
+        write_session.bulk_save_objects(data_to_insert[i : i + MAX_QUERY_TO_WRITE])
 
-    session.commit()
-    session.close()
+    write_session.commit()
+    write_session.close()
     return len(data_to_insert)
 
 
-def process_an_hour(time_selection: str, write_table: str) -> AggregationResult:
+def process_an_hour(time_selection: str, write_db_uri: str) -> AggregationResult:
     """manages an hour's process of fetching data, prcoessing it, writing to a database and logging it"""
     query = f"{QUERY_START}\n{time_selection}\n{QUERY_END}"
     query_job = bq_client.query(query)
     download_result = query_job.result()
-    return perform_aggregation(download_result, write_table)
-
-
-def manual_aggregate(starttime: datetime, endtime: datetime):
-    """used to do a manual run for transforming downloads logs into aggreated hourly download data
-    startime and endtime are both included
-    Note: not a fast program, even finishing in 1 min/hour takes 24 minutes per day
-    """
-    write_table = os.environ.get("WRITE_TABLE")
-    if not write_table:
-        logging.error("Must set WRTIE_TABLE to store results to")
-
-    active_hour = starttime
-    failed_hours = []
-    starttime = datetime.now()
-    logging.info(AggregationResult.table_header())
-
-    # for each hour
-    while active_hour <= endtime:
-        time_selection = f"and timestamp between TIMESTAMP('{active_hour.strftime('%Y-%m-%d %H')}:00:00') and TIMESTAMP('{active_hour.strftime('%Y-%m-%d %H')}:59:59')"
-        try:
-            ministart = datetime.now()
-            result = process_an_hour(time_selection, write_table)
-            miniend = datetime.now()
-            logging.info(
-                f"{result.table_row_str()} {(miniend - ministart).total_seconds():.1f} seconds"
-            )
-        except Exception:
-            logging.critical(f"Failed {active_hour}")
-            failed_hours.append(active_hour)
-        active_hour += timedelta(hours=1)
-
-    endtime = datetime.now()
-    if len(failed_hours) > 0:
-        formatted_hours = ", ".join(dt.strftime("%Y-%m-%d %H") for dt in failed_hours)
-        logging.critical(f"All failed time periods: {formatted_hours}")
-    total_time = str(endtime - starttime).split(".")[0]
-    logging.info(
-        f"    Finished processing! total time: {total_time}, started: {starttime.strftime('%H:%M')}, ended: {endtime.strftime('%H:%M')}"
-    )
-
-
-def parse_arguments():
-    """accept start and end periods from commandline"""
-    import argparse
-
-    EARLIEST_DATE = datetime(2024, 3, 1, 0)
-    parser = argparse.ArgumentParser(description="Process two datetime values.")
-
-    parser.add_argument(
-        "start_datetime",
-        type=str,
-        help="Start datetime in the format YYYY-MM-DD-HH",
-    )
-    parser.add_argument(
-        "end_datetime",
-        type=str,
-        help="End datetime in the format YYYY-MM-DD-HH",
-    )
-
-    args = parser.parse_args()
-    try:
-        start = datetime.strptime(args.start_datetime, "%Y-%m-%d-%H")
-        end = datetime.strptime(args.end_datetime, "%Y-%m-%d-%H")
-    except ValueError as e:
-        parser.error(f"Invalid datetime format: {e}")
-
-    if end < start:
-        parser.error("end time before start time")
-    if start < EARLIEST_DATE:
-        parser.error("log data starts at 2024/03/01")
-
-    return start, end
-
-
-if __name__ == "__main__":
-    start, end = parse_arguments()
-    manual_aggregate(start, end)
+    return perform_aggregation(download_result, write_db_uri)
