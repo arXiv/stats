@@ -23,13 +23,13 @@ resource "google_cloud_run_service_iam_member" "cloud_run_invoker" {
 }
 
 resource "google_secret_manager_secret_iam_member" "read_db" {
-  secret_id = var.read_db_secret_name
+  secret_id = var.read_db_pw_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.account.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "write_db" {
-  secret_id = var.write_db_secret_name
+  secret_id = var.write_db_pw_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.account.email}"
 }
@@ -86,19 +86,24 @@ resource "google_cloudfunctions2_function" "function" {
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
-      ENV       = var.env
-      LOG_LEVEL = var.log_level
+      ENV           = var.env
+      READ_DB_USER  = var.read_db_user
+      READ_DB_HOST  = var.read_db_host
+      READ_DB_PORT  = var.read_db_port
+      WRITE_DB_USER = var.write_db_user
+      WRITE_DB_HOST = var.write_db_host
+      WRITE_DB_PORT = var.write_db_port
     }
     secret_environment_variables {
-      key        = "READ_DB_URI"
+      key        = "READ_DB_PW"
       project_id = var.gcp_project_id
-      secret     = var.read_db_secret_name # wouldn't have to pass this in as a var if we had consistent secret naming across envs
+      secret     = var.read_db_pw_secret_name # wouldn't have to pass this in as a var if we had consistent secret naming across envs
       version    = "latest"
     }
     secret_environment_variables {
-      key        = "WRITE_DB_URI"
+      key        = "WRITE_DB_PW"
       project_id = var.gcp_project_id
-      secret     = var.write_db_secret_name
+      secret     = var.write_db_pw_secret_name
       version    = "latest"
     }
   }
