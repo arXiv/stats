@@ -226,21 +226,21 @@ class AggregateHourlyDownloadsJob:
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
         self.log_locally = os.getenv("LOG_LOCALLY", False)
         self.env = os.getenv("ENV")
+        _read_db_instance = os.getenv("READ_DB_INSTANCE")
         self.read_db_uri = URL.create(
             "mysql",
             username=os.getenv("READ_DB_USER"),
             password=os.getenv("READ_DB_PW"),
-            host=os.getenv("READ_DB_HOST"),
-            port=os.getenv("READ_DB_PORT"),
-            database="arXiv",
+            database=os.getenv("READ_DB_NAME"),
+            query={"unix_socket": f"/cloudsql/{_read_db_instance}"},
         )
+        _write_db_instance = os.getenv("WRITE_DB_INSTANCE")
         self.write_db_uri = URL.create(
             "mysql",
             username=os.getenv("WRITE_DB_USER"),
             password=os.getenv("WRITE_DB_PW"),
-            host=os.getenv("WRITE_DB_HOST"),
-            port=os.getenv("WRITE_DB_PORT"),
-            database="site_usage",
+            database=os.getenv("WRITE_DB_NAME"),
+            query={"unix_socket": f"/cloudsql/{_write_db_instance}"},
         )
 
         logging.basicConfig()

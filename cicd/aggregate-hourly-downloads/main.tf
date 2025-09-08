@@ -46,6 +46,12 @@ resource "google_bigquery_dataset_iam_member" "viewer" {
   member     = "serviceAccount:${google_service_account.account.email}"
 }
 
+resource "google_project_iam_member" "cloudsql_client" {
+  project = "your-gcp-project-id" # Replace with your GCP project ID
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.account.email}"
+}
+
 ### existing bigquery table ###
 
 import {
@@ -86,13 +92,13 @@ resource "google_cloudfunctions2_function" "function" {
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
-      ENV           = var.env
-      READ_DB_USER  = var.read_db_user
-      READ_DB_HOST  = var.read_db_host
-      READ_DB_PORT  = var.read_db_port
-      WRITE_DB_USER = var.write_db_user
-      WRITE_DB_HOST = var.write_db_host
-      WRITE_DB_PORT = var.write_db_port
+      ENV               = var.env
+      READ_DB_USER      = var.read_db_user
+      READ_DB_INSTANCE  = var.read_db_instance
+      READ_DB_NAME      = var.read_db_name
+      WRITE_DB_USER     = var.write_db_user
+      WRITE_DB_INSTANCE = var.write_db_instance
+      WRITE_DB_NAME     = var.write_db_name
     }
     secret_environment_variables {
       key        = "READ_DB_PW"
