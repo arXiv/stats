@@ -1,5 +1,3 @@
-import json
-import base64
 import os
 import logging
 from typing import Set, Dict, List, Literal, Tuple, Any, Union
@@ -18,7 +16,7 @@ from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator, _EmptyRowIterator
 
 from models import ReadBase, WriteBase, DocumentCategory, Metadata, HourlyDownloads
-from sqlalchemy import create_engine, Row
+from sqlalchemy import URL, create_engine, Row
 from sqlalchemy.orm import sessionmaker, aliased
 
 
@@ -226,10 +224,24 @@ class AggregateHourlyDownloadsJob:
 
     def __init__(self):
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
-        self.log_locally = os.environ.get("LOG_LOCALLY", False)
-        self.env = os.environ.get("ENV")
-        self.write_db_uri = os.environ.get("WRITE_DB_URI")
-        self.read_db_uri = os.environ.get("READ_DB_URI")
+        self.log_locally = os.getenv("LOG_LOCALLY", False)
+        self.env = os.getenv("ENV")
+        self.read_db_uri = URL.create(
+            "mysql",
+            username=os.getenv("READ_DB_USER"),
+            password=os.getenv("READ_DB_PW"),
+            host=os.getenv("READ_DB_HOST"),
+            port=os.getenv("READ_DB_PORT"),
+            database="arXiv",
+        )
+        self.write_db_uri = URL.create(
+            "mysql",
+            username=os.getenv("WRITE_DB_USER"),
+            password=os.getenv("WRITE_DB_PW"),
+            host=os.getenv("WRITE_DB_HOST"),
+            port=os.getenv("WRITE_DB_PORT"),
+            database="site_usage",
+        )
 
         logging.basicConfig()
         logger.setLevel(self.log_level)
@@ -512,16 +524,15 @@ class AggregateHourlyDownloadsJob:
         return self.perform_aggregation(query_job.result())
 
     @functions_framework.cloud_event
-    def run(
-        self,
-        # cloud_event: CloudEvent
-    ):
+    def run(self, cloud_event: CloudEvent):
         logger.info("Running aggregate hourly downloads job")
-        # pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(tzinfo=timezone.utc)
+        pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
+            tzinfo=timezone.utc
+        )
 
-        date_string = "2025-09-02 18:42:00"
-        format_string = "%Y-%m-%d %H:%M:%S"
-        pubsub_timestamp = datetime.strptime(date_string, format_string)
+        # date_string = "2025-09-02 18:42:00"
+        # format_string = "%Y-%m-%d %H:%M:%S"
+        # pubsub_timestamp = datetime.strptime(date_string, format_string)
 
         active_hour = pubsub_timestamp - timedelta(
             hours=self.HOUR_DELAY
