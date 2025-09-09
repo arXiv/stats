@@ -15,8 +15,14 @@ import google.cloud.logging
 from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator, _EmptyRowIterator
 
+from google.cloud.sql.connector import Connector, IPTypes
+import pymysql
+
 from models import ReadBase, WriteBase, DocumentCategory, Metadata, HourlyDownloads
-from sqlalchemy import URL, create_engine, Row
+
+# from sqlalchemy import URL
+from sqlalchemy import create_engine, Row
+from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker, aliased
 
 
@@ -226,36 +232,23 @@ class AggregateHourlyDownloadsJob:
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
         self.log_locally = os.getenv("LOG_LOCALLY", False)
         self.env = os.getenv("ENV")
-        _read_db_instance = os.getenv("READ_DB_INSTANCE")
-        self.read_db_uri = URL.create(
-            "mysql",
-            username=os.getenv("READ_DB_USER"),
-            password=os.getenv("READ_DB_PW"),
-            database=os.getenv("READ_DB_NAME"),
-            query={"unix_socket": f"/cloudsql/{_read_db_instance}"},
-        )
-        _write_db_instance = os.getenv("WRITE_DB_INSTANCE")
-        self.write_db_uri = URL.create(
-            "mysql",
-            username=os.getenv("WRITE_DB_USER"),
-            password=os.getenv("WRITE_DB_PW"),
-            database=os.getenv("WRITE_DB_NAME"),
-            query={"unix_socket": f"/cloudsql/{_write_db_instance}"},
-        )
 
         logging.basicConfig()
         logger.setLevel(self.log_level)
 
         logger.info("Initializing aggregate hourly downloads job")
 
-        logger.info("Checking environment variables")
         if not (self.log_locally):
             logger.info("Initializing cloud logging")
             client = google.cloud.logging.Client()
             client.setup_logging()
 
-        if (self.env == "PROD" and "development" in self.write_db_uri) or (
-            self.env == "DEV" and "production" in self.write_db_uri
+        logger.info("Checking environment variables")
+        _read_db_instance = os.getenv("READ_DB_INSTANCE")
+        _write_db_instance = os.getenv("WRITE_DB_INSTANCE")
+
+        if (self.env == "PROD" and "development" in _write_db_instance) or (
+            self.env == "DEV" and "production" in _write_db_instance
         ):
             logger.error(
                 f"Referencing a database in another environment! Check database configuration"
@@ -267,15 +260,49 @@ class AggregateHourlyDownloadsJob:
         self.bq_client = bigquery.Client(project=project)
 
         logger.info("Instantiating database interfaces")
-        read_engine = create_engine(self.read_db_uri)
-        ReadBase.metadata.create_all(read_engine)
-        self.ReadSession = sessionmaker(bind=read_engine)
+        self._read_db_engine = self._connect_with_connector(
+            _read_db_instance,
+            os.getenv("READ_DB_USER"),
+            os.getenv("READ_DB_PW"),
+            os.getenv("READ_DB_NAME"),
+        )
+        ReadBase.metadata.create_all(self._read_db_engine)
+        self.ReadSession = sessionmaker(bind=self._read_db_engine)
 
-        write_engine = create_engine(self.write_db_uri)
-        WriteBase.metadata.create_all(write_engine)
-        self.WriteSession = sessionmaker(bind=write_engine)
+        self._write_db_engine = self._connect_with_connector(
+            _write_db_instance,
+            os.getenv("WRITE_DB_USER"),
+            os.getenv("WRITE_DB_PW"),
+            os.getenv("WRITE_DB_NAME"),
+        )
+        WriteBase.metadata.create_all(self._write_db_engine)
+        self.WriteSession = sessionmaker(bind=self._write_db_engine)
 
         logger.info("Initialization of aggregate hourly downloads job complete")
+
+    def _connect_with_connector(
+        self, instance_name, db_user, db_password, db_name
+    ) -> Engine:
+        """
+        Initializes a connection pool for a Cloud SQL instance of MySQL.
+        Uses the Cloud SQL Python Connector package.
+        """
+        ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
+
+        # initialize Cloud SQL Python Connector object
+        connector = Connector(ip_type=ip_type, refresh_strategy="LAZY")
+
+        def getconn() -> pymysql.connections.Connection:
+            conn: pymysql.connections.Connection = connector.connect(
+                instance_name,
+                "pymysql",
+                user=db_user,
+                password=db_password,
+                db=db_name,
+            )
+            return conn
+
+        return create_engine("mysql+pymysql://", creator=getconn)
 
     def process_table_rows(
         self,
@@ -523,16 +550,11 @@ class AggregateHourlyDownloadsJob:
         query_job = self.bq_client.query(self.LOGS_QUERY, job_config=job_config)
         return self.perform_aggregation(query_job.result())
 
-    @functions_framework.cloud_event
     def run(self, cloud_event: CloudEvent):
         logger.info("Running aggregate hourly downloads job")
         pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
             tzinfo=timezone.utc
         )
-
-        # date_string = "2025-09-02 18:42:00"
-        # format_string = "%Y-%m-%d %H:%M:%S"
-        # pubsub_timestamp = datetime.strptime(date_string, format_string)
 
         active_hour = pubsub_timestamp - timedelta(
             hours=self.HOUR_DELAY
@@ -545,10 +567,15 @@ class AggregateHourlyDownloadsJob:
         )
 
         result = self.process_an_hour(start_time, end_time)
-        logger.info(result.single_run_str())
+        if result is not None:
+            logger.info(result.single_run_str())
 
 
-job = AggregateHourlyDownloadsJob()
+@functions_framework.cloud_event
+def aggregate_hourly_downloads(cloud_event: CloudEvent):
+    job = AggregateHourlyDownloadsJob()
+    job.run(cloud_event)
+
 
 if __name__ == "__main__":
-    job.run()
+    aggregate_hourly_downloads()
