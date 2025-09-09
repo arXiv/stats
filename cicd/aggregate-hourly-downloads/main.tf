@@ -47,7 +47,7 @@ resource "google_bigquery_dataset_iam_member" "viewer" {
 }
 
 resource "google_project_iam_member" "cloudsql_client" {
-  project = "your-gcp-project-id" # Replace with your GCP project ID
+  project = var.gcp_project_id
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.account.email}"
 }
