@@ -229,19 +229,11 @@ class AggregateHourlyDownloadsJob:
                 """
 
     def __init__(self):
-        self.log_level = os.getenv("LOG_LEVEL", "INFO")
-        self.log_locally = os.getenv("LOG_LOCALLY", False)
         self.env = os.getenv("ENV")
 
-        logging.basicConfig()
-        logger.setLevel(self.log_level)
+        self._set_up_logging()
 
         logger.info("Initializing aggregate hourly downloads job")
-
-        if not (self.log_locally):
-            logger.info("Initializing cloud logging")
-            client = google.cloud.logging.Client()
-            client.setup_logging()
 
         logger.info("Checking environment variables")
         _read_db_instance = os.getenv("READ_DB_INSTANCE")
@@ -260,7 +252,10 @@ class AggregateHourlyDownloadsJob:
         self.bq_client = bigquery.Client(project=project)
 
         logger.info("Instantiating database interfaces")
-        self._read_db_engine = self._connect_with_connector(
+        _ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
+
+        self._read_db_connector, self._read_db_engine = self._connect_with_connector(
+            _ip_type,
             _read_db_instance,
             os.getenv("READ_DB_USER"),
             os.getenv("READ_DB_PW"),
@@ -269,7 +264,8 @@ class AggregateHourlyDownloadsJob:
         ReadBase.metadata.create_all(self._read_db_engine)
         self.ReadSession = sessionmaker(bind=self._read_db_engine)
 
-        self._write_db_engine = self._connect_with_connector(
+        self._write_db_connector, self._write_db_engine = self._connect_with_connector(
+            _ip_type,
             _write_db_instance,
             os.getenv("WRITE_DB_USER"),
             os.getenv("WRITE_DB_PW"),
@@ -280,15 +276,26 @@ class AggregateHourlyDownloadsJob:
 
         logger.info("Initialization of aggregate hourly downloads job complete")
 
+    def _set_up_logging(self):
+        self.log_level = os.getenv("LOG_LEVEL", "INFO")
+        self.log_locally = os.getenv("LOG_LOCALLY", False)
+
+        logging.basicConfig()
+        logger.setLevel(self.log_level)
+
+        if not (self.log_locally):
+            logger.info("Initializing cloud logging")
+            self.cloud_logging_client = google.cloud.logging.Client()
+            self.cloud_logging_client.setup_logging()
+
+    @staticmethod
     def _connect_with_connector(
-        self, instance_name, db_user, db_password, db_name
+        ip_type, instance_name, db_user, db_password, db_name
     ) -> Engine:
         """
         Initializes a connection pool for a Cloud SQL instance of MySQL.
         Uses the Cloud SQL Python Connector package.
         """
-        ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
-
         # initialize Cloud SQL Python Connector object
         connector = Connector(ip_type=ip_type, refresh_strategy="LAZY")
 
@@ -302,7 +309,8 @@ class AggregateHourlyDownloadsJob:
             )
             return conn
 
-        return create_engine("mysql+pymysql://", creator=getconn)
+        pool = create_engine("mysql+pymysql://", creator=getconn)
+        return (connector, pool)
 
     def process_table_rows(
         self,
@@ -567,6 +575,10 @@ class AggregateHourlyDownloadsJob:
         )
 
         result = self.process_an_hour(start_time, end_time)
+
+        self._read_db_connector.close()
+        self._write_db_connector.close()
+
         if result is not None:
             logger.info(result.single_run_str())
 
