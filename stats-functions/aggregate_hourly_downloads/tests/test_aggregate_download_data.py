@@ -1,10 +1,11 @@
 import os
 import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+
 from datetime import datetime
 from unittest import mock
 from arxiv.taxonomy.definitions import CATEGORIES
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from main import (
     PaperCategories,
@@ -16,7 +17,9 @@ from main import (
 
 
 def test_process_cats_basic():
-    """Assert AggregateHourlyDownloadsJob.process_paper_categories works as expected"""
+    """
+    Assert AggregateHourlyDownloadsJob.process_paper_categories works as expected
+    """
     data = [
         ("1234.5678", "math.GM", 1),
         ("1234.5679", "hep-lat", 1),
@@ -43,7 +46,9 @@ def test_process_cats_basic():
 
 
 def test_paper_categories_basic():
-    """Assert PaperCategories works as expected"""
+    """
+    Assert PaperCategories works as expected
+    """
 
     # initial creation
     item = PaperCategories("1234.5678")
@@ -71,8 +76,10 @@ def test_paper_categories_basic():
 
 
 def test_paper_categories_subsumed():
-    """Assert that only the canonical version of subsumed archives is used
-    duplicates caused by this are avoided"""
+    """
+    Assert that only the canonical archive is used in the case where a subsumed name is present
+    Subsumed = a deprecated archive name, replaced by a name that is now a subcategory of an archive
+    """
 
     # converts to canon correctly
     item = PaperCategories("1234.5678")
@@ -81,7 +88,7 @@ def test_paper_categories_subsumed():
     assert item.primary is None
     assert item.crosses == {CATEGORIES["nlin.CD"]}
 
-    # doesnt duplicate cross
+    # doesn't duplicate cross
     item.add_cross("chao-dyn")
     assert item.primary is None
     assert item.crosses == {CATEGORIES["nlin.CD"]}
@@ -96,7 +103,7 @@ def test_paper_categories_subsumed():
     assert item.primary == CATEGORIES["nlin.CD"]
     assert item.crosses == set()
 
-    # cant add a matching crosslist
+    # can't add a matching crosslist
     item.add_cross("nlin.CD")
     assert item.primary == CATEGORIES["nlin.CD"]
     assert item.crosses == set()
@@ -108,8 +115,10 @@ def test_paper_categories_subsumed():
 
 
 def test_paper_categories_alias():
-    """test that only the canonical version of alias is used
-    duplicates caused by this are avoided"""
+    """
+    Assert that only the canonical archive is used in the case where a category alias is present
+    Alias = a name that allows a category to exist in two archives at once, not deprecated
+    """
 
     # converts to canon correctly
     item = PaperCategories("1234.5678")
@@ -145,6 +154,9 @@ def test_paper_categories_alias():
 
 
 def test_aggregate_data():
+    """
+    Assert that AggregateHourlyDownloadsJob.aggregate_data works as expected
+    """
     paper1 = PaperCategories("1234.5678")
     paper1.add_primary("math.GM")
     paper1.add_cross("q-fin.CP")
