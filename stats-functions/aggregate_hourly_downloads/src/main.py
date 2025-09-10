@@ -1,4 +1,5 @@
 import os
+import argparse
 import logging
 from typing import Set, Dict, List, Tuple, Any, Union
 from datetime import datetime, timedelta, timezone
@@ -404,17 +405,39 @@ class AggregateHourlyDownloadsJob:
         query_job = self.bq_client.query(self.LOGS_QUERY, job_config=job_config)
         return self.perform_aggregation(query_job.result())
 
-    def run(self, cloud_event: CloudEvent):
+    def run(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
         logger.info("Running aggregate hourly downloads job")
-        pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
-            tzinfo=timezone.utc
-        )
+        
+        if cloud_event:
+            logger.info("Received cloud event trigger")
+            pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
+                tzinfo=timezone.utc
+            )
 
-        active_hour = pubsub_timestamp - timedelta(
-            hours=self.HOUR_DELAY
-        )  # give some time for logs to make it to gcp
-        start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
-        end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
+            active_hour = pubsub_timestamp - timedelta(
+                hours=self.HOUR_DELAY
+            )  # give some time for logs to make it to gcp
+
+            start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
+            end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
+        
+        if start_time and end_time:
+            logger.info("Received start and end times")
+            date_format = '%Y-%m-%d%H'
+            
+            try:
+                valid_start_time = datetime.strptime(start_time, date_format)
+                valid_end_time = datetime.strptime(end_time, date_format)
+            except ValueError:
+                logger.critical("Invalid date input(s)!")
+                return                
+            
+            start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
+            end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
+
+        else:
+            logger.critical("Must receive either a cloud event or valid start and end times!")
+            return
 
         logger.info(
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
@@ -436,4 +459,11 @@ def aggregate_hourly_downloads(cloud_event: CloudEvent):
 
 
 if __name__ == "__main__":
-    aggregate_hourly_downloads()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--start-time', dest='start_time', help="The start time in 'YYYY-MM-DDHH' format", required=True)
+    parser.add_argument('--end-time', dest='end_time', help="The end time in 'YYYY-MM-DDHH' format", required=True)
+
+    args = parser.parse_args()
+
+    job = AggregateHourlyDownloadsJob()
+    job.run(start_time=args.start_time, end_time=args.end_time)
