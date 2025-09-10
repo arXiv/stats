@@ -184,8 +184,8 @@ class AggregationResult:
 
 
 class AggregateHourlyDownloadsJob:
-    MAX_QUERY_TO_WRITE = 1000  # the latexmldb we write to has a stack size limit
-    HOUR_DELAY = 3  # how many hours back to run the hourly query, gives time for logs to make it to gcp
+    MAX_QUERY_TO_WRITE = os.getenv("MAX_QUERY_TO_WRITE", 1000)
+    HOUR_DELAY = os.getenv("HOUR_DELAY", 3)
     LOGS_QUERY = """
                     SELECT
                         paper_id,
@@ -538,7 +538,9 @@ class AggregateHourlyDownloadsJob:
             ).delete(synchronize_session=False)
 
             # add data
-            for i in range(0, len(data_to_insert), self.MAX_QUERY_TO_WRITE):
+            for i in range(
+                0, len(data_to_insert), self.MAX_QUERY_TO_WRITE
+            ):  # to conform to db stack size limit
                 session.bulk_save_objects(
                     data_to_insert[i : i + self.MAX_QUERY_TO_WRITE]
                 )
