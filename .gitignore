@@ -16,3 +16,12 @@
 
 # node packages
 **/node_modules/
+
+# terraform
+**/.terraform/*
+*.tfoverride
+*.tfstate
+*.tfstate.backup
+
+# mac os
+**/.DS_Store
