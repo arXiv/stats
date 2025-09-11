@@ -1,0 +1,39 @@
+## Aggregate hourly downloads job
+
+The aggregate hourly downloads job parses arXiv access logs saved to BigQuery, queries the main database for paper metadata, generates counts of downloads per category (with careful data validation), and then writes them to a database for use.
+
+This is a cron job implemented as a GCP Cloud Function with a pubsub trigger. Trigger messages are published by a GCP Scheduler Job.
+
+Preferred deployment is with terraform - see `cicd/aggregate-hourly-downloads/`.
+
+## To deploy with terraform
+
+Currently this is deployed manually - in the future, this will be deployed via workflow.
+
+1. If resources already exist in the environment you'd like to deploy to, make sure you have both the state and lock files locally at `cicd/aggregate-hourly-downloads` (see `arxiv-terraform-state-dev` bucket)
+1. Update variables - non-sensitive values can be updated in `.tfvars`(environment-specific); sensitive values should be referenced in the cloud function resource in `main.tf`.
+1. If you are starting from zero state, first import the BigQuery dataset (this has destruction protection so that it cannot be destroyed without force):
+    ```
+    terraform import 
+    ```
+4. Manually zip the source files for the job and copy that zip to `cicd/aggregate-hourly-downloads`:
+    ```
+    cd stats-functions/aggregate_hourly_downloads/src
+    zip src.zip main.py models.py entities.py requirements.txt
+    ```
+5. Apply
+    ```
+    terraform apply --var-file={dev.tfvars or prod.tfvars}
+    ```
+    > Note: The current terraform does not version the source zip object in the bucket, so subsequent `apply` executions may not update the cloud function resource (because terraform does not recognize that the source zip object has changed). To force an update, run `terraform apply --var-file={.tfvars} -replace google_cloudfunctions2_function.function`, then `terraform apply --var-file={.tfvars}` again (to update resources which reference the cloud function resource).
+
+## To run manually with start and end dates
+
+This is only recommended for testing (in dev) or in the case that the cron does not execute properly and a data patch is needed (in prod).
+
+1. Create a python virtual environment and `pip install -r` both `requirements.txt` and `requirements-dev.txt`
+1. If running in dev, ensure that sufficient log data is available in dev BigQuery at `_AllLogs`. If not, copy in a reasonable subset from production.
+1. Run the job with a `start_time` and `end_time`:
+    ```
+    python main.py --start-time {YYYY-MM-DDHH} --end-time {YYYY-MM-DDHH}
+    ```
