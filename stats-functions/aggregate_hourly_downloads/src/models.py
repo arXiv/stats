@@ -4,6 +4,8 @@ from datetime import datetime
 from arxiv.taxonomy.category import Category
 from arxiv.taxonomy.definitions import CATEGORIES
 
+DOWNLOAD_TYPE = Literal["pdf", "html", "src"]
+
 class PaperCategories:
     paper_id: str
     primary: Category
@@ -57,7 +59,7 @@ class DownloadData:
         self,
         paper_id: str,
         country: str,
-        download_type: Literal["pdf", "html", "src"],
+        download_type: DOWNLOAD_TYPE,
         time: datetime,
         num: int,
     ):
@@ -95,7 +97,7 @@ class DownloadKey:
         self,
         time: datetime,
         country: str,
-        download_type: Literal["pdf", "html", "src"],
+        download_type: DOWNLOAD_TYPE,
         archive: str,
         category_id: str,
     ):

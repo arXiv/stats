@@ -394,7 +394,7 @@ class AggregateHourlyDownloadsJob:
 
         return len(data_to_insert)
 
-    def process_an_hour(self, start_time: str, end_time: str) -> AggregationResult:
+    def query_logs(self, start_time: str, end_time: str) -> AggregationResult:
         logger.info("Querying logs in bigquery")
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
@@ -443,7 +443,7 @@ class AggregateHourlyDownloadsJob:
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
         )
 
-        result = self.process_an_hour(start_time, end_time)
+        result = self.query_logs(start_time, end_time)
 
         self._read_db_connector.close()
         self._write_db_connector.close()
@@ -455,7 +455,7 @@ class AggregateHourlyDownloadsJob:
 @functions_framework.cloud_event
 def aggregate_hourly_downloads(cloud_event: CloudEvent):
     job = AggregateHourlyDownloadsJob()
-    job.run(cloud_event)
+    job.run(cloud_event=cloud_event)
 
 
 if __name__ == "__main__":
