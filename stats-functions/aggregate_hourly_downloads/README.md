@@ -10,11 +10,11 @@ Preferred deployment is with terraform - see `cicd/aggregate-hourly-downloads/`.
 
 Currently this is deployed manually - in the future, this will be deployed via workflow.
 
-1. If resources already exist in the environment you'd like to deploy to, make sure you have both the state and lock files locally at `cicd/aggregate-hourly-downloads` (see `arxiv-terraform-state-dev` bucket)
+1. If resources already exist in the environment you'd like to deploy to, make sure you have both the state and lock files locally at `cicd/aggregate-hourly-downloads` (see the `arxiv-terraform-state-dev` bucket; for prod talk to DevOps)
 1. Update variables - non-sensitive values can be updated in `.tfvars`(environment-specific); sensitive values should be referenced in the cloud function resource in `main.tf`.
-1. If you are starting from zero state, first import the BigQuery dataset (this has destruction protection so that it cannot be destroyed without force):
+1. If you are starting from zero terraform state, you will first need to import the BigQuery dataset (this has destruction protection so that it cannot be destroyed without force). This is done automatically on `apply`, or you can manually import by running:
     ```
-    terraform import 
+    terraform import {address id}
     ```
 4. Manually zip the source files for the job and copy that zip to `cicd/aggregate-hourly-downloads`:
     ```
@@ -32,6 +32,7 @@ Currently this is deployed manually - in the future, this will be deployed via w
 This is only recommended for testing (in dev) or in the case that the cron does not execute properly and a data patch is needed (in prod).
 
 1. Create a python virtual environment and `pip install -r` both `requirements.txt` and `requirements-dev.txt`
+1. Set your environment variables (see `.tfvars` and `variables.tf`)
 1. If running in dev, ensure that sufficient log data is available in dev BigQuery at `_AllLogs`. If not, copy in a reasonable subset from production.
 1. Run the job with a `start_time` and `end_time`:
     ```
