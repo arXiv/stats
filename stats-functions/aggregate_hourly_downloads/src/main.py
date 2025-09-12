@@ -405,8 +405,8 @@ class AggregateHourlyDownloadsJob:
         query_job = self.bq_client.query(self.LOGS_QUERY, job_config=job_config)
         return self.perform_aggregation(query_job.result())
 
-    def run(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
-        logger.info("Running aggregate hourly downloads job")
+    def validate_inputs(self, cloud_event, start_time, end_time):
+        logger.info("Validating inputs")
         
         if cloud_event:
             logger.info("Received cloud event trigger")
@@ -437,18 +437,23 @@ class AggregateHourlyDownloadsJob:
 
         else:
             logger.critical("Must receive either a cloud event or valid start and end times!")
-            return
 
         logger.info(
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
         )
 
-        result = self.query_logs(start_time, end_time)
+        return self.query_logs(start_time, end_time)
+
+    def run(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
+        logger.info("Running aggregate hourly downloads job")
+
+        result = self.validate_inputs(cloud_event, start_time, end_time)
 
         self._read_db_connector.close()
         self._write_db_connector.close()
 
         if result is not None:
+            self._success = True
             logger.info(result.single_run_str())
 
 
