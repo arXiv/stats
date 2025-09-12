@@ -1,3 +1,5 @@
+tf_backend_bucket       = "arxiv-terraform-state-dev"
+tf_backend_path         = "dev-stats-aggregate-hourly-downloads"
 gcp_project_id          = "arxiv-development"
 gcp_region              = "us-central1"
 env                     = "DEV"
