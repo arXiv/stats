@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from datetime import datetime
 from unittest import mock
+from cloudevents.http import CloudEvent
 from arxiv.taxonomy.definitions import CATEGORIES
 
 from main import (
@@ -12,6 +13,7 @@ from main import (
     DownloadData,
     DownloadKey,
     DownloadCounts,
+    AggregationResult,
     AggregateHourlyDownloadsJob,
 )
 
@@ -26,7 +28,7 @@ def test_process_cats_basic():
         ("1234.5679", "q-fin.CP", 0),
         ("1234.5679", "q-fin.PM", 0),
     ]
-    mock_job_instance = mock.Mock()
+    mock_job_instance = mock.Mock(autospec=AggregateHourlyDownloadsJob)
 
     result = AggregateHourlyDownloadsJob.process_paper_categories(
         mock_job_instance, data
@@ -201,7 +203,7 @@ def test_aggregate_data():
         key7: DownloadCounts(4, 0),
     }
 
-    mock_job_instance = mock.Mock()
+    mock_job_instance = mock.Mock(autospec=AggregateHourlyDownloadsJob)
 
     result = AggregateHourlyDownloadsJob.aggregate_data(
         mock_job_instance, download_data, paper_categories
@@ -224,3 +226,59 @@ def test_aggregate_data():
     assert result[key7] == DownloadCounts(4, 0)
 
     assert result == expected
+
+
+def test_validate_inputs_cloud_event():
+    """Assert that AggregateHourlyDownloads.validate_inputs executes successfully when cloud event with valid timestamp is provided"""
+    mock_job_instance = mock.Mock(autospec=AggregateHourlyDownloadsJob)
+    mock_job_instance.HOUR_DELAY = 3
+
+    mock_result = mock.Mock(autospec=AggregationResult)
+    mock_job_instance.query_logs.return_value = mock_result
+
+    mock_attributes = {"type": "mock_type",
+                       "source": "mock_source",
+                       "time": "2025-09-12T16:30:00Z"}
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    AggregateHourlyDownloadsJob.validate_inputs(
+        mock_job_instance, cloud_event=mock_cloud_event
+    )
+
+    assert mock_job_instance._start_time == "2025-09-12 13:00:00"
+    assert mock_job_instance._end_time == "2025-09-12 13:59:59"
+
+def test_run_start_and_end_times_valid():
+    """Assert that AggregateHourlyDownloads.validate_inputs executes successfully when valid start and end times are provided"""
+    mock_job_instance = mock.Mock(autospec=AggregateHourlyDownloadsJob)
+    
+    mock_result = mock.Mock(autospec=AggregationResult)
+    mock_job_instance.query_logs.return_value = mock_result
+
+    start_time = "2025-09-1216"
+    end_time = "2025-09-1216"
+
+    AggregateHourlyDownloadsJob.validate_inputs(
+        mock_job_instance, start_time=start_time, end_time=end_time
+    )
+
+    assert mock_job_instance._start_time == "2025-09-12 16:00:00"
+    assert mock_job_instance._end_time == "2025-09-12 16:59:59"
+
+@mock.patch("main.logger")
+def test_run_start_and_end_times_invalid(mock_logger):
+    """Assert that AggregateHourlyDownloads job exits appropriately when invalid start and end times are provided"""
+    mock_job_instance = mock.Mock(autospec=AggregateHourlyDownloadsJob)
+
+    mock_result = mock.Mock(autospec=AggregationResult)
+    mock_job_instance.query_logs.return_value = mock_result
+
+    start_time = "2025-09-1001"
+    end_time = "2025-09-0901"
+
+    AggregateHourlyDownloadsJob.validate_inputs(
+        mock_job_instance, start_time=start_time, end_time=end_time
+    )
+
+    mock_logger.error.assert_called_once_with("Invalid date input(s)!")
