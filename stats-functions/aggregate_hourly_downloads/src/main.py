@@ -409,7 +409,7 @@ class AggregateHourlyDownloadsJob:
         query_job = self.bq_client.query(self.LOGS_QUERY, job_config=job_config)
         logger.info("Log query successfully executed")
 
-        return self.perform_aggregation(query_job.result())
+        return query_job.result()
 
     def validate_inputs(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
         logger.info("Validating inputs")
@@ -438,7 +438,7 @@ class AggregateHourlyDownloadsJob:
                 assert valid_start_time <= valid_end_time
             except (AssertionError, ValueError):
                 logger.error("Invalid date input(s)!")
-                return                
+                return (None, None)
             
             start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
             end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
@@ -449,23 +449,24 @@ class AggregateHourlyDownloadsJob:
         logger.info(
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
         )
-        
-        self._start_time = start_time
-        self._end_time = end_time
 
-        return self.query_logs(start_time, end_time)
+        return (start_time, end_time)
 
     def run(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
         logger.info("Running aggregate hourly downloads job")
 
-        result = self.validate_inputs(cloud_event=cloud_event, start_time=start_time, end_time=end_time)
+        start_time, end_time = self.validate_inputs(cloud_event=cloud_event, start_time=start_time, end_time=end_time)
+
+        if start_time and end_time:
+            log_query_result = self.query_logs(start_time, end_time)
+            aggregation_result = self.perform_aggregation(log_query_result)
 
         self._read_db_connector.close()
         self._write_db_connector.close()
         logger.info("Database connectors successfully closed")
 
-        if result:
-            logger.info(result.single_run_str())
+        if aggregation_result:
+            logger.info(aggregation_result.single_run_str())
 
 
 @functions_framework.cloud_event
