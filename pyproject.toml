@@ -11,11 +11,21 @@ dependencies = [
     "python-dotenv>=1.1.1,<2",
 ]
 
+<<<<<<< HEAD
 [dependency-groups]
 test = [
     "pytest>=8.4.2,<9",
     "ruff>=0.13.0,<0.14",
 ]
+=======
+[tool.poetry.dependencies]
+python = "^3.10"
+flask = "^3.1.2"
+flask-cors = "^6.0.1"
+flask-sqlalchemy = "^3.1.1"
+pg8000 = "^1.31.5"
+python-dotenv = "^1.1.1"
+>>>>>>> main
 
 [tool.uv]
 default-groups = ["test"]

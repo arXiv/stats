@@ -172,9 +172,9 @@ class AggregateHourlyDownloadsJob:
         """
         # process and store returned data
         paper_ids = set()  # only look things up for each paper once
-        download_data: List[
-            DownloadData
-        ] = []  # not a dictionary because no unique keys
+        download_data: List[DownloadData] = (
+            []
+        )  # not a dictionary because no unique keys
         problem_rows: List[Tuple[Any], Exception] = []
         problem_row_count = 0
         bad_id_count = 0
@@ -435,7 +435,6 @@ class AggregateHourlyDownloadsJob:
 
             start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
             end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
-
         elif start_time and end_time:
             logger.info("Received start and end times")
             date_format = "%Y-%m-%d%H"
@@ -448,7 +447,6 @@ class AggregateHourlyDownloadsJob:
             except (AssertionError, ValueError):
                 logger.error("Invalid date input(s)!")
                 return (None, None)
-
             start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
             end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
 
