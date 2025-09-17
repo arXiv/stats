@@ -172,9 +172,9 @@ class AggregateHourlyDownloadsJob:
         """
         # process and store returned data
         paper_ids = set()  # only look things up for each paper once
-        download_data: List[DownloadData] = (
-            []
-        )  # not a dictionary because no unique keys
+        download_data: List[
+            DownloadData
+        ] = []  # not a dictionary because no unique keys
         problem_rows: List[Tuple[Any], Exception] = []
         problem_row_count = 0
         bad_id_count = 0
