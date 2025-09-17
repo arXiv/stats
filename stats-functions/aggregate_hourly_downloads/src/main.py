@@ -1,6 +1,7 @@
 import os
 import argparse
 import logging
+import traceback
 from typing import Set, Dict, List, Tuple, Any, Union
 from datetime import datetime, timedelta, timezone
 from dateutil import parser
@@ -10,7 +11,7 @@ from arxiv.identifier import Identifier, IdentifierException
 import functions_framework
 from cloudevents.http import CloudEvent
 
-import google.cloud.logging
+from google.cloud import logging as gc_logging
 from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator, _EmptyRowIterator
 
@@ -18,11 +19,18 @@ from google.cloud.sql.connector import Connector, IPTypes
 import pymysql
 
 from entities import ReadBase, WriteBase, DocumentCategory, Metadata, HourlyDownloads
-from models import PaperCategories, DownloadData, DownloadCounts, DownloadKey, AggregationResult
+from models import (
+    Database,
+    PaperCategories,
+    DownloadData,
+    DownloadCounts,
+    DownloadKey,
+    AggregationResult,
+)
 
 from sqlalchemy import create_engine, Row
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import sessionmaker, aliased
+from sqlalchemy.orm import sessionmaker, aliased, DeclarativeBase, Session
 
 
 logger = logging.getLogger(__name__)
@@ -75,68 +83,58 @@ class AggregateHourlyDownloadsJob:
 
     def __init__(self):
         self.env = os.getenv("ENV")
-
-        self._set_up_logging()
-
-        logger.info("Initializing aggregate hourly downloads job")
-
-        logger.info("Checking environment variables")
-        _read_db_instance = os.getenv("READ_DB_INSTANCE")
-        _write_db_instance = os.getenv("WRITE_DB_INSTANCE")
-
-        if (self.env == "PROD" and "development" in _write_db_instance) or (
-            self.env == "DEV" and "production" in _write_db_instance
-        ):
-            logger.error(
-                f"Referencing a database in another environment! Check database configuration"
-            )
-            return
-
-        logger.info("Initializing bigquery client")
-        project = "arxiv-production" if self.env == "PROD" else "arxiv-development"
-        self.bq_client = bigquery.Client(project=project)
-
-        logger.info("Instantiating database interfaces")
-        _ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
-
-        self._read_db_connector, self._read_db_engine = self._connect_with_connector(
-            _ip_type,
-            _read_db_instance,
+        self.read_db = Database(
+            os.getenv("READ_DB_INSTANCE"),
             os.getenv("READ_DB_USER"),
             os.getenv("READ_DB_PW"),
             os.getenv("READ_DB_NAME"),
         )
-        ReadBase.metadata.create_all(self._read_db_engine)
-        self.ReadSession = sessionmaker(bind=self._read_db_engine)
-
-        self._write_db_connector, self._write_db_engine = self._connect_with_connector(
-            _ip_type,
-            _write_db_instance,
+        self.write_db = Database(
+            os.getenv("WRITE_DB_INSTANCE"),
             os.getenv("WRITE_DB_USER"),
             os.getenv("WRITE_DB_PW"),
             os.getenv("WRITE_DB_NAME"),
         )
-        WriteBase.metadata.create_all(self._write_db_engine)
-        self.WriteSession = sessionmaker(bind=self._write_db_engine)
-
-        logger.info("Initialization of aggregate hourly downloads job complete")
-
-    def _set_up_logging(self):
+        self.project = "arxiv-production" if self.env == "PROD" else "arxiv-development"
+        self.ip_type = (
+            IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
+        )
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
         self.log_locally = os.getenv("LOG_LOCALLY", False)
 
+        self._set_up_logging()
+        logger.info("Initialization of aggregate hourly downloads job complete")
+
+    def _set_up_logging(self):
         logging.basicConfig()
         logger.setLevel(self.log_level)
 
         if not (self.log_locally):
             logger.info("Initializing cloud logging")
-            self.cloud_logging_client = google.cloud.logging.Client()
+            self.cloud_logging_client = gc_logging.Client(project=self.project)
             self.cloud_logging_client.setup_logging()
 
+    def _check_environment(self):
+        logger.info("Checking environment variables")
+
+        if (self.env == "PROD" and "development" in self.write_db.instance_name) or (
+            self.env == "DEV" and "production" in self.write_db.instance_name
+        ):
+            logger.error(
+                f"Referencing a database in another environment! Check database configuration"
+            )
+            raise Exception()
+
+    def _instantiate_db_interface(
+        self, db_engine: Engine, base: DeclarativeBase
+    ) -> tuple[Connector, sessionmaker]:
+        base.metadata.create_all(db_engine)
+        Session = sessionmaker(bind=db_engine)
+
+        return Session
+
     @staticmethod
-    def _connect_with_connector(
-        ip_type, instance_name, db_user, db_password, db_name
-    ) -> Engine:
+    def connect_with_connector(ip_type, db: Database) -> tuple[Connector, Engine]:
         """
         Initializes a connection pool for a Cloud SQL instance of MySQL.
         Uses the Cloud SQL Python Connector package.
@@ -146,16 +144,17 @@ class AggregateHourlyDownloadsJob:
 
         def getconn() -> pymysql.connections.Connection:
             conn: pymysql.connections.Connection = connector.connect(
-                instance_name,
+                db.instance_name,
                 "pymysql",
-                user=db_user,
-                password=db_password,
-                db=db_name,
+                user=db.username,
+                password=db.password,
+                db=db.db_name,
             )
             return conn
 
-        pool = create_engine("mysql+pymysql://", creator=getconn)
-        return (connector, pool)
+        engine = create_engine("mysql+pymysql://", creator=getconn, pool_pre_ping=True)
+
+        return (connector, engine)
 
     def process_table_rows(
         self,
@@ -164,7 +163,6 @@ class AggregateHourlyDownloadsJob:
         """processes rows of data from bigquery
         returns the list of download data, a set of all unique paper_ids and a string of the time periods this covers
         """
-        # process and store returned data
         paper_ids = set()  # only look things up for each paper once
         download_data: List[DownloadData] = (
             []
@@ -191,7 +189,7 @@ class AggregateHourlyDownloadsJob:
                     )
                 )
                 paper_ids.add(paper_id)
-            except IdentifierException as e:
+            except IdentifierException:
                 bad_id_count += 1
                 continue  # dont count this download
             except Exception as e:
@@ -219,63 +217,36 @@ class AggregateHourlyDownloadsJob:
             time_periods,
         )
 
-    def perform_aggregation(
-        self,
-        rows: Union[RowIterator, _EmptyRowIterator],
-    ) -> AggregationResult:
-        logger.info("Processing results of log query")
-        (
-            download_data,
-            paper_ids,
-            time_period_str,
-            bad_id_count,
-            problem_row_count,
-            time_periods,
-        ) = self.process_table_rows(rows)
-        fetched_count = len(download_data)
-        unique_id_count = len(paper_ids)
-        if len(paper_ids) == 0:
-            logger.error("No log data retrieved from bigquery")
-            return  # this will prevent retries
-
-        # find categories for all the papers
-        paper_categories = self.get_paper_categories(paper_ids)
-        if len(paper_categories) == 0:
-            logger.error(
-                f"{time_period_str}: No category data retrieved from database"
-            )
-            return
-
-        # aggregate download data
-        aggregated_data = self.aggregate_data(download_data, paper_categories)
-
-        # write all_data to tables
-        add_count = self.insert_into_database(aggregated_data, time_periods)
-        result = AggregationResult(
-            time_period_str,
-            add_count,
-            fetched_count,
-            unique_id_count,
-            bad_id_count,
-            problem_row_count,
-        )
-        return result
-
     def get_paper_categories(self, paper_ids: Set[str]) -> Dict[str, PaperCategories]:
         # get the category data for papers
         meta = aliased(Metadata)
         dc = aliased(DocumentCategory)
 
-        with self.ReadSession() as session:
-            logger.info("Executing read database query")
-            paper_cats = (
-                session.query(meta.paper_id, dc.category, dc.is_primary)
-                .join(meta, dc.document_id == meta.document_id)
-                .filter(meta.paper_id.in_(paper_ids))
-                .filter(meta.is_current == 1)
-                .all()
+        try:
+            read_connector, read_engine = self.connect_with_connector(
+                self.ip_type, self.read_db
             )
-        logger.info("Read database query successfully executed; session closed")
+            ReadSession = self._instantiate_db_interface(read_engine, ReadBase)
+
+            with ReadSession() as session:
+                logger.info("Executing read database query")
+                paper_cats = (
+                    session.query(meta.paper_id, dc.category, dc.is_primary)
+                    .join(meta, dc.document_id == meta.document_id)
+                    .filter(meta.paper_id.in_(paper_ids))
+                    .filter(meta.is_current == 1)
+                    .all()
+                )
+            logger.info("Read database query successfully executed; session closed")
+        except Exception:
+            logger.error("Read database query unsuccessful!")
+            raise
+        finally:
+            try:
+                read_connector.close()
+                logger.info("Read database connector closed")
+            except UnboundLocalError:
+                pass  # connector does not exist
 
         return self.process_paper_categories(paper_cats)
 
@@ -378,95 +349,193 @@ class AggregateHourlyDownloadsJob:
             for key, counts in aggregated_data.items()
         ]
 
-        # remove previous data for the time period
-        with self.WriteSession() as session:
-            logger.info("Executing write database transaction")
-            session.query(HourlyDownloads).filter(
-                HourlyDownloads.start_dttm.in_(time_periods)
-            ).delete(synchronize_session=False)
+        try:
+            write_connector, write_engine = self.connect_with_connector(
+                self.ip_type, self.write_db
+            )
+            WriteSession = self._instantiate_db_interface(write_engine, WriteBase)
 
-            # add data
-            for i in range(
-                0, len(data_to_insert), self.MAX_QUERY_TO_WRITE
-            ):  # to conform to db stack size limit
-                session.bulk_save_objects(
-                    data_to_insert[i : i + self.MAX_QUERY_TO_WRITE]
-                )
+            with WriteSession() as session:
+                logger.info("Executing write database transaction")
+                # remove previous data for the time period
+                session.query(HourlyDownloads).filter(
+                    HourlyDownloads.start_dttm.in_(time_periods)
+                ).delete(synchronize_session=False)
 
-            session.commit()
-        logger.info("Write database transaction successfully committed; session closed")
+                # add data
+                for i in range(
+                    0, len(data_to_insert), self.MAX_QUERY_TO_WRITE
+                ):  # to conform to db stack size limit
+                    session.bulk_save_objects(
+                        data_to_insert[i : i + self.MAX_QUERY_TO_WRITE]
+                    )
+
+                session.commit()
+            logger.info(
+                "Write database transaction successfully committed; session closed"
+            )
+        except Exception:
+            logger.error("Insertion into database unsuccessful!")
+            raise
+        finally:
+            try:
+                write_connector.close()
+                logger.info("Write database connector closed")
+            except UnboundLocalError:
+                pass  # connector does not exist
 
         return len(data_to_insert)
 
-    def query_logs(self, start_time: str, end_time: str) -> AggregationResult:
+    def perform_aggregation(
+        self,
+        rows: Union[RowIterator, _EmptyRowIterator],
+    ) -> AggregationResult:
+        logger.info("Processing results of log query")
+        (
+            download_data,
+            paper_ids,
+            time_period_str,
+            bad_id_count,
+            problem_row_count,
+            time_periods,
+        ) = self.process_table_rows(rows)
+
+        fetched_count = len(download_data)
+        unique_id_count = len(paper_ids)
+
+        # find categories for all the papers
+        paper_categories = self.get_paper_categories(paper_ids)
+        if len(paper_categories) == 0:
+            logger.error(
+                f"{time_period_str}: No category data retrieved from database!"
+            )
+            raise Exception()
+
+        # aggregate download data
+        aggregated_data = self.aggregate_data(download_data, paper_categories)
+
+        # write all_data to tables
+        add_count = self.insert_into_database(aggregated_data, time_periods)
+        result = AggregationResult(
+            time_period_str,
+            add_count,
+            fetched_count,
+            unique_id_count,
+            bad_id_count,
+            problem_row_count,
+        )
+        return result
+
+    def query_logs(self, start_time: str, end_time: str) -> RowIterator:
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
                 bigquery.ScalarQueryParameter("start_time", "STRING", start_time),
                 bigquery.ScalarQueryParameter("end_time", "STRING", end_time),
             ]
         )
-        logger.info("Executing log query in bigquery")
-        query_job = self.bq_client.query(self.LOGS_QUERY, job_config=job_config)
-        logger.info("Log query successfully executed")
+        try:
+            logger.info("Initializing bigquery client")
+            client = bigquery.Client(project=self.project)
+            logger.info("Executing log query in bigquery")
+            query_job = client.query(self.LOGS_QUERY, job_config=job_config)
+            logger.info("Log query successfully executed")
+        except Exception:
+            logger.error("Logs query unsuccessful!")
+            raise
 
-        return query_job.result()
+        rows = query_job.result()
 
-    def validate_inputs(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
-        logger.info("Validating inputs")
-        
-        if cloud_event:
-            logger.info("Received cloud event trigger")
+        if rows.total_rows > 0:
+            return rows
+        else:
+            logger.error("No log data returned from BigQuery!")
+            raise Exception()
+
+    def _validate_cloud_event(self, cloud_event: CloudEvent) -> tuple[str, str]:
+        try:
             pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
                 tzinfo=timezone.utc
             )
-
             active_hour = pubsub_timestamp - timedelta(
                 hours=self.HOUR_DELAY
             )  # give some time for logs to make it to gcp
+        except Exception:
+            logger.error("Could not process cloud event!")
+            raise
 
-            start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
-            end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
-        
-        elif start_time and end_time:
-            logger.info("Received start and end times")
-            date_format = '%Y-%m-%d%H'
-            
-            try:
-                assert len(start_time)==12 and len(end_time)==12
-                valid_start_time = datetime.strptime(start_time, date_format)
-                valid_end_time = datetime.strptime(end_time, date_format)
-                assert valid_start_time <= valid_end_time
-            except (AssertionError, ValueError):
-                logger.error("Invalid date input(s)!")
-                return (None, None)
-            
-            start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
-            end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
+        start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
+        end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
 
-        else:
-            logger.error("Must receive either a cloud event or valid start and end times!")
+        return start_time, end_time
+
+    def _validate_dates(self, start_time: str, end_time: str) -> tuple[str, str]:
+        date_format = "%Y-%m-%d%H"
+
+        try:
+            assert len(start_time) == 12 and len(end_time) == 12
+            valid_start_time = datetime.strptime(start_time, date_format)
+            valid_end_time = datetime.strptime(end_time, date_format)
+            assert valid_start_time <= valid_end_time
+        except (AssertionError, ValueError):
+            logger.error("Invalid start or end time(s)! Check input parameters")
+            raise
+
+        start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
+        end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
+
+        return start_time, end_time
+
+    def _validate_inputs(
+        self,
+        cloud_event: CloudEvent = None,
+        start_time: str = None,
+        end_time: str = None,
+    ):
+        logger.info("Validating inputs")
+
+        try:
+            if cloud_event:
+                logger.info("Received cloud event trigger")
+                start_time, end_time = self._validate_cloud_event(cloud_event)
+            elif start_time and end_time:
+                logger.info("Received start and end times")
+                start_time, end_time = self._validate_dates(start_time, end_time)
+            else:
+                logger.error(
+                    "Must receive either a cloud event or valid start and end times!"
+                )
+                raise Exception()
+        except Exception:
+            raise
 
         logger.info(
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
         )
-
         return (start_time, end_time)
 
-    def run(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
+    def run(
+        self,
+        cloud_event: CloudEvent = None,
+        start_time: str = None,
+        end_time: str = None,
+    ):
         logger.info("Running aggregate hourly downloads job")
 
-        start_time, end_time = self.validate_inputs(cloud_event=cloud_event, start_time=start_time, end_time=end_time)
-
-        if start_time and end_time:
+        try:
+            self._check_environment()
+            start_time, end_time = self._validate_inputs(
+                cloud_event=cloud_event, start_time=start_time, end_time=end_time
+            )
             log_query_result = self.query_logs(start_time, end_time)
             aggregation_result = self.perform_aggregation(log_query_result)
-
-        self._read_db_connector.close()
-        self._write_db_connector.close()
-        logger.info("Database connectors successfully closed")
-
-        if aggregation_result:
             logger.info(aggregation_result.single_run_str())
+        except Exception:
+            logger.exception("Exception occurred! Run unsuccessful")
+        finally:
+            try:
+                self.cloud_logging_client.close()
+            except UnboundLocalError:  # client does not exist
+                pass
 
 
 @functions_framework.cloud_event
@@ -477,8 +546,18 @@ def aggregate_hourly_downloads(cloud_event: CloudEvent):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start-time', dest='start_time', help="The start time in 'YYYY-MM-DDHH' format", required=True)
-    parser.add_argument('--end-time', dest='end_time', help="The end time in 'YYYY-MM-DDHH' format", required=True)
+    parser.add_argument(
+        "--start-time",
+        dest="start_time",
+        help="The start time in 'YYYY-MM-DDHH' format",
+        required=True,
+    )
+    parser.add_argument(
+        "--end-time",
+        dest="end_time",
+        help="The end time in 'YYYY-MM-DDHH' format",
+        required=True,
+    )
 
     args = parser.parse_args()
 
