@@ -1,7 +1,7 @@
 [project]
 name = "stats"
 version = "0.1.0"
-description = "Flask backend for the usage stats page on arxiv.org"
+description = "Backend for the usage stats page on arxiv.org"
 requires-python = "~=3.10.0"
 dependencies = [
     "flask>=3.1.2,<4",

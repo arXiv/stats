@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'stats-functions/aggregate-hourly-downloads/**'
+      
   workflow_dispatch:
     inputs:
       logLevel:

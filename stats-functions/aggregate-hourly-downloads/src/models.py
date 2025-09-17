@@ -1,10 +1,15 @@
+import logging
 from typing import Set, Literal
 from datetime import datetime
 
 from arxiv.taxonomy.category import Category
 from arxiv.taxonomy.definitions import CATEGORIES
 
+logger = logging.getLogger(__name__)
+
+
 DOWNLOAD_TYPE = Literal["pdf", "html", "src"]
+
 
 class PaperCategories:
     paper_id: str
@@ -17,7 +22,9 @@ class PaperCategories:
         self.crosses = set()
 
     def add_primary(self, cat: str):
-        if self.primary != None:  # this function should only get called once per paper
+        if (
+            self.primary is not None
+        ):  # this function should only get called once per paper
             logger.error(
                 f"Multiple primary categories for {self.paper_id}: {self.primary} and {cat}"
             )
