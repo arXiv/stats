@@ -2,23 +2,24 @@
 name = "stats"
 version = "0.1.0"
 description = "Flask backend for the usage stats page on arxiv.org"
-dynamic = ["requires-python", "dependencies"]
+requires-python = "~=3.10.0"
+dependencies = [
+    "flask>=3.1.2,<4",
+    "flask-cors>=6.0.1,<7",
+    "flask-sqlalchemy>=3.1.1,<4",
+    "pg8000>=1.31.4,<2",
+    "python-dotenv>=1.1.1,<2",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-flask = "^3.1.2"
-flask-cors = "^6.0.1"
-flask-sqlalchemy = "^3.1.1"
-pg8000 = "^1.31.4"
-python-dotenv = "^1.1.1"
+[dependency-groups]
+test = [
+    "pytest>=8.4.2,<9",
+    "ruff>=0.13.0,<0.14",
+]
 
-[tool.poetry.group.test.dependencies]
-pytest = "^8.4.2"
-
-
-[tool.poetry.group.dev.dependencies]
-black = "^25.1.0"
+[tool.uv]
+default-groups = ["test"]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
