@@ -1,3 +1,16 @@
+terraform {
+  required_version = "~> 1.13"
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "~> 7.2"
+    }
+  }
+  backend "gcs" {
+    prefix = "stats-aggregate-hourly-downloads"
+  }
+}
+
 provider "google" {
   project = var.gcp_project_id # default inherited by all resources
   region  = var.gcp_region     # default inherited by all resources
@@ -41,7 +54,7 @@ resource "google_project_iam_member" "bq_jobs_user" {
 }
 
 resource "google_bigquery_dataset_iam_member" "viewer" {
-  dataset_id = google_bigquery_dataset.dataset.dataset_id
+  dataset_id = "arxiv_logs"
   role       = "roles/bigquery.dataViewer"
   member     = "serviceAccount:${google_service_account.account.email}"
 }
@@ -50,21 +63,6 @@ resource "google_project_iam_member" "cloudsql_client" {
   project = var.gcp_project_id
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.account.email}"
-}
-
-### existing bigquery table ###
-
-import {
-  to = google_bigquery_dataset.dataset
-  id = "arxiv_logs"
-}
-
-resource "google_bigquery_dataset" "dataset" {
-  dataset_id = "arxiv_logs"
-
-  lifecycle {
-    prevent_destroy = true # IMPORTANT: block destroy on dataset, use --target to destroy other resources
-  }
 }
 
 ### cloud function ###
