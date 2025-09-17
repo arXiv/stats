@@ -9,7 +9,7 @@ python = "^3.10"
 flask = "^3.1.2"
 flask-cors = "^6.0.1"
 flask-sqlalchemy = "^3.1.1"
-pg8000 = "^1.31.4"
+pg8000 = "^1.31.5"
 python-dotenv = "^1.1.1"
 
 [tool.poetry.group.test.dependencies]
