@@ -1,13 +1,3 @@
-variable "tf_backend_bucket" {
-  description = "GCP bucket to send terraform state to"
-  type        = string
-}
-
-variable "tf_backend_path" {
-  description = "Path to terraform state in bucket"
-  type        = string
-}
-
 variable "gcp_project_id" {
   description = "GCP Project ID corresponding to environment"
   type        = string
