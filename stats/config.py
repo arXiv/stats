@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 # use variables in environment first, .env file second
@@ -13,6 +14,7 @@ class Config:
 
 class TestConfig(Config):
     DEBUG = True
+    TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
 
 

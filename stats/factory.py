@@ -7,7 +7,6 @@ from flask_cors import CORS
 from stats.routes.api import api
 from stats.routes.graph_routes import graph_routes
 
-
 config_map = {
     "TEST": TestConfig,
     "DEV": DevConfig,
@@ -19,7 +18,7 @@ def create_app():
     configure_logging()
 
     app = Flask(__name__)
-    app.config.from_object(config_map[os.getenv("ENV", "DEV")])
+    app.config.from_object(config_map[os.getenv("ENV", "TEST")])
 
     db.init_app(app)
 

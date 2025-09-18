@@ -6,11 +6,6 @@ from stats.factory import create_app
 def app():
     """Fixture to create a test Flask app."""
     app = create_app()
-    app.config.update(
-        {
-            "TESTING": True,
-        }
-    )
     yield app
 
 
