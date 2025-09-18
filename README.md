@@ -11,16 +11,15 @@ Application for public usage statistics pages on arXiv.org. `stats/` contains th
 
 ## Native setup
 
-1. Install [Python](https://www.python.org/downloads/) - see `pyproject.toml` for current version
-2. Install [poetry](https://python-poetry.org/docs/#installation) - see `Dockerfile.api` for current version
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. Install [Python](https://www.python.org/downloads/) - see `pyproject.toml` for current version; use `uv` if you prefer
 3. Install [Node](https://nodejs.org/en/download) - see `package.json` for current version
 4. [Set environment variables](#environment-variables)
 5. [Set database connection](#database-connection)
 6. Install and run `stats`
    ```
-   cd stats
-   poetry install
-   poetry run python factory.py
+   uv sync
+   uv run python stats/factory.py
    ```
 7. Install and run `stats-ui`
    ```
