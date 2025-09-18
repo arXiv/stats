@@ -235,13 +235,13 @@ class AggregateHourlyDownloadsJob:
         fetched_count = len(download_data)
         unique_id_count = len(paper_ids)
         if len(paper_ids) == 0:
-            logger.critical("No log data retrieved from bigquery")
+            logger.error("No log data retrieved from bigquery")
             return  # this will prevent retries
 
         # find categories for all the papers
         paper_categories = self.get_paper_categories(paper_ids)
         if len(paper_categories) == 0:
-            logger.critical(
+            logger.error(
                 f"{time_period_str}: No category data retrieved from database"
             )
             return
@@ -267,6 +267,7 @@ class AggregateHourlyDownloadsJob:
         dc = aliased(DocumentCategory)
 
         with self.ReadSession() as session:
+            logger.info("Executing read database query")
             paper_cats = (
                 session.query(meta.paper_id, dc.category, dc.is_primary)
                 .join(meta, dc.document_id == meta.document_id)
@@ -274,6 +275,7 @@ class AggregateHourlyDownloadsJob:
                 .filter(meta.is_current == 1)
                 .all()
             )
+        logger.info("Read database query successfully executed; session closed")
 
         return self.process_paper_categories(paper_cats)
 
@@ -378,6 +380,7 @@ class AggregateHourlyDownloadsJob:
 
         # remove previous data for the time period
         with self.WriteSession() as session:
+            logger.info("Executing write database transaction")
             session.query(HourlyDownloads).filter(
                 HourlyDownloads.start_dttm.in_(time_periods)
             ).delete(synchronize_session=False)
@@ -391,22 +394,25 @@ class AggregateHourlyDownloadsJob:
                 )
 
             session.commit()
+        logger.info("Write database transaction successfully committed; session closed")
 
         return len(data_to_insert)
 
     def query_logs(self, start_time: str, end_time: str) -> AggregationResult:
-        logger.info("Querying logs in bigquery")
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
                 bigquery.ScalarQueryParameter("start_time", "STRING", start_time),
                 bigquery.ScalarQueryParameter("end_time", "STRING", end_time),
             ]
         )
+        logger.info("Executing log query in bigquery")
         query_job = self.bq_client.query(self.LOGS_QUERY, job_config=job_config)
-        return self.perform_aggregation(query_job.result())
+        logger.info("Log query successfully executed")
 
-    def run(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
-        logger.info("Running aggregate hourly downloads job")
+        return query_job.result()
+
+    def validate_inputs(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
+        logger.info("Validating inputs")
         
         if cloud_event:
             logger.info("Received cloud event trigger")
@@ -421,35 +427,46 @@ class AggregateHourlyDownloadsJob:
             start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
             end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
         
-        if start_time and end_time:
+        elif start_time and end_time:
             logger.info("Received start and end times")
             date_format = '%Y-%m-%d%H'
             
             try:
+                assert len(start_time)==12 and len(end_time)==12
                 valid_start_time = datetime.strptime(start_time, date_format)
                 valid_end_time = datetime.strptime(end_time, date_format)
-            except ValueError:
-                logger.critical("Invalid date input(s)!")
-                return                
+                assert valid_start_time <= valid_end_time
+            except (AssertionError, ValueError):
+                logger.error("Invalid date input(s)!")
+                return (None, None)
             
             start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
             end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
 
         else:
-            logger.critical("Must receive either a cloud event or valid start and end times!")
-            return
+            logger.error("Must receive either a cloud event or valid start and end times!")
 
         logger.info(
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
         )
 
-        result = self.query_logs(start_time, end_time)
+        return (start_time, end_time)
+
+    def run(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
+        logger.info("Running aggregate hourly downloads job")
+
+        start_time, end_time = self.validate_inputs(cloud_event=cloud_event, start_time=start_time, end_time=end_time)
+
+        if start_time and end_time:
+            log_query_result = self.query_logs(start_time, end_time)
+            aggregation_result = self.perform_aggregation(log_query_result)
 
         self._read_db_connector.close()
         self._write_db_connector.close()
+        logger.info("Database connectors successfully closed")
 
-        if result is not None:
-            logger.info(result.single_run_str())
+        if aggregation_result:
+            logger.info(aggregation_result.single_run_str())
 
 
 @functions_framework.cloud_event
