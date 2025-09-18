@@ -47,7 +47,7 @@ clean-ui:
 	docker rmi $(FE_IMAGE_NAME) || true
 
 test-api:
-	poetry run pytest
+	uv run pytest tests
 
 format-api:
-	poetry run black stats/
+	ruff format stats

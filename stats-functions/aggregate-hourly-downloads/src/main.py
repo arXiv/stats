@@ -18,7 +18,13 @@ from google.cloud.sql.connector import Connector, IPTypes
 import pymysql
 
 from entities import ReadBase, WriteBase, DocumentCategory, Metadata, HourlyDownloads
-from models import PaperCategories, DownloadData, DownloadCounts, DownloadKey, AggregationResult
+from models import (
+    PaperCategories,
+    DownloadData,
+    DownloadCounts,
+    DownloadKey,
+    AggregationResult,
+)
 
 from sqlalchemy import create_engine, Row
 from sqlalchemy.engine.base import Engine
@@ -88,7 +94,7 @@ class AggregateHourlyDownloadsJob:
             self.env == "DEV" and "production" in _write_db_instance
         ):
             logger.error(
-                f"Referencing a database in another environment! Check database configuration"
+                "Referencing a database in another environment! Check database configuration"
             )
             return
 
@@ -191,7 +197,7 @@ class AggregateHourlyDownloadsJob:
                     )
                 )
                 paper_ids.add(paper_id)
-            except IdentifierException as e:
+            except IdentifierException:
                 bad_id_count += 1
                 continue  # dont count this download
             except Exception as e:
@@ -241,9 +247,7 @@ class AggregateHourlyDownloadsJob:
         # find categories for all the papers
         paper_categories = self.get_paper_categories(paper_ids)
         if len(paper_categories) == 0:
-            logger.error(
-                f"{time_period_str}: No category data retrieved from database"
-            )
+            logger.error(f"{time_period_str}: No category data retrieved from database")
             return
 
         # aggregate download data
@@ -310,7 +314,7 @@ class AggregateHourlyDownloadsJob:
         for entry in download_data:
             try:
                 cats = paper_categories[entry.paper_id]
-            except KeyError as e:
+            except KeyError:
                 missing_data_count += 1
                 (
                     missing_data.append(entry.paper_id)
@@ -411,9 +415,14 @@ class AggregateHourlyDownloadsJob:
 
         return query_job.result()
 
-    def validate_inputs(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
+    def validate_inputs(
+        self,
+        cloud_event: CloudEvent = None,
+        start_time: str = None,
+        end_time: str = None,
+    ):
         logger.info("Validating inputs")
-        
+
         if cloud_event:
             logger.info("Received cloud event trigger")
             pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
@@ -426,25 +435,25 @@ class AggregateHourlyDownloadsJob:
 
             start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
             end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
-        
         elif start_time and end_time:
             logger.info("Received start and end times")
-            date_format = '%Y-%m-%d%H'
-            
+            date_format = "%Y-%m-%d%H"
+
             try:
-                assert len(start_time)==12 and len(end_time)==12
+                assert len(start_time) == 12 and len(end_time) == 12
                 valid_start_time = datetime.strptime(start_time, date_format)
                 valid_end_time = datetime.strptime(end_time, date_format)
                 assert valid_start_time <= valid_end_time
             except (AssertionError, ValueError):
                 logger.error("Invalid date input(s)!")
                 return (None, None)
-            
             start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
             end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
 
         else:
-            logger.error("Must receive either a cloud event or valid start and end times!")
+            logger.error(
+                "Must receive either a cloud event or valid start and end times!"
+            )
 
         logger.info(
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
@@ -452,10 +461,17 @@ class AggregateHourlyDownloadsJob:
 
         return (start_time, end_time)
 
-    def run(self, cloud_event: CloudEvent = None, start_time: str = None, end_time: str = None):
+    def run(
+        self,
+        cloud_event: CloudEvent = None,
+        start_time: str = None,
+        end_time: str = None,
+    ):
         logger.info("Running aggregate hourly downloads job")
 
-        start_time, end_time = self.validate_inputs(cloud_event=cloud_event, start_time=start_time, end_time=end_time)
+        start_time, end_time = self.validate_inputs(
+            cloud_event=cloud_event, start_time=start_time, end_time=end_time
+        )
 
         if start_time and end_time:
             log_query_result = self.query_logs(start_time, end_time)
@@ -477,8 +493,18 @@ def aggregate_hourly_downloads(cloud_event: CloudEvent):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start-time', dest='start_time', help="The start time in 'YYYY-MM-DDHH' format", required=True)
-    parser.add_argument('--end-time', dest='end_time', help="The end time in 'YYYY-MM-DDHH' format", required=True)
+    parser.add_argument(
+        "--start-time",
+        dest="start_time",
+        help="The start time in 'YYYY-MM-DDHH' format",
+        required=True,
+    )
+    parser.add_argument(
+        "--end-time",
+        dest="end_time",
+        help="The end time in 'YYYY-MM-DDHH' format",
+        required=True,
+    )
 
     args = parser.parse_args()
 

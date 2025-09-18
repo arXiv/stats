@@ -165,7 +165,7 @@ def query_model(
 
         return final_result
 
-    except Exception as e:
+    except Exception:
         raise
 
 
@@ -223,7 +223,7 @@ def query_global_sum(model_name, time_group):
             final_result = inject_old_data(final_result, "yearly")
         return final_result
 
-    except Exception as e:
+    except Exception:
         raise
 
 
@@ -277,7 +277,7 @@ def query_todays_downloads(timezone="UTC"):
     """
     try:
         query = text(
-            f"""
+            """
             SELECT 
                 EXTRACT(HOUR FROM start_dttm AT TIME ZONE 'UTC' AT TIME ZONE :tz) AS local_hour,
                 SUM(primary_count) AS total_primary_count

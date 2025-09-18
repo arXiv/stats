@@ -4,6 +4,9 @@
 # pytest cache
 **/.pytest_cache/
 
+# ruff cache
+**/.ruff_cache/
+
 # flask
 **/instance/
 **/.webassets-cache
