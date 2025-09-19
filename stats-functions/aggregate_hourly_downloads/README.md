@@ -4,19 +4,19 @@ The aggregate hourly downloads job parses arXiv access logs saved to BigQuery, q
 
 This is a cron job implemented as a GCP Cloud Function with a pubsub trigger. Trigger messages are published by a GCP Scheduler Job.
 
-Preferred deployment is with terraform - see `cicd/aggregate-hourly-downloads/`.
+Preferred deployment is with terraform - see `terraform/aggregate_hourly_downloads/`.
 
 ## To deploy with terraform
 
 Currently this is deployed manually - in the future, this will be deployed via workflow.
 
-1. If resources already exist in the environment you'd like to deploy to, make sure you have both the state and lock files locally at `cicd/aggregate-hourly-downloads` (see the `arxiv-terraform-state-dev` bucket; for prod talk to DevOps)
+1. If resources already exist in the environment you'd like to deploy to, make sure you have both the state and lock files locally at `terraform/aggregate_hourly_downloads` (see the `arxiv-terraform-state-dev` bucket; for prod talk to DevOps)
 1. Update variables - non-sensitive values can be updated in `.tfvars`(environment-specific); sensitive values should be referenced in the cloud function resource in `main.tf`.
 1. If you are starting from zero terraform state, you will first need to import the BigQuery dataset (this has destruction protection so that it cannot be destroyed without force). This is done automatically on `apply`, or you can manually import by running:
     ```
     terraform import {address id}
     ```
-4. Manually zip the source files for the job and copy that zip to `cicd/aggregate-hourly-downloads`:
+4. Manually zip the source files for the job and copy that zip to `terraform/aggregate_hourly_downloads`:
     ```
     cd statsfunctions/aggregate_hourly_downloads/src
     zip src.zip main.py models.py entities.py requirements.txt
