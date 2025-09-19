@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Backend for the usage stats page on arxiv.org"
 requires-python = "~=3.10.0"
 dependencies = [
+    "atlas-provider-sqlalchemy>=0.4.0",
     "flask>=3.1.2,<4",
     "flask-cors>=6.0.1,<7",
     "flask-sqlalchemy>=3.1.1,<4",
