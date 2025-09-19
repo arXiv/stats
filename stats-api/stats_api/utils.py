@@ -1,5 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, PrimaryKeyConstraint
-from stats_entities.entities import HourlyDownloads
+from stats_entities.site_usage import HourlyDownloads
 
 
 def get_model(model_name):
