@@ -32,7 +32,7 @@ Application for public usage statistics pages on arXiv.org. `stats/` contains th
 
 NOTE: If you would like to use different ports and are running via Docker, make sure you also update the `FE_PORT` and `BE_PORT` in the `Makefile`.
 
-Non-sensitive constants are declared in `stats.config`. The appropriate config is chosen based on the value of the `ENV` environment variable - `TEST`, `DEV`, or `PROD`.
+Non-sensitive constants are declared in `stats_api.config`. The appropriate config is chosen based on the value of the `ENV` environment variable - `TEST`, `DEV`, or `PROD`.
 
 Other variables may be set in a `.env` file or in your local environment (i.e. your shell or terminal session). If running locally with Docker, other variables must be set in an `.env` file. 
 

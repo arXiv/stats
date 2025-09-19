@@ -2,12 +2,6 @@ version = 1
 revision = 3
 requires-python = "==3.10.*"
 
-[manifest]
-members = [
-    "stats",
-    "statsentities",
-]
-
 [[package]]
 name = "asn1crypto"
 version = "1.5.1"
@@ -371,7 +365,7 @@ wheels = [
 ]
 
 [[package]]
-name = "stats"
+name = "stats-api"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
@@ -381,7 +375,7 @@ dependencies = [
     { name = "flask-sqlalchemy" },
     { name = "pg8000" },
     { name = "python-dotenv" },
-    { name = "statsentities" },
+    { name = "stats-entities" },
 ]
 
 [package.dev-dependencies]
@@ -398,7 +392,7 @@ requires-dist = [
     { name = "flask-sqlalchemy", specifier = ">=3.1.1,<4" },
     { name = "pg8000", specifier = ">=1.31.4,<2" },
     { name = "python-dotenv", specifier = ">=1.1.1,<2" },
-    { name = "statsentities", editable = "statsentities" },
+    { name = "stats-entities", editable = "../stats-entities" },
 ]
 
 [package.metadata.requires-dev]
@@ -408,17 +402,11 @@ test = [
 ]
 
 [[package]]
-name = "statsentities"
+name = "stats-entities"
 version = "0.1.0"
-source = { editable = "statsentities" }
+source = { editable = "../stats-entities" }
 dependencies = [
     { name = "sqlalchemy" },
-]
-
-[package.dev-dependencies]
-test = [
-    { name = "pytest" },
-    { name = "ruff" },
 ]
 
 [package.metadata]
