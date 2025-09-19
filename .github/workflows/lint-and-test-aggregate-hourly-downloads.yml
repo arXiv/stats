@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'stats-functions/aggregate-hourly-downloads/**'
+      - 'statsfunctions/aggregate-hourly-downloads/**'
       
   workflow_dispatch:
     inputs:
@@ -32,14 +32,14 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r stats-functions/aggregate-hourly-downloads/src/requirements.txt
-        pip install -r stats-functions/aggregate-hourly-downloads/src/requirements-dev.txt
+        pip install -r statsfunctions/aggregate-hourly-downloads/src/requirements.txt
+        pip install -r statsfunctions/aggregate-hourly-downloads/src/requirements-dev.txt
 
     - name: Lint
       run: |
-        ruff check --output-format=github stats-functions/aggregate-hourly-downloads/src
+        ruff check --output-format=github statsfunctions/aggregate-hourly-downloads/src
 
     - name: Test with pytest
-      working-directory: stats-functions/aggregate-hourly-downloads
+      working-directory: statsfunctions/aggregate-hourly-downloads
       run: |
         pytest

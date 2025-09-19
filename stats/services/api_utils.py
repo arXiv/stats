@@ -40,7 +40,7 @@ Usage:
 import logging
 from stats.utils.database import db
 from sqlalchemy import func, extract, text
-from stats.models.models import get_model
+from stats_entities.entities import get_model
 from stats.services.add_old_data import inject_old_data
 
 logger = logging.getLogger(__name__)

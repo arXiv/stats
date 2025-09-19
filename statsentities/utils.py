@@ -1,33 +1,10 @@
-"""
-models.py
-
-This module contains ORM models to be used by the API for querying and aggregating data from the database.
-It includes a model for the hourly download data table, as well as a helper function to retrieve models by name.
-
-Classes:
-    HourlyDownloadData:
-        A class to represent the hourly download data sheet in the database.
-
-Functions:
-    get_model(model_name):
-        Returns the ORM model specified by the model name.
-
-Modules:
-    sqlalchemy: SQL toolkit and Object-Relational Mapping (ORM) library.
-    sqlalchemy.orm: Provides the base class for ORM models and other ORM utilities.
-
-Usage:
-    Import the necessary models from this module to interact with the database.
-    Use the get_model function to retrieve models by name.
-"""
-
 from sqlalchemy import Column, String, Integer, DateTime, PrimaryKeyConstraint
 from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
+SiteUsageBase = declarative_base()
 
 
-class HourlyDownloadData(Base):
+class HourlyDownloadData(SiteUsageBase):
     """
     A class to represent the hourly download data sheet in the database.
     Refer to category/archive guide for more detailed information on attributes.

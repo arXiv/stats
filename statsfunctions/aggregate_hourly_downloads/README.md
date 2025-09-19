@@ -18,7 +18,7 @@ Currently this is deployed manually - in the future, this will be deployed via w
     ```
 4. Manually zip the source files for the job and copy that zip to `cicd/aggregate-hourly-downloads`:
     ```
-    cd stats-functions/aggregate_hourly_downloads/src
+    cd statsfunctions/aggregate_hourly_downloads/src
     zip src.zip main.py models.py entities.py requirements.txt
     ```
 5. Apply
