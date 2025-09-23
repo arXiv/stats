@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'stats/**'
+      - 'stats-api/**'
 
   workflow_dispatch:
     inputs:
