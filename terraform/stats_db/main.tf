@@ -36,8 +36,7 @@ resource "google_sql_database_instance" "stats_db" {
     disk_autoresize = true
 
     ip_configuration {
-      # The following SSL enforcement options only allow connections encrypted with SSL/TLS and with
-      # valid client certificates. Please check the API reference for other SSL enforcement options:
+      # only allow connections encrypted with SSL/TLS and with valid client certificates
       # https://cloud.google.com/sql/docs/postgres/admin-api/rest/v1beta4/instances#ipconfiguration
       ssl_mode = "TRUSTED_CLIENT_CERTIFICATE_REQUIRED"
     }

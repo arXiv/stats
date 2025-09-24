@@ -10,18 +10,17 @@ Preferred deployment is with terraform - see `terraform/aggregate_hourly_downloa
 
 Currently this is deployed manually - in the future, this will be deployed via workflow.
 
-1. If resources already exist in the environment you'd like to deploy to, make sure you have both the state and lock files locally at `terraform/aggregate_hourly_downloads` (see the `arxiv-terraform-state-dev` bucket; for prod talk to DevOps)
-1. Update variables - non-sensitive values can be updated in `.tfvars`(environment-specific); sensitive values should be referenced in the cloud function resource in `main.tf`.
-1. If you are starting from zero terraform state, you will first need to import the BigQuery dataset (this has destruction protection so that it cannot be destroyed without force). This is done automatically on `apply`, or you can manually import by running:
+1. Update variables - non-sensitive values can be updated in `.tfvars`(environment-specific); sensitive values should be in Secret Manager and referenced in the cloud function resource in `main.tf`.
+1. Initialize the remote backend. The environment will be either `dev` or `prod`.
     ```
-    terraform import {address id}
+    terraform init -backend-config=”bucket={env}-arxiv-terraform-state”
     ```
-4. Manually zip the source files for the job and copy that zip to `terraform/aggregate_hourly_downloads`:
+1. Manually zip the source files for the job and copy that zip to `terraform/aggregate_hourly_downloads`:
     ```
     cd statsfunctions/aggregate_hourly_downloads/src
     zip src.zip main.py models.py entities.py requirements.txt
     ```
-5. Apply
+1. Apply
     ```
     terraform apply --var-file={dev.tfvars or prod.tfvars}
     ```
