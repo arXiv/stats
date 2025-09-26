@@ -1,14 +1,15 @@
 [project]
-name = "stats"
+name = "stats-api"
 version = "0.1.0"
-description = "Backend for the usage stats page on arxiv.org"
-requires-python = "~=3.10.0"
+description = "API for the usage stats page on arxiv.org"
+requires-python = "~=3.11.13"
 dependencies = [
     "flask>=3.1.2,<4",
     "flask-cors>=6.0.1,<7",
     "flask-sqlalchemy>=3.1.1,<4",
     "pg8000>=1.31.4,<2",
     "python-dotenv>=1.1.1,<2",
+    "stats-entities",
 ]
 
 [dependency-groups]
@@ -19,6 +20,9 @@ test = [
 
 [tool.uv]
 default-groups = ["test"]
+
+[tool.uv.sources]
+stats-entities = { path = "../stats-entities", editable = true }
 
 [build-system]
 requires = ["hatchling"]

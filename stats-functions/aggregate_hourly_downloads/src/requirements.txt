@@ -4,3 +4,4 @@ google-cloud-logging
 google-cloud-bigquery
 sqlalchemy>=2.0.26
 cloud-sql-python-connector[pymysql] >=1.18.4
+stats-entities @ git+https://github.com/arXiv/stats.git@ARXIVCE-3944-terraform-db#egg=stats_entities&subdirectory=stats-entities

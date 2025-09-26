@@ -1,0 +1,9 @@
+[project]
+name = "stats-db"
+version = "0.1.0"
+description = "Migrations for stats-db, managed by atlas"
+readme = "README.md"
+requires-python = "~=3.11.13"
+dependencies = [
+    "atlas-provider-sqlalchemy>=0.4.0",
+]

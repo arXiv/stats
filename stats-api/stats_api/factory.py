@@ -1,11 +1,11 @@
 import os
-from stats.config import TestConfig, DevConfig, ProdConfig
-from stats.utils.database import db
-from stats.utils.logging import configure_logging
+from stats_api.config import TestConfig, DevConfig, ProdConfig
+from stats_api.utils.database import db
+from stats_api.utils.logging import configure_logging
 from flask import Flask
 from flask_cors import CORS
-from stats.routes.api import api
-from stats.routes.graph_routes import graph_routes
+from stats_api.routes.api import api
+from stats_api.routes.graph_routes import graph_routes
 
 config_map = {
     "TEST": TestConfig,

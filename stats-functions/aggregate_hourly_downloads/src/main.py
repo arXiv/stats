@@ -17,7 +17,9 @@ from google.cloud.bigquery.table import RowIterator, _EmptyRowIterator
 from google.cloud.sql.connector import Connector, IPTypes
 import pymysql
 
-from entities import ReadBase, WriteBase, DocumentCategory, Metadata, HourlyDownloads
+from stats_entities.site_usage import SiteUsageBase, HourlyDownloads
+
+from entities import ReadBase, DocumentCategory, Metadata
 from models import (
     PaperCategories,
     DownloadData,
@@ -122,7 +124,7 @@ class AggregateHourlyDownloadsJob:
             os.getenv("WRITE_DB_PW"),
             os.getenv("WRITE_DB_NAME"),
         )
-        WriteBase.metadata.create_all(self._write_db_engine)
+        SiteUsageBase.metadata.create_all(self._write_db_engine)
         self.WriteSession = sessionmaker(bind=self._write_db_engine)
 
         logger.info("Initialization of aggregate hourly downloads job complete")

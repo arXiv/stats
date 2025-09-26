@@ -1,5 +1,5 @@
 import pytest
-from stats.factory import create_app
+from stats_api.factory import create_app
 
 
 @pytest.fixture

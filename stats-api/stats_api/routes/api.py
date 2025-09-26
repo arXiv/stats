@@ -30,12 +30,12 @@ Usage:
 import logging
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
-from stats.services.api_utils import (
+from stats_api.services.api_utils import (
     query_model,
     query_global_sum,
     query_todays_downloads,
 )
-from stats.models.models import get_model
+from stats_api.utils.database import get_model
 
 logger = logging.getLogger(__name__)
 

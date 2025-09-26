@@ -1,0 +1,5 @@
+gcp_project_id         = "arxiv-production"
+gcp_region             = "us-central1"
+env                    = "PROD"
+db_root_pw_secret_name = "stats-db-root-pw"
+db_user_pw_secret_name = ""
