@@ -35,7 +35,7 @@ from stats_api.services.api_utils import (
     query_global_sum,
     query_todays_downloads,
 )
-from stats_entities.utils import get_model
+from stats_api.utils.database import get_model
 
 logger = logging.getLogger(__name__)
 

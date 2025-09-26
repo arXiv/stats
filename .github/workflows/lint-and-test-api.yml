@@ -1,4 +1,4 @@
-name: Lint and test stats
+name: Lint and test stats-api
 
 on:
   pull_request:
@@ -33,11 +33,11 @@ jobs:
       uses: astral-sh/setup-uv@v6
 
     - name: Install the project
-      run: uv sync --locked --all-extras --dev
+      run: uv sync --directory stats-api --locked --all-extras --dev
 
     - name: Lint
       run: |
-        uv run ruff check --output-format=github stats
+        uv run --directory stats-api ruff check --output-format=github .
 
     - name: Run tests
-      run: uv run pytest tests
+      run: uv run --directory stats-api pytest tests
