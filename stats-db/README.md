@@ -1,5 +1,5 @@
 # stats-db
-Use this package to manage changes to stats-db database, including site_usage. For more information, see [the Atlas docs](https://atlasgo.io/guides/orms/sqlalchemy).
+Use this package to manage changes to stats-db databases, including `site_usage`. For more information, see [the Atlas docs](https://atlasgo.io/guides/orms/sqlalchemy).
 
 The database user with appropriate permissions to execute migrations is terraformed - see `terraform/stats-db/main.tf`.
 

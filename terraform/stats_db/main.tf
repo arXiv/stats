@@ -7,7 +7,7 @@ terraform {
     }
   }
   backend "gcs" {
-    prefix = "stats-db"
+    prefix = "stats-stats-db"
   }
 }
 
@@ -60,7 +60,7 @@ resource "google_sql_database_instance" "stats_db" {
   }
   root_password = data.google_secret_manager_secret_version.db_root_pw.secret_data
   # deletion protection protects the instance at the GCP level
-  deletion_protection = false
+  deletion_protection = true
 }
 
 ### database ###
