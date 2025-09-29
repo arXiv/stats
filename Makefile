@@ -45,9 +45,3 @@ stop-ui:
 clean-ui:
 	docker rm $(FE_CONTAINER_NAME) || true
 	docker rmi $(FE_IMAGE_NAME) || true
-
-test-api:
-	uv run pytest tests
-
-format-api:
-	ruff format stats

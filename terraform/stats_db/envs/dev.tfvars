@@ -1,0 +1,5 @@
+gcp_project_id         = "arxiv-development"
+gcp_region             = "us-central1"
+env                    = "DEV"
+db_root_pw_secret_name = "stats-db-root-pw"
+db_user_pw_secret_name = "stats-db-siteusagemigrations-pw"
