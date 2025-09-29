@@ -13,13 +13,13 @@ dependencies = [
 ]
 
 [dependency-groups]
-test = [
+dev = [
     "pytest>=8.4.2,<9",
     "ruff>=0.13.0,<0.14",
 ]
 
 [tool.uv]
-default-groups = ["test"]
+default-groups = ["dev"]
 
 [tool.uv.sources]
 stats-entities = { path = "../stats-entities", editable = true }

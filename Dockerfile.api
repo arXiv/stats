@@ -1,60 +1,45 @@
 ARG PORT
 
 ################ base ################
-FROM python:3.10 AS base
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm AS base
 
 ################ builder ################
 FROM base AS builder
 
-# install poetry in its own environment
-ENV POETRY_VERSION=2.1.3 \
-    POETRY_HOME=/opt/poetry
-RUN python -m venv $POETRY_HOME && \
-    $POETRY_HOME/bin/pip install -U pip poetry==$POETRY_VERSION
+WORKDIR /home/nonroot
+COPY stats-entities ./stats-entities
+COPY stats-api/stats_api ./stats-api/stats_api
+COPY stats-api/pyproject.toml stats-api/uv.lock ./stats-api
 
-ENV PATH="/opt/poetry/bin:$PATH"
-
-# install dependencies in their own environment
-WORKDIR /home
-COPY poetry.lock pyproject.toml ./
-COPY stats ./stats/
-RUN poetry config virtualenvs.in-project true && \
-    poetry install --no-interaction --no-ansi \
-    --without test
+WORKDIR /home/nonroot/stats-api
+RUN uv sync --locked --no-dev
 
 ################ runtime ################
-FROM base AS runtime
-COPY --from=builder /opt/poetry /opt/poetry
-COPY --from=builder /home /home
+FROM builder AS runtime
 
-ENV PATH="/opt/poetry/bin:$PATH"
+ENV PATH="/home/nonroot/stats-api/.venv/bin:$PATH"
+
+# run as non-root user for security reasons
+RUN useradd nonroot
+RUN chmod -R u+x /home/nonroot
+USER nonroot
 
 EXPOSE ${PORT}
 
-WORKDIR /home
-ENTRYPOINT ["poetry", "run", "python", "stats/factory.py"]
-
-################ with test ################
-FROM builder AS with-test
-
-ENV PATH="/opt/poetry/bin:$PATH"
-
-# install test dependencies
-# TODO: add integration tests
-WORKDIR /home
-RUN poetry config virtualenvs.in-project true && \
-    poetry install --no-interaction --no-ansi
-
-# copy tests
-COPY tests ./tests/
+ENTRYPOINT ["uv", "run", "python", "factory.py"]
 
 ################ test ################
-FROM with-test AS test
+FROM builder AS test
 
-ENV PATH="/opt/poetry/bin:$PATH" \
-    ENV="TEST"
+ENV PATH="/home/nonroot/stats-api/.venv/bin:$PATH"
+
+# install test dependencies
+WORKDIR /home/nonroot/stats-api
+RUN uv sync --locked
+
+# copy tests
+COPY stats-api/tests ./tests
 
 # run any tests that have dependencies
 # TODO: add integration tests
-WORKDIR /home
-ENTRYPOINT ["poetry", "run", "pytest"]
+ENTRYPOINT ["uv", "run", "pytest", "tests"]
