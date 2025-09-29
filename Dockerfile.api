@@ -26,7 +26,7 @@ USER nonroot
 
 EXPOSE ${PORT}
 
-ENTRYPOINT ["uv", "run", "python", "factory.py"]
+ENTRYPOINT ["python", "stats_api/factory.py"]
 
 ################ test ################
 FROM builder AS test
@@ -42,4 +42,4 @@ COPY stats-api/tests ./tests
 
 # run any tests that have dependencies
 # TODO: add integration tests
-ENTRYPOINT ["uv", "run", "pytest", "tests"]
+ENTRYPOINT ["pytest", "tests"]
