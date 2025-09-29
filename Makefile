@@ -1,6 +1,6 @@
 .PHONY: up up-api up-ui build-api run-api stop-api clean-api build-ui run-ui stop-ui clean-ui test-api format-api
 
-TARGET := test
+TARGET := runtime
 
 BE_IMAGE_NAME := stats-api
 BE_CONTAINER_NAME := stats-api
