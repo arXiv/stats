@@ -1,0 +1,166 @@
+name: CICD for stats-db migrations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/ci-stats-db.yaml
+      - "stats-db/migrations/*"
+  pull_request:
+    branches: [main]
+    paths:
+      - "stats-entities/**"
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment"
+        required: true
+        type: choice
+        options:
+          - "development"
+          - "production"
+        default: "development"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "stats-db/pyproject.toml"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install the project
+        working-directory: stats-db
+        run: uv sync --locked
+
+      - name: Diff migrations
+        id: diff
+        working-directory: stats-db
+        run: |
+          uv run atlas migrate diff --env sqlalchemy
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fail if diff
+        if: ${{ steps.diff.outputs.changed == 'true' }}
+        run: |
+          echo "::error title=Migration Check Failed::Please run 'atlas migrate diff' and commit the changes."
+          exit 1
+
+  lint:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    needs: check-diff
+    steps:
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@v0
+
+      - name: Authenticate to Google Cloud
+        id: "auth"
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Get secrets
+        id: "gcp_secrets"
+        uses: google-github-actions/get-secretmanager-secrets@v3
+        with:
+          secrets: |-
+            DB_PASSWORD:${{ vars.GOOGLE_CLOUD_PROJECT }}/${{ vars.DB_PW_SECRET_NAME }}
+
+      - name: Download Cloud SQL proxy
+        run: |
+          curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.7.0/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+
+      - name: Start Cloud SQL proxy
+        run: |
+          nohup ./cloud-sql-proxy ${{ vars.INSTANCE_NAME }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
+          echo "CLOUD_SQL_PROXY_PID=$!" >> $GITHUB_ENV
+
+      - name: Wait for Cloud SQL Proxy to Start
+        run: |
+          sleep 5
+
+      - name: Lint migrations
+        uses: ariga/atlas-action/migrate/lint@v1
+        with:
+          dir: "file://stats-db/migrations"
+          dev-url: "mysql://${{ vars.DB_USER }}:${{ gcp_secrets.DB_PASSWORD }}@localhost:3306/dev"
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+
+      - name: Stop Cloud SQL Proxy
+        if: always()
+        run: |
+          kill ${{ env.CLOUD_SQL_PROXY_PID }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    needs: lint
+    steps:
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@v0
+
+      - name: Authenticate to Google Cloud
+        id: "auth"
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Get secrets
+        id: "gcp_secrets"
+        uses: google-github-actions/get-secretmanager-secrets@v3
+        with:
+          secrets: |-
+            DB_PASSWORD:${{ vars.GOOGLE_CLOUD_PROJECT }}/${{ vars.DB_PW_SECRET_NAME }}
+
+      - name: Download Cloud SQL proxy
+        run: |
+          curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.7.0/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+
+      - name: Start Cloud SQL proxy
+        run: |
+          nohup ./cloud-sql-proxy ${{ vars.INSTANCE_NAME }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
+          echo "CLOUD_SQL_PROXY_PID=$!" >> $GITHUB_ENV
+
+      - name: Wait for Cloud SQL Proxy to Start
+        run: |
+          sleep 5
+
+      - name: Deploy
+        uses: ariga/atlas-action/migrate/apply@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          dir: "file://stats-db/migrations"
+          url: "mysql://${{ vars.DB_USER }}:${{ gcp_secrets.DB_PASSWORD }}@localhost:3306/dev"
+
+      - name: Stop Cloud SQL Proxy
+        if: always()
+        run: |
+          kill ${{ env.CLOUD_SQL_PROXY_PID }}
