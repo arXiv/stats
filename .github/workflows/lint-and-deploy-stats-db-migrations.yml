@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/ci-stats-db.yaml
-      - "stats-db/migrations/*"
+      - "stats-db/migrations/**"
   pull_request:
     branches: [main]
     paths:
@@ -85,7 +85,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@v3
         with:
           secrets: |-
-            DB_PASSWORD:${{ vars.GOOGLE_CLOUD_PROJECT }}/${{ vars.DB_PW_SECRET_NAME }}
+            DB_PASSWORD:projects/${{ vars.GOOGLE_CLOUD_PROJECT }}/secrets/${{ vars.DB_PW_SECRET_NAME }}/versions/latest
 
       - name: Download Cloud SQL proxy
         run: |
@@ -105,7 +105,7 @@ jobs:
         uses: ariga/atlas-action/migrate/lint@v1
         with:
           dir: "file://stats-db/migrations"
-          dev-url: "mysql://${{ vars.DB_USER }}:${{ gcp_secrets.DB_PASSWORD }}@localhost:3306/dev"
+          dev-url: "mysql://${{ vars.DB_USER }}:${{ steps.gcp_secrets.outputs.DB_PASSWORD }}@localhost:3306/dev"
         env:
           GITHUB_TOKEN: "${{ github.token }}"
 
@@ -117,6 +117,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    if: github.ref == 'refs/heads/main'
     needs: lint
     steps:
       - name: Setup Atlas
@@ -137,7 +138,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@v3
         with:
           secrets: |-
-            DB_PASSWORD:${{ vars.GOOGLE_CLOUD_PROJECT }}/${{ vars.DB_PW_SECRET_NAME }}
+            DB_PASSWORD:projects/${{ vars.GOOGLE_CLOUD_PROJECT }}/secrets/${{ vars.DB_PW_SECRET_NAME }}/versions/latest
 
       - name: Download Cloud SQL proxy
         run: |
@@ -155,10 +156,9 @@ jobs:
 
       - name: Deploy
         uses: ariga/atlas-action/migrate/apply@v1
-        if: github.ref == 'refs/heads/main'
         with:
           dir: "file://stats-db/migrations"
-          url: "mysql://${{ vars.DB_USER }}:${{ gcp_secrets.DB_PASSWORD }}@localhost:3306/dev"
+          url: "mysql://${{ vars.DB_USER }}:${{ steps.gcp_secrets.outputs.DB_PASSWORD }}@localhost:3306/dev"
 
       - name: Stop Cloud SQL Proxy
         if: always()
