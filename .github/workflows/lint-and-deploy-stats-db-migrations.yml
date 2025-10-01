@@ -36,7 +36,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: "Set up Python"
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version-file: "stats-db/pyproject.toml"
@@ -74,6 +74,9 @@ jobs:
     environment: ${{ inputs.environment || 'development' }}
     needs: check-diff
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Inspect environment
         run: |
           echo "Environment: ${{ inputs.environment || 'development' }}"
@@ -115,7 +118,7 @@ jobs:
       - name: Lint migrations
         uses: ariga/atlas-action/migrate/lint@v1
         with:
-          dir: "file://stats-db/migrations"
+          dir: "stats-db/migrations"
           dev-url: "mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PASSWORD }}@localhost:3306/dev"
         env:
           GITHUB_TOKEN: "${{ github.token }}"
@@ -133,6 +136,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: lint
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Inspect environment
         run: |
           echo "Environment: ${{ inputs.environment || 'development' }}"
@@ -174,7 +180,7 @@ jobs:
       - name: Deploy
         uses: ariga/atlas-action/migrate/apply@v1
         with:
-          dir: "file://stats-db/migrations"
+          dir: "stats-db/migrations"
           url: "mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PASSWORD }}@localhost:3306/dev"
 
       - name: Stop Cloud SQL Proxy
