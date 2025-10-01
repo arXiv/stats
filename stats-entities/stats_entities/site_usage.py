@@ -32,4 +32,4 @@ class HourlyDownloads(SiteUsageBase):
         PrimaryKeyConstraint("country", "download_type", "category", "start_dttm"),
     )
 
-# updated comment for testing
+# comment for testing
