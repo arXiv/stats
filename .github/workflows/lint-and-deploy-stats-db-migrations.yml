@@ -21,7 +21,6 @@ on:
         options:
           - "development"
           - "production"
-        default: "development"
 
 permissions:
   contents: read
@@ -71,12 +70,12 @@ jobs:
     # connect via cloud sql proxy
     # error if migrations cannot be deployed safely
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment || 'development' }}
     needs: check-diff
     steps:
       - name: Inspect environment
         run: |
-          echo "Environment: ${{ inputs.environment }}"
+          echo "Environment: ${{ inputs.environment || 'development' }}"
 
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
@@ -129,10 +128,14 @@ jobs:
     # deploy migrations to database
     # connect via cloud sql proxy
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment || 'development' }}
     if: github.ref == 'refs/heads/main'
     needs: lint
     steps:
+      - name: Inspect environment
+        run: |
+          echo "Environment: ${{ inputs.environment || 'development' }}"
+
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
 
