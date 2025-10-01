@@ -45,14 +45,12 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install the project
-        working-directory: stats-db
-        run: uv sync --locked
+        run: uv sync --directory stats-db --locked
 
       - name: Diff migrations
         id: diff
-        working-directory: stats-db
         run: |
-          uv run atlas migrate diff --env sqlalchemy
+          uv run --directory stats-db atlas migrate diff --env sqlalchemy
           if [[ -n "$(git status --porcelain)" ]]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
