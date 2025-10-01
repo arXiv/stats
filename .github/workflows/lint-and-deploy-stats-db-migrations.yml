@@ -117,6 +117,12 @@ jobs:
           curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.7.0/cloud-sql-proxy.linux.amd64
           chmod +x cloud-sql-proxy
 
+      - name: Download wait-for-it.sh
+        run: |
+          # Download the script and make it executable
+          curl -sS -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
+          chmod +x wait-for-it.sh
+
       - name: Start Cloud SQL proxy
         run: |
           nohup ./cloud-sql-proxy ${{ vars.STATS_DB_INSTANCE }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
@@ -124,11 +130,12 @@ jobs:
 
       - name: Wait for Cloud SQL Proxy to Start
         run: |
-          sleep 5
-
+          # Wait up to 30 seconds for the Cloud SQL Proxy to become available on port 3306
+          ./wait-for-it.sh localhost:3306 --timeout=30 --strict -- echo "Cloud SQL Proxy is ready."
+          
       - name: Lint migrations
         run: |
-          DB_URL="mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PASSWORD }}@localhost:3306/${{ vars.STATS_DB_NAME }}"
+          DB_URL="mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PW }}@localhost:3306/${{ vars.STATS_DB_NAME }}"
           atlas migrate lint --dev-url $DB_URL --git-base main
 
       - name: Stop Cloud SQL Proxy
@@ -187,6 +194,12 @@ jobs:
           curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.7.0/cloud-sql-proxy.linux.amd64
           chmod +x cloud-sql-proxy
 
+      - name: Download wait-for-it.sh
+        run: |
+          # Download the script and make it executable
+          curl -sS -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
+          chmod +x wait-for-it.sh
+
       - name: Start Cloud SQL proxy
         run: |
           nohup ./cloud-sql-proxy ${{ vars.STATS_DB_INSTANCE }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
@@ -194,11 +207,12 @@ jobs:
 
       - name: Wait for Cloud SQL Proxy to Start
         run: |
-          sleep 5
+          # Wait up to 30 seconds for the Cloud SQL Proxy to become available on port 3306
+          ./wait-for-it.sh localhost:3306 --timeout=30 --strict -- echo "Cloud SQL Proxy is ready."
 
       - name: Deploy migrations
         run: |
-          DB_URL="mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PASSWORD }}@localhost:3306/${{ vars.STATS_DB_NAME }}"
+          DB_URL="mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PW }}@localhost:3306/${{ vars.STATS_DB_NAME }}"
           atlas migrate apply --url $DB_URL
 
       - name: Stop Cloud SQL Proxy
