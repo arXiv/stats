@@ -4,12 +4,11 @@ on:
   push:
     branches:
       - main
-      - ARXIVCE-3986-add-migration-workflow # for testing
     paths:
       - .github/workflows/ci-stats-db.yaml
       - "stats-db/migrations/**"
   pull_request:
-    branches: [main]
+    branches: [ main ]
     paths:
       - .github/workflows/ci-stats-db.yaml
       - "stats-entities/**"
@@ -36,8 +35,8 @@ env:
 
 jobs:
   check-diff:
-  # validate ORM entities against migrations 
-  # exit if changes exist which are not in migrations
+    # validate ORM entities against migrations
+    # exit if changes exist which are not in migrations
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -73,9 +72,9 @@ jobs:
           exit 1
 
   lint:
-  # validate migrations against database
-  # connect via cloud sql proxy
-  # error if migrations cannot be deployed safely
+    # validate migrations against database
+    # connect via cloud sql proxy
+    # error if migrations cannot be deployed safely
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     needs: check-diff
@@ -128,8 +127,8 @@ jobs:
           kill ${{ env.CLOUD_SQL_PROXY_PID }}
 
   deploy:
-  # deploy migrations to database
-  # connect via cloud sql proxy
+    # deploy migrations to database
+    # connect via cloud sql proxy
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     if: github.ref == 'refs/heads/main'
