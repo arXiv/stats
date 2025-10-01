@@ -43,7 +43,7 @@ jobs:
 
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
-        
+
       - name: Install uv
         uses: astral-sh/setup-uv@v6
 
@@ -74,6 +74,10 @@ jobs:
     environment: ${{ inputs.environment }}
     needs: check-diff
     steps:
+      - name: Inspect environment
+        run: |
+          echo "Environment: ${{ inputs.environment }}"
+
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
 
@@ -81,8 +85,8 @@ jobs:
         id: "auth"
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
-          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.PROVIDER_NAME }}
+          service_account: ${{ vars.SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
