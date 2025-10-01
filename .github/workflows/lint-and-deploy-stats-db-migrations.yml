@@ -41,6 +41,9 @@ jobs:
         with:
           python-version-file: "stats-db/pyproject.toml"
 
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@v0
+        
       - name: Install uv
         uses: astral-sh/setup-uv@v6
 
