@@ -27,12 +27,6 @@ permissions:
   contents: read
   pull-requests: write
 
-env:
-  GCP_PROJECT_ID: arxiv-development
-  STATS_DB_INSTANCE: arxiv-development:us-central1:stats-db
-  STATS_DB_PW_SECRET_NAME: stats-db-siteusagemigrations-pw
-  STATS_DB_USER: siteusagemigrations
-
 jobs:
   check-diff:
     # validate ORM entities against migrations
@@ -97,7 +91,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@v3
         with:
           secrets: |-
-            STATS_DB_PW:projects/${{ env.GCP_PROJECT_ID }}/secrets/${{ env.STATS_DB_PW_SECRET_NAME }}/versions/latest
+            STATS_DB_PW:projects/${{ vars.GCP_PROJECT_ID }}/secrets/${{ vars.STATS_DB_PW_SECRET_NAME }}/versions/latest
 
       - name: Download Cloud SQL proxy
         run: |
@@ -106,7 +100,7 @@ jobs:
 
       - name: Start Cloud SQL proxy
         run: |
-          nohup ./cloud-sql-proxy ${{ env.STATS_DB_INSTANCE }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
+          nohup ./cloud-sql-proxy ${{ vars.STATS_DB_INSTANCE }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
           echo "CLOUD_SQL_PROXY_PID=$!" >> $GITHUB_ENV
 
       - name: Wait for Cloud SQL Proxy to Start
@@ -117,7 +111,7 @@ jobs:
         uses: ariga/atlas-action/migrate/lint@v1
         with:
           dir: "file://stats-db/migrations"
-          dev-url: "mysql://${{ env.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PASSWORD }}@localhost:3306/dev"
+          dev-url: "mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PASSWORD }}@localhost:3306/dev"
         env:
           GITHUB_TOKEN: "${{ github.token }}"
 
@@ -152,7 +146,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@v3
         with:
           secrets: |-
-            STATS_DB_PW:projects/${{ env.GCP_PROJECT_ID }}/secrets/${{ env.STATS_DB_PW_SECRET_NAME }}/versions/latest
+            STATS_DB_PW:projects/${{ vars.GCP_PROJECT_ID }}/secrets/${{ vars.STATS_DB_PW_SECRET_NAME }}/versions/latest
 
       - name: Download Cloud SQL proxy
         run: |
@@ -161,7 +155,7 @@ jobs:
 
       - name: Start Cloud SQL proxy
         run: |
-          nohup ./cloud-sql-proxy ${{ env.STATS_DB_INSTANCE }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
+          nohup ./cloud-sql-proxy ${{ vars.STATS_DB_INSTANCE }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
           echo "CLOUD_SQL_PROXY_PID=$!" >> $GITHUB_ENV
 
       - name: Wait for Cloud SQL Proxy to Start
@@ -172,7 +166,7 @@ jobs:
         uses: ariga/atlas-action/migrate/apply@v1
         with:
           dir: "file://stats-db/migrations"
-          url: "mysql://${{ env.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PASSWORD }}@localhost:3306/dev"
+          url: "mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PASSWORD }}@localhost:3306/dev"
 
       - name: Stop Cloud SQL Proxy
         if: always()
