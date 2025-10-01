@@ -67,12 +67,27 @@ jobs:
           exit 1
 
   lint:
-    # validate migrations against database
-    # connect via cloud sql proxy
+    # validate migrations against a clean database
+    # use docker mysql image
     # error if migrations cannot be deployed safely
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'development' }}
     needs: check-diff
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: temp_pw
+          MYSQL_DATABASE: ${{ vars.STATS_DB_NAME }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -p${{ secrets.ROOT_DB_PASSWORD }}" 
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -95,53 +110,15 @@ jobs:
       - name: Set up Atlas
         uses: ariga/setup-atlas@v0
 
-      - name: Authenticate to Google Cloud
-        id: "auth"
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ vars.PROVIDER_NAME }}
-          service_account: ${{ vars.SERVICE_ACCOUNT }}
+      - name: Wait for mysql service to be ready
+        # GHA automatically waits for the health check to pass,
+        # but a brief sleep is still helpful
+        run: sleep 10 
 
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
-
-      - name: Get secrets
-        id: "gcp_secrets"
-        uses: google-github-actions/get-secretmanager-secrets@v3
-        with:
-          secrets: |-
-            STATS_DB_PW:projects/${{ vars.GCP_PROJECT_ID }}/secrets/${{ vars.STATS_DB_PW_SECRET_NAME }}/versions/latest
-
-      - name: Download Cloud SQL proxy
-        run: |
-          curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.7.0/cloud-sql-proxy.linux.amd64
-          chmod +x cloud-sql-proxy
-
-      - name: Download wait-for-it.sh
-        run: |
-          # Download the script and make it executable
-          curl -sS -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
-          chmod +x wait-for-it.sh
-
-      - name: Start Cloud SQL proxy
-        run: |
-          nohup ./cloud-sql-proxy ${{ vars.STATS_DB_INSTANCE }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
-          echo "CLOUD_SQL_PROXY_PID=$!" >> $GITHUB_ENV
-
-      - name: Wait for Cloud SQL Proxy to Start
-        run: |
-          # Wait up to 30 seconds for the Cloud SQL Proxy to become available on port 3306
-          ./wait-for-it.sh localhost:3306 --timeout=30 --strict -- echo "Cloud SQL Proxy is ready."
-          
       - name: Lint migrations
         run: |
-          DB_URL="mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PW }}@localhost:3306/${{ vars.STATS_DB_NAME }}"
-          atlas migrate lint --dev-url $DB_URL --git-base main
-
-      - name: Stop Cloud SQL Proxy
-        if: always()
-        run: |
-          kill ${{ env.CLOUD_SQL_PROXY_PID }}
+          DB_URL="mysql://root:temp_pw@mysql:3306/${{ vars.STATS_DB_NAME }}"
+          atlas migrate lint --dir file://stats-db/migrations --dev-url $DB_URL --git-base main
 
   deploy:
     # deploy migrations to database
@@ -213,7 +190,8 @@ jobs:
       - name: Deploy migrations
         run: |
           DB_URL="mysql://${{ vars.STATS_DB_USER }}:${{ steps.gcp_secrets.outputs.STATS_DB_PW }}@localhost:3306/${{ vars.STATS_DB_NAME }}"
-          atlas migrate apply --url $DB_URL
+          atlas migrate apply --dry-run --dir file://stats-db/migrations --url $DB_URL
+          atlas migrate apply --dir file://stats-db/migrations --url $DB_URL
 
       - name: Stop Cloud SQL Proxy
         if: always()
