@@ -111,14 +111,9 @@ jobs:
       - name: Set up Atlas
         uses: ariga/setup-atlas@v0
 
-      - name: Wait for mysql service to be ready
-        # the action automatically waits for the health check to pass,
-        # but a brief sleep is still helpful
-        run: sleep 10 
-
       - name: Lint migrations
         run: |
-          DB_URL="mysql://root:pass@mysql:3306/dev
+          DB_URL="mysql://root:pass@mysql:3306/dev"
           atlas migrate lint --dir file://stats-db/migrations --dev-url $DB_URL --git-base main
 
   deploy:
