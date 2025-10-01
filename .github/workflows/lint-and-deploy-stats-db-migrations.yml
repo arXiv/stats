@@ -78,15 +78,16 @@ jobs:
       mysql:
         image: mysql:8.4
         env:
-          MYSQL_ROOT_PASSWORD: temp_pw
-          MYSQL_DATABASE: ${{ vars.STATS_DB_NAME }}
+          MYSQL_DATABASE: dev
+          MYSQL_ROOT_PASSWORD: pass
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -p temp_pw" 
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          --health-cmd "mysqladmin ping -ppass"
+          --health-interval 10s
+          --health-start-period 10s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout code
@@ -117,7 +118,7 @@ jobs:
 
       - name: Lint migrations
         run: |
-          DB_URL="mysql://root:temp_pw@mysql:3306/${{ vars.STATS_DB_NAME }}"
+          DB_URL="mysql://root:pass@mysql:3306/dev
           atlas migrate lint --dir file://stats-db/migrations --dev-url $DB_URL --git-base main
 
   deploy:

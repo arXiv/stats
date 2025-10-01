@@ -31,5 +31,4 @@ class HourlyDownloads(SiteUsageBase):
     __table_args__ = (
         PrimaryKeyConstraint("country", "download_type", "category", "start_dttm"),
     )
-
-# comment for testing
+    
