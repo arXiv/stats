@@ -112,9 +112,10 @@ jobs:
         uses: ariga/setup-atlas@v0
 
       - name: Lint migrations
-        run: |
-          DB_URL="mysql://root:pass@mysql:3306/dev"
-          atlas migrate lint --dir file://stats-db/migrations --dev-url $DB_URL --git-base main
+        env:
+          DB_URL: "mysql://root:pass@127.0.0.1:3306/dev"
+          DIR: "file://stats-db/migrations"
+        run: atlas migrate lint --dir $DIR --dev-url $DB_URL --git-base main
 
   deploy:
     # deploy migrations to database
@@ -178,7 +179,7 @@ jobs:
           nohup ./cloud-sql-proxy ${{ vars.STATS_DB_INSTANCE }} --port 3306 > cloud-sql-proxy.out 2> cloud-sql-proxy.err < /dev/null &
           echo "CLOUD_SQL_PROXY_PID=$!" >> $GITHUB_ENV
 
-      - name: Wait for Cloud SQL Proxy to Start
+      - name: Wait for Cloud SQL Proxy to start
         run: |
           # Wait up to 30 seconds for the Cloud SQL Proxy to become available on port 3306
           ./wait-for-it.sh localhost:3306 --timeout=30 --strict -- echo "Cloud SQL Proxy is ready."
