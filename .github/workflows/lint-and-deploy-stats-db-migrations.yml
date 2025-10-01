@@ -83,7 +83,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -p${{ secrets.ROOT_DB_PASSWORD }}" 
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -p temp_pw" 
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -111,7 +111,7 @@ jobs:
         uses: ariga/setup-atlas@v0
 
       - name: Wait for mysql service to be ready
-        # GHA automatically waits for the health check to pass,
+        # the action automatically waits for the health check to pass,
         # but a brief sleep is still helpful
         run: sleep 10 
 
