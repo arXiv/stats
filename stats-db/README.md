@@ -37,8 +37,7 @@ All configuration is in `atlas.hcl`. It includes two blocks - `data` points Atla
     ```
 1. Deploy - this will make the changes and write migration metadata to the `atlas_schema_revisions` table
     ```
-    atlas migrate apply --dry-run
-    atlas migrate apply
+    atlas migrate apply --url mysql://siteusagemigrations:{password}@{host}:{port}/site_usage
     ```
 
 If needed, revert a migration with `atlas migrate down` or restore the schema to its original state with `atlas schema clean`. See the Atlas docs for more information.
