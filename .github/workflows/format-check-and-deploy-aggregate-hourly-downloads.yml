@@ -74,13 +74,13 @@ jobs:
         run: terraform --version
 
       - name: Initialize remote backend
-        run: terraform init --backend-config=”bucket=${{ vars.ENV_VAR }}-arxiv-terraform-state”
+        run: terraform init -backend-config="bucket=${{ vars.ENV_VAR }}-arxiv-terraform-state"
         working-directory: terraform/aggregate_hourly_downloads
 
       - name: Plan
-        run: terraform plan --var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}"
+        run: terraform plan -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}"
         working-directory: terraform/aggregate_hourly_downloads
 
       - name: Apply
-        run: terraform apply --var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}" -auto-approve
+        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}" -auto-approve
         working-directory: terraform/aggregate_hourly_downloads
