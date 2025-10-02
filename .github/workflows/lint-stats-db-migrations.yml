@@ -1,0 +1,51 @@
+name: Lint stats-db migrations
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "stats-entities/**"
+      - "stats-db/migrations/*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-diff:
+    # validate ORM entities against migrations
+    # exit if changes exist which are not in migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "stats-db/pyproject.toml"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install the project
+        run: uv sync --directory stats-db --locked
+
+      - name: Set up Atlas
+        uses: ariga/setup-atlas@v0
+
+      - name: Diff migrations
+        id: diff
+        run: |
+          uv run --directory stats-db atlas migrate diff --env sqlalchemy
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fail if diff
+        if: ${{ steps.diff.outputs.changed == 'true' }}
+        run: |
+          echo "::error title=Migration Check Failed::Please run 'atlas migrate diff' and commit the changes."
+          exit 1
