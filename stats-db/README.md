@@ -27,11 +27,11 @@ All configuration is in `atlas.hcl`. It includes two blocks - `data` points Atla
     ```
 1. Validate migrations against the dev database - this requires a mechanism to determine which set of migration files to analyze
     
-    For manual checks, we provide a number of migration files
+    For manual checks, provide the number of new migration files
     ```
     atlas migrate lint --dev-url mysql://siteusagemigrations:{password}@{host}:{port}/site_usage --latest 1
     ```
-    In an automated workflow, we will compare against main
+    In an automated workflow, compare against main
     ```
     atlas migrate lint --dev-url mysql://siteusagemigrations:{password}@{host}:{port}/site_usage --git-base main
     ```
