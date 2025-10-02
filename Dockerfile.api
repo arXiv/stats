@@ -21,7 +21,7 @@ ENV PATH="/home/nonroot/stats-api/.venv/bin:$PATH"
 
 # run as non-root user for security reasons
 RUN useradd nonroot
-RUN chmod -R u+x /home/nonroot
+RUN chmod -R u+wx /home/nonroot
 USER nonroot
 
 EXPOSE ${PORT}
