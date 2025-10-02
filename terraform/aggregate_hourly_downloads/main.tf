@@ -127,7 +127,7 @@ resource "google_storage_bucket" "bucket" {
 }
 
 resource "google_storage_bucket_object" "object" {
-  name   = "aggregate-hourly-downloads-src.zip"
+  name   = "aggregate-hourly-downloads-src-${var.commit_sha}.zip"
   bucket = google_storage_bucket.bucket.name
   source = "src.zip"
 }
