@@ -308,7 +308,7 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
-test = [
+dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -324,7 +324,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-test = [
+dev = [
     { name = "pytest", specifier = ">=8.4.2,<9" },
     { name = "ruff", specifier = ">=0.13.0,<0.14" },
 ]
