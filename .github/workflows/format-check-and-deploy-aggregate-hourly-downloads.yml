@@ -53,7 +53,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Zip function source
-        run: cd stats-functions/aggregate_hourly_downloads/src
+        run: |
+          cd stats-functions/aggregate_hourly_downloads/src
           zip src.zip main.py entities.py models.py requirements.txt
           cp src.zip ../../../terraform/aggregate_hourly_downloads/
 
