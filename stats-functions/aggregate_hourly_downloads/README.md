@@ -13,12 +13,16 @@ Currently this is deployed manually - in the future, this will be deployed via w
 1. Update variables - non-sensitive values can be updated in `.tfvars`(environment-specific); sensitive values should be in Secret Manager and referenced in the cloud function resource in `main.tf`.
 1. Initialize the remote backend. The environment will be either `dev` or `prod`.
     ```
-    terraform init -backend-config=”bucket={env}-arxiv-terraform-state”
+    terraform init --backend-config=”bucket={env}-arxiv-terraform-state”
     ```
 1. Manually zip the source files for the job and copy that zip to `terraform/aggregate_hourly_downloads`:
     ```
     cd statsfunctions/aggregate_hourly_downloads/src
     zip src.zip main.py models.py entities.py requirements.txt
+    ```
+1. Plan
+    ```
+    terraform plan --var-file={dev.tfvars or prod.tfvars}
     ```
 1. Apply
     ```

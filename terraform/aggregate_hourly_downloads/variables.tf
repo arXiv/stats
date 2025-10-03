@@ -13,6 +13,11 @@ variable "env" {
   type        = string
 }
 
+variable "commit_sha" {
+  description = "Commit hash"
+  type = string
+}
+
 variable "read_db_user" {
   description = "Username for database paper metadata is read from"
   type        = string
