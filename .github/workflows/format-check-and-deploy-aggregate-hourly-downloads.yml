@@ -45,7 +45,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'development' }}
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs: format-check
 
     steps:
@@ -75,10 +75,6 @@ jobs:
 
       - name: Initialize remote backend
         run: terraform init -backend-config="bucket=${{ vars.ENV_VAR }}-arxiv-terraform-state"
-        working-directory: terraform/aggregate_hourly_downloads
-
-      - name: Plan
-        run: terraform plan -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}"
         working-directory: terraform/aggregate_hourly_downloads
 
       - name: Apply
