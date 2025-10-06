@@ -71,7 +71,7 @@ jobs:
         working-directory: terraform/stats_db
 
       - name: Plan
-        run: terraform plan -var-file=envs/${{ vars.ENV_VAR }}.tfvars
+        run: terraform plan -var-file=envs/${{ vars.ENV_VAR }}.tfvars -out=plan.tfout
         working-directory: terraform/stats_db
 
       - name: Save plan to workspace
@@ -79,6 +79,7 @@ jobs:
         with:
           name: terraform-plan
           path: terraform/stats_db/plan.tfout
+          if-no-files-found: error
 
   manual-approval:
     permissions:
@@ -95,7 +96,7 @@ jobs:
         uses: trstringer/manual-approval@v1
         with:
           secret: ${{ github.TOKEN }}
-          approvers: arXiv-developers
+          approvers: carly-jones
           minimum-approvals: 1
           issue-title: "Manual Approval Required to Deploy or Update Database"
           issue-body: "Please review the plan and approve or deny the deployment."
