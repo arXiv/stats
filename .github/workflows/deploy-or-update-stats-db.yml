@@ -140,5 +140,5 @@ jobs:
           path: terraform/stats_db/plan.tfout
 
       - name: Apply
-        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -auto-approve ./plan.tfout
+        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -auto-approve plan.tfout
         working-directory: terraform/stats_db
