@@ -137,7 +137,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: terraform-plan
-          path: terraform/stats_db/plan.tfout
+          path: terraform/stats_db
 
       - name: Apply
         run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -auto-approve plan.tfout
