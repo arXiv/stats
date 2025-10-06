@@ -80,16 +80,6 @@ jobs:
           name: terraform-plan
           path: terraform/stats_db/plan.tfout
 
-      - name: Copy .terraform.lock.hcl to workspace
-        run: cp terraform/stats_db/.terraform.lock.hcl /home/runner/work/{REPO_NAME}/{REPO_NAME}/.terraform.lock.hcl
-
-      - name: Upload .terraform.lock.hcl
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-workspace
-          path: /home/runner/work/{REPO_NAME}/{REPO_NAME}/.terraform.lock.hcl
-          include-hidden-files: true
-
   manual-approval:
     permissions:
       contents: read
@@ -148,12 +138,6 @@ jobs:
         with:
           name: terraform-plan
           path: terraform/stats_db/plan.tfout
-
-      - name: Checkout workspace from previous job
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-workspace
-          path: terraform/stats_db/.terraform.lock.hcl
 
       - name: Apply
         run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -auto-approve ./plan.tfout
