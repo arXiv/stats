@@ -96,7 +96,7 @@ jobs:
         uses: trstringer/manual-approval@v1
         with:
           secret: ${{ github.TOKEN }}
-          approvers: carly-jones
+          approvers: developers
           minimum-approvals: 1
           issue-title: "Manual Approval Required to Deploy or Update Database"
           issue-body: "Please review the plan and approve or deny the deployment."
