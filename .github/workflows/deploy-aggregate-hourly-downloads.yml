@@ -6,10 +6,12 @@ on:
       - main
     paths:
       - "stats-functions/aggregate_hourly_downloads/**"
+      - "terraform/aggregate_hourly_downloads/**"
   pull_request:
     branches: [ main ]
     paths:
       - "stats-functions/aggregate_hourly_downloads/**"
+      - "terraform/aggregate_hourly_downloads/**"
   workflow_dispatch:
     inputs:
       env:
