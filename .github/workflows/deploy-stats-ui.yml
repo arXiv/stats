@@ -69,12 +69,11 @@ jobs:
       - name: Configure Docker
         run: gcloud auth configure-docker
 
+          # docker pull gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest
+          # --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
       - name: Build image, caching from latest
         run: |
-          # docker pull gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest
-
           docker build --build-arg PORT=${PORT} -f ${DOCKERFILE} \
-          # --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
           -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ github.sha }} \
           -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest .
 
