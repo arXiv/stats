@@ -86,6 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'development' }}
     if: github.ref == 'refs/heads/main'
+    needs: build-push
 
     steps:
       - name: Checkout code
