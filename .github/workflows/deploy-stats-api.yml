@@ -25,6 +25,12 @@ permissions:
   pull-requests: write
   id-token: write
 
+env:
+  DOCKERFILE: "Dockerfile.api"
+  IMAGE_NAME: "arxiv-stats"
+  PORT: "8080"
+  TARGET: "runtime"
+
 jobs:
   format-check:
     runs-on: ubuntu-latest
@@ -41,6 +47,38 @@ jobs:
 
       - name: Format check
         run: terraform fmt -check
+
+  build-push:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'development' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.PROVIDER_NAME }}
+          service_account: ${{ vars.SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+
+      - name: Build image, caching from latest
+        run: |
+          docker pull gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest
+
+          docker build --target ${TARGET} --build-arg PORT=${PORT} -f ${DOCKERFILE} \
+          --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
+          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ github.sha }} \
+          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest .
+          
+      - name: Push image
+        run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
   deploy:
     runs-on: ubuntu-latest
@@ -72,5 +110,5 @@ jobs:
         working-directory: terraform/stats-api
 
       - name: Apply
-        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}" -auto-approve
+        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="image_path=gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest" -auto-approve
         working-directory: terraform/stats-api
