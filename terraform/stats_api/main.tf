@@ -55,7 +55,7 @@ resource "google_project_iam_member" "service_account_user" {
 
 ### cloud run instance ###
 
-resource "google_cloud_run_v2_service" "default" {
+resource "google_cloud_run_v2_service" "stats_api" {
   name     = "stats-api"
   location = var.gcp_region
 

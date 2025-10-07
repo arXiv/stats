@@ -1,17 +1,17 @@
-name: Deploy stats-api
+name: Deploy stats-ui
 
 on:
   push:
     branches:
       - main
     paths:
-      - "stats-api/**"
-      - "terraform/stats_api/**"
+      - "stats-ui/**"
+      - "terraform/stats_ui/**"
   pull_request:
     branches: [ main ]
     paths:
-      - "stats-api/**"
-      - "terraform/stats_api/**"
+      - "stats-ui/**"
+      - "terraform/stats_ui/**"
   workflow_dispatch:
     inputs:
       env:
@@ -28,10 +28,9 @@ permissions:
   id-token: write
 
 env:
-  DOCKERFILE: "Dockerfile.api"
-  IMAGE_NAME: "stats-api"
-  PORT: "8080"
-  TARGET: "runtime"
+  DOCKERFILE: "Dockerfile.ui"
+  IMAGE_NAME: "stats-ui"
+  PORT: "3000"
 
 jobs:
   format-check:
@@ -74,7 +73,7 @@ jobs:
         run: |
           docker pull gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest
 
-          docker build --target ${TARGET} --build-arg PORT=${PORT} -f ${DOCKERFILE} \
+          docker build --build-arg PORT=${PORT} -f ${DOCKERFILE} \
           --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
           -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ github.sha }} \
           -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest .
@@ -108,8 +107,8 @@ jobs:
 
       - name: Initialize remote backend
         run: terraform init -backend-config="bucket=${{ vars.ENV_VAR }}-arxiv-terraform-state"
-        working-directory: terraform/stats_api
+        working-directory: terraform/stats_ui
 
       - name: Apply
         run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="image_path=gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest" -auto-approve
-        working-directory: terraform/stats_api
+        working-directory: terraform/stats_ui
