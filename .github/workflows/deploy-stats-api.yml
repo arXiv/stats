@@ -25,6 +25,16 @@ on:
         required: false
         type: string
         default: "us-central1"
+      read_db_instance:
+        description: "Read database instance"
+        required: false
+        type: string
+        default: "arxiv-development:us-central1:latexml-db"
+      read_db_secret_name:
+        description: "Read database secret name"
+        required: false
+        type: string
+        default: "latexml_db_uri"
       image_tag:
         description: "Docker image tag (latest or the commit SHA)"
         required: false
@@ -314,13 +324,37 @@ jobs:
           fi
         working-directory: terraform/stats_api
 
+      # - name: Plan
+      #   run: |
+      #     echo "Running terraform plan..."
+      #     terraform plan \
+      #       -var="project_name=${{ env.PROJECT_NAME }}" \
+      #       -var="region=${{ env.REGION }}" \
+      #       -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
+      #       -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
+      #   working-directory: terraform/stats_api
+
+      # - name: Apply
+      #   run: |
+      #     echo "Running terraform apply..."
+      #     terraform apply \
+      #       -var="project_name=${{ env.PROJECT_NAME }}" \
+      #       -var="region=${{ env.REGION }}" \
+      #       -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
+      #       -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
+      #       -auto-approve
+      #   working-directory: terraform/stats_api
+
       - name: Plan
         run: |
-          echo "Running terraform apply..."
+          echo "Running terraform plan..."
           terraform plan \
-            -var="project_name=${{ env.PROJECT_NAME }}" \
-            -var="region=${{ env.REGION }}" \
+            -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
+            -var="gcp_region=${{ env.REGION }}" \
+            -var="env=${{ env.PROJECT_NAME }}" \
             -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
+            -var="read_db_instance=${{ inputs.read_db_instance }}" \
+            -var="read_db_secret_name=${{ inputs.read_db_secret_name }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
         working-directory: terraform/stats_api
 
@@ -328,9 +362,12 @@ jobs:
         run: |
           echo "Running terraform apply..."
           terraform apply \
-            -var="project_name=${{ env.PROJECT_NAME }}" \
-            -var="region=${{ env.REGION }}" \
+            -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
+            -var="gcp_region=${{ env.REGION }}" \
+            -var="env=${{ env.PROJECT_NAME }}" \
             -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
+            -var="read_db_instance=${{ inputs.read_db_instance }}" \
+            -var="read_db_secret_name=${{ inputs.read_db_secret_name }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
             -auto-approve
         working-directory: terraform/stats_api
