@@ -366,6 +366,6 @@ jobs:
             -var="env=${{ env.PROJECT_NAME }}" \
             -var="read_db_instance=${{ inputs.read_db_instance }}" \
             -var="read_db_secret_name=${{ inputs.read_db_secret_name }}" \
-            -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
+            -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}" \
             -auto-approve
         working-directory: terraform/stats_api
