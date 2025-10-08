@@ -89,6 +89,7 @@ resource "google_cloud_run_v2_service" "stats_api" {
   }
 
   traffic {
+    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
   }
 }
