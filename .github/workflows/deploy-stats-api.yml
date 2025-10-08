@@ -312,7 +312,7 @@ jobs:
           else
             echo "No lock file found, proceeding normally"
           fi
-        working-directory: cicd/deploy
+        working-directory: terraform/stats_api
 
       # - name: Plan
       #   run: |
