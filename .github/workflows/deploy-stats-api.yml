@@ -314,14 +314,15 @@ jobs:
           fi
         working-directory: terraform/stats_api
 
-      # - name: Plan
-      #   run: |
-      #     echo "Running terraform plan..."
-      #     terraform plan \
-      #       -var="project_name=${{ env.PROJECT_NAME }}" \
-      #       -var="region=${{ env.REGION }}" \
-      #       -var="commit_sha=${{ inputs.image_tag || github.sha }}"
-      #   working-directory: terraform/stats_api
+      - name: Plan
+        run: |
+          echo "Running terraform apply..."
+          terraform plan \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="region=${{ env.REGION }}" \
+            -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
+            -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
+        working-directory: terraform/stats_api
 
       - name: Apply
         run: |
