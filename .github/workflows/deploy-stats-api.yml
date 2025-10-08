@@ -352,7 +352,6 @@ jobs:
             -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
             -var="gcp_region=${{ env.REGION }}" \
             -var="env=${{ env.PROJECT_NAME }}" \
-            -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
             -var="read_db_instance=${{ inputs.read_db_instance }}" \
             -var="read_db_secret_name=${{ inputs.read_db_secret_name }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
@@ -365,7 +364,6 @@ jobs:
             -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
             -var="gcp_region=${{ env.REGION }}" \
             -var="env=${{ env.PROJECT_NAME }}" \
-            -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
             -var="read_db_instance=${{ inputs.read_db_instance }}" \
             -var="read_db_secret_name=${{ inputs.read_db_secret_name }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
