@@ -62,6 +62,7 @@ resource "google_cloud_run_v2_service" "stats_api" {
   deletion_protection = false
 
   template {
+    service_account = google_service_account.account.email
     containers {
       image = var.image_path
       env {
