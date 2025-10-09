@@ -131,7 +131,7 @@ jobs:
       - name: Set environment variables
         run: |
           ENV_NAME="${{ inputs.env }}"
-          REGION="${{ vars.region || 'us-central1' }}"
+          REGION="${{ vars.GCP_REGION || 'us-central1' }}"
           echo "ENVIRONMENT=$ENV_NAME" >> $GITHUB_ENV
           echo "REGION=$REGION" >> $GITHUB_ENV
 
@@ -257,12 +257,12 @@ jobs:
         run: |
           echo "provider \"google\" {" > provider_override.tf
           echo "  project = \"${{ env.PROJECT_NAME }}\"" >> provider_override.tf
-          echo "  region  = \"${{ vars.REGION }}\"" >> provider_override.tf
+          echo "  region  = \"${{ vars.GCP_REGION }}\"" >> provider_override.tf
           echo "}" >> provider_override.tf
           
           echo "Terraform configuration:"
           echo "  Project: ${{ env.PROJECT_NAME }}"
-          echo "  Region: ${{ vars.REGION }}"
+          echo "  Region: ${{ vars.GCP_REGION }}"
           echo "  Commit SHA: ${{ inputs.image_tag || github.sha }}"
           echo "  Container Image: gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
         working-directory: terraform/stats_api
@@ -305,7 +305,7 @@ jobs:
           echo "Running terraform plan..."
           terraform plan \
             -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
-            -var="gcp_region=${{ vars.REGION }}" \
+            -var="gcp_region=${{ vars.GCP_REGION }}" \
             -var="env=${{ env.PROJECT_NAME }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}" \
             -var="read_db_instance=${{ vars.READ_DB_INSTANCE }}" \
@@ -317,7 +317,7 @@ jobs:
           echo "Running terraform apply..."
           terraform apply \
             -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
-            -var="gcp_region=${{ vars.REGION }}" \
+            -var="gcp_region=${{ vars.GCP_REGION }}" \
             -var="env=${{ env.PROJECT_NAME }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}" \
             -var="read_db_instance=${{ vars.READ_DB_INSTANCE }}" \
