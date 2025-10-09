@@ -20,21 +20,6 @@ on:
         required: true
         type: string
         default: ""
-      region:
-        description: "GCP region"
-        required: false
-        type: string
-        default: "us-central1"
-      read_db_instance:
-        description: "Read database instance"
-        required: false
-        type: string
-        default: "arxiv-development:us-central1:latexml-db"
-      read_db_secret_name:
-        description: "Read database secret name"
-        required: false
-        type: string
-        default: "latexml_db_uri"
       image_tag:
         description: "Docker image tag (latest or the commit SHA)"
         required: false
@@ -187,10 +172,10 @@ jobs:
           workload_identity_provider: ${{ env.PROVIDER_NAME }}
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
-      - name: Show service account being used
-        run: |
-          echo "Service account being used: ${{ env.SERVICE_ACCOUNT }}"
-          echo "This is the account that needs access to arxiv-development secrets"
+      # - name: Show service account being used
+      #   run: |
+      #     echo "Service account being used: ${{ env.SERVICE_ACCOUNT }}"
+      #     echo "This is the account that needs access to arxiv-development secrets"
 
       # - name: Get secret values from arxiv-development
       #   run: |
@@ -272,12 +257,12 @@ jobs:
         run: |
           echo "provider \"google\" {" > provider_override.tf
           echo "  project = \"${{ env.PROJECT_NAME }}\"" >> provider_override.tf
-          echo "  region  = \"${{ env.REGION }}\"" >> provider_override.tf
+          echo "  region  = \"${{ vars.REGION }}\"" >> provider_override.tf
           echo "}" >> provider_override.tf
           
           echo "Terraform configuration:"
           echo "  Project: ${{ env.PROJECT_NAME }}"
-          echo "  Region: ${{ env.REGION }}"
+          echo "  Region: ${{ vars.REGION }}"
           echo "  Commit SHA: ${{ inputs.image_tag || github.sha }}"
           echo "  Container Image: gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
         working-directory: terraform/stats_api
@@ -298,7 +283,7 @@ jobs:
           fi
           
           # Check if there's a lock file in the bucket
-          LOCK_FILE="gs://${{ env.TERRAFORM_BUCKET }}/${{env.IMAGE_NAME}}/state/default.tflock"
+          LOCK_FILE="gs://${{ env.TERRAFORM_BUCKET }}/stats-${{env.IMAGE_NAME}}/default.tflock"
           if gsutil ls "$LOCK_FILE" >/dev/null 2>&1; then
             echo "Found existing lock file: $LOCK_FILE"
             echo "Attempting to remove stale lock..."
@@ -315,37 +300,16 @@ jobs:
           fi
         working-directory: terraform/stats_api
 
-      # - name: Plan
-      #   run: |
-      #     echo "Running terraform plan..."
-      #     terraform plan \
-      #       -var="project_name=${{ env.PROJECT_NAME }}" \
-      #       -var="region=${{ env.REGION }}" \
-      #       -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
-      #       -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
-      #   working-directory: terraform/stats_api
-
-      # - name: Apply
-      #   run: |
-      #     echo "Running terraform apply..."
-      #     terraform apply \
-      #       -var="project_name=${{ env.PROJECT_NAME }}" \
-      #       -var="region=${{ env.REGION }}" \
-      #       -var="commit_sha=${{ inputs.image_tag || github.sha }}" \
-      #       -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
-      #       -auto-approve
-      #   working-directory: terraform/stats_api
-
       - name: Plan
         run: |
           echo "Running terraform plan..."
           terraform plan \
             -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
-            -var="gcp_region=${{ env.REGION }}" \
+            -var="gcp_region=${{ vars.REGION }}" \
             -var="env=${{ env.PROJECT_NAME }}" \
-            -var="read_db_instance=${{ inputs.read_db_instance }}" \
-            -var="read_db_secret_name=${{ inputs.read_db_secret_name }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
+            -var="read_db_instance=${{ vars.READ_DB_INSTANCE }}" \
+            -var="read_db_secret_name=${{ vars.READ_DB_SECRET_NAME }}"
         working-directory: terraform/stats_api
 
       - name: Apply
@@ -353,10 +317,10 @@ jobs:
           echo "Running terraform apply..."
           terraform apply \
             -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
-            -var="gcp_region=${{ env.REGION }}" \
+            -var="gcp_region=${{ vars.REGION }}" \
             -var="env=${{ env.PROJECT_NAME }}" \
-            -var="read_db_instance=${{ inputs.read_db_instance }}" \
-            -var="read_db_secret_name=${{ inputs.read_db_secret_name }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}" \
+            -var="read_db_instance=${{ vars.READ_DB_INSTANCE }}" \
+            -var="read_db_secret_name=${{ vars.READ_DB_SECRET_NAME }}"
             -auto-approve
         working-directory: terraform/stats_api
