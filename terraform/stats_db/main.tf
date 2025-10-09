@@ -32,7 +32,7 @@ resource "google_sql_database_instance" "stats_db" {
   database_version = "MYSQL_8_4"
   name             = "stats-db"
   settings {
-    tier            = "db-custom-4-26" # 4 cores, 26 GB RAM (max allowed for 4 cores)
+    tier            = "db-custom-4-26624" # 4 cores, 26 GB RAM (max allowed for 4 cores)
     edition         = "ENTERPRISE"
     disk_autoresize = true
 
