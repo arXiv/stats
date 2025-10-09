@@ -306,7 +306,7 @@ jobs:
           terraform plan \
             -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
             -var="gcp_region=${{ vars.GCP_REGION }}" \
-            -var="env=${{ env.PROJECT_NAME }}" \
+            -var="env=${{ vars.ENV_VAR }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}" \
             -var="read_db_instance=${{ vars.READ_DB_INSTANCE }}" \
             -var="read_db_secret_name=${{ vars.READ_DB_SECRET_NAME }}"
@@ -318,7 +318,7 @@ jobs:
           terraform apply \
             -var="gcp_project_id=${{ env.PROJECT_NAME }}" \
             -var="gcp_region=${{ vars.GCP_REGION }}" \
-            -var="env=${{ env.PROJECT_NAME }}" \
+            -var="env=${{ vars.ENV_VAR }}" \
             -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}" \
             -var="read_db_instance=${{ vars.READ_DB_INSTANCE }}" \
             -var="read_db_secret_name=${{ vars.READ_DB_SECRET_NAME }}" \
