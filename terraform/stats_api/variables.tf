@@ -41,3 +41,9 @@ variable "secrets_to_copy" {
     }
   ]
 }
+
+variable "service_account_email" {
+  description = "Service account email for the Cloud Run service (empty for default Compute Engine service account)"
+  type        = string
+  default     = ""  # Empty means use default Compute Engine service account
+}
