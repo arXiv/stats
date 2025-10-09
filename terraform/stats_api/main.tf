@@ -98,7 +98,7 @@ resource "google_cloud_run_v2_service" "stats_api" {
 
 # Get current project info for default service account
 data "google_project" "current" {
-  project_id = var.project_name
+  project_id = var.gcp_project_id
 }
 
 # Note: IAM permissions for the deployment service account are managed by arxiv-env script
