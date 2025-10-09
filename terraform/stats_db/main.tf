@@ -79,22 +79,22 @@ resource "google_sql_database" "site_usage" {
   }
 }
 
-### database user for migrations ###
+### admin database user for migrations ###
 
-data "google_secret_manager_secret_version" "db_mig_user_pw" {
-  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_mig_user_pw_secret_name}"
+data "google_secret_manager_secret_version" "db_admin_user_pw" {
+  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_admin_user_pw_secret_name}"
   version = "latest"
 }
 
-output "secret_db_mig_user_pw" {
-  value     = data.google_secret_manager_secret_version.db_mig_user_pw
+output "secret_db_admin_user_pw" {
+  value     = data.google_secret_manager_secret_version.db_admin_user_pw
   sensitive = true # prevents exposure in logs and state file
 }
 
-resource "google_sql_user" "db_mig_user" {
-  name     = "siteusagemigrations"
+resource "google_sql_user" "db_admin_user" {
+  name     = "admin"
   instance = google_sql_database_instance.stats_db.name
-  password = data.google_secret_manager_secret_version.db_mig_user_pw.secret_data
+  password = data.google_secret_manager_secret_version.db_admin_user_pw.secret_data
 
   password_policy {
     allowed_failed_attempts      = 5
@@ -103,22 +103,22 @@ resource "google_sql_user" "db_mig_user" {
   }
 }
 
-### database user for cron job connections ###
+### insert update user ###
 
-data "google_secret_manager_secret_version" "db_job_user_pw" {
-  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_job_user_pw_secret_name}"
+data "google_secret_manager_secret_version" "db_update_user_pw" {
+  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_update_user_pw_secret_name}"
   version = "latest"
 }
 
-output "secret_db_job_user_pw" {
-  value     = data.google_secret_manager_secret_version.db_job_user_pw
+output "secret_db_update_user_pw" {
+  value     = data.google_secret_manager_secret_version.db_update_user_pw
   sensitive = true # prevents exposure in logs and state file
 }
 
-resource "google_sql_user" "db_job_user" {
-  name     = "siteusagejobs"
+resource "google_sql_user" "db_update_user" {
+  name     = "insertupdate"
   instance = google_sql_database_instance.stats_db.name
-  password = data.google_secret_manager_secret_version.db_job_user_pw.secret_data
+  password = data.google_secret_manager_secret_version.db_update_user_pw.secret_data
 
   password_policy {
     allowed_failed_attempts      = 5
@@ -127,22 +127,22 @@ resource "google_sql_user" "db_job_user" {
   }
 }
 
-### database user for application connections ###
+### read only user ###
 
-data "google_secret_manager_secret_version" "db_app_user_pw" {
-  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_app_user_pw_secret_name}"
+data "google_secret_manager_secret_version" "db_readonly_user_pw" {
+  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_readonly_user_pw_secret_name}"
   version = "latest"
 }
 
-output "secret_db_app_user_pw" {
-  value     = data.google_secret_manager_secret_version.db_app_user_pw
+output "secret_db_readonly_user_pw" {
+  value     = data.google_secret_manager_secret_version.db_readonly_user_pw
   sensitive = true # prevents exposure in logs and state file
 }
 
-resource "google_sql_user" "db_app_user" {
-  name     = "siteusagereadonly"
+resource "google_sql_user" "db_readonly_user" {
+  name     = "readonly"
   instance = google_sql_database_instance.stats_db.name
-  password = data.google_secret_manager_secret_version.db_app_user_pw.secret_data
+  password = data.google_secret_manager_secret_version.db_readonly_user_pw.secret_data
 
   password_policy {
     allowed_failed_attempts      = 5

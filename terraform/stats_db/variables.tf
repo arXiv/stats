@@ -18,17 +18,17 @@ variable "db_root_pw_secret_name" {
   type        = string
 }
 
-variable "db_mig_user_pw_secret_name" {
+variable "db_admin_user_pw_secret_name" {
   description = "Reference to migrations user database password in Secret Manager"
   type        = string
 }
 
-variable "db_job_user_pw_secret_name" {
+variable "db_update_user_pw_secret_name" {
   description = "Reference to app user database password in Secret Manager"
   type        = string
 }
 
-variable "db_app_user_pw_secret_name" {
+variable "db_readonly_user_pw_secret_name" {
   description = "Reference to app user database password in Secret Manager"
   type        = string
 }
