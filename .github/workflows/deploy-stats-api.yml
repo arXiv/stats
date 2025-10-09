@@ -131,7 +131,7 @@ jobs:
       - name: Set environment variables
         run: |
           ENV_NAME="${{ inputs.env }}"
-          REGION="${{ inputs.region || 'us-central1' }}"
+          REGION="${{ vars.region || 'us-central1' }}"
           echo "ENVIRONMENT=$ENV_NAME" >> $GITHUB_ENV
           echo "REGION=$REGION" >> $GITHUB_ENV
 
