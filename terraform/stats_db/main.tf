@@ -71,8 +71,8 @@ resource "google_sql_database_instance" "stats_db" {
 resource "google_sql_database" "site_usage" {
   name      = "site_usage"
   instance  = google_sql_database_instance.stats_db.name
-  charset   = "utf8mb3"
-  collation = "utf8mb3_general_ci"
+  charset   = "utf8mb4"
+  collation = "utf8mb4_general_ci"
   lifecycle {
     # prevent destroy protects the database only at the terraform level
     prevent_destroy = true
