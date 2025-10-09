@@ -58,7 +58,7 @@ resource "google_sql_database_instance" "stats_db" {
       query_insights_enabled  = true
       record_application_tags = true
       record_client_address   = true
-      query_string_length     = 2048 # max query length to capture
+      query_string_length     = 4500 # max query length to capture
     }
   }
   root_password = data.google_secret_manager_secret_version.db_root_pw.secret_data
