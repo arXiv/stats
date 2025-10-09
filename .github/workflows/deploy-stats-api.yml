@@ -283,7 +283,7 @@ jobs:
           fi
           
           # Check if there's a lock file in the bucket
-          LOCK_FILE="gs://${{ env.TERRAFORM_BUCKET }}/stats-${{env.IMAGE_NAME}}/default.tflock"
+          LOCK_FILE="gs://${{ env.TERRAFORM_BUCKET }}/${{env.IMAGE_NAME}}/default.tflock"
           if gsutil ls "$LOCK_FILE" >/dev/null 2>&1; then
             echo "Found existing lock file: $LOCK_FILE"
             echo "Attempting to remove stale lock..."
