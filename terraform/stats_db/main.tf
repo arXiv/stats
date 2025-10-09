@@ -32,7 +32,8 @@ resource "google_sql_database_instance" "stats_db" {
   database_version = "MYSQL_8_4"
   name             = "stats-db"
   settings {
-    tier            = "db-perf-optimized-N-4" # 4 cores, 32 GB RAM
+    tier            = "db-custom-4-26" # 4 cores, 26 GB RAM (max allowed for 4 cores)
+    edition = "ENTERPRISE"
     disk_autoresize = true
 
     ip_configuration {
@@ -47,15 +48,17 @@ resource "google_sql_database_instance" "stats_db" {
       binary_log_enabled = true
     }
 
-    database_flags {
-      name  = "long_query_time"
-      value = "60" # log queries that take longer than one minute
-    }
-
     password_validation_policy {
       enable_password_policy      = true
       min_length                  = 20
       disallow_username_substring = true
+    }
+
+    insights_config {
+      query_insights_enabled = true
+      record_application_tags = true
+      record_client_address = true
+      query_string_length = 2048 # max query length to capture
     }
   }
   root_password = data.google_secret_manager_secret_version.db_root_pw.secret_data
