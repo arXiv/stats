@@ -216,7 +216,7 @@ jobs:
           echo "Switched to arxiv-development project"
           
           # Read secret names from Terraform variables file - extract only the actual secret names
-          SECRETS=$(grep -A 20 'variable "secrets_to_copy"' terraform/stats_api | grep 'name =' | grep -v 'name = string' | sed 's/.*name = "\(.*\)".*/\1/' | tr -d ' ')
+          SECRETS=$(grep -A 20 'variable "secrets_to_copy"' terraform/stats_api/variables.tf | grep 'name =' | grep -v 'name = string' | sed 's/.*name = "\(.*\)".*/\1/' | tr -d ' ')
           echo "Found secrets to get: $SECRETS"
           for secret in $SECRETS; do
             echo "Getting secret value: $secret"
@@ -253,7 +253,7 @@ jobs:
         run: |
           echo "Creating secrets in target project..."
           # Read secret names from Terraform variables file - extract only the actual secret names
-          SECRETS=$(grep -A 20 'variable "secrets_to_copy"' terraform/stats_api | grep 'name =' | grep -v 'name = string' | sed 's/.*name = "\(.*\)".*/\1/' | tr -d ' ')
+          SECRETS=$(grep -A 20 'variable "secrets_to_copy"' terraform/stats_api/variables.tf | grep 'name =' | grep -v 'name = string' | sed 's/.*name = "\(.*\)".*/\1/' | tr -d ' ')
           echo "Found secrets to create: $SECRETS"
           for secret in $SECRETS; do
             echo "Processing secret: $secret"
