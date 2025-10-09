@@ -33,7 +33,7 @@ resource "google_sql_database_instance" "stats_db" {
   name             = "stats-db"
   settings {
     tier            = "db-custom-4-26" # 4 cores, 26 GB RAM (max allowed for 4 cores)
-    edition = "ENTERPRISE"
+    edition         = "ENTERPRISE"
     disk_autoresize = true
 
     ip_configuration {
@@ -55,10 +55,10 @@ resource "google_sql_database_instance" "stats_db" {
     }
 
     insights_config {
-      query_insights_enabled = true
+      query_insights_enabled  = true
       record_application_tags = true
-      record_client_address = true
-      query_string_length = 2048 # max query length to capture
+      record_client_address   = true
+      query_string_length     = 2048 # max query length to capture
     }
   }
   root_password = data.google_secret_manager_secret_version.db_root_pw.secret_data
@@ -81,20 +81,68 @@ resource "google_sql_database" "site_usage" {
 
 ### database user for migrations ###
 
-data "google_secret_manager_secret_version" "db_user_pw" {
-  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_user_pw_secret_name}"
+data "google_secret_manager_secret_version" "db_mig_user_pw" {
+  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_mig_user_pw_secret_name}"
   version = "latest"
 }
 
-output "secret_db_user_pw" {
-  value     = data.google_secret_manager_secret_version.db_user_pw
+output "secret_db_mig_user_pw" {
+  value     = data.google_secret_manager_secret_version.db_mig_user_pw
   sensitive = true # prevents exposure in logs and state file
 }
 
-resource "google_sql_user" "db_user" {
+resource "google_sql_user" "db_mig_user" {
   name     = "siteusagemigrations"
   instance = google_sql_database_instance.stats_db.name
-  password = data.google_secret_manager_secret_version.db_user_pw.secret_data
+  password = data.google_secret_manager_secret_version.db_mig_user_pw.secret_data
+
+  password_policy {
+    allowed_failed_attempts      = 5
+    enable_failed_attempts_check = true # lock after too many failed login attempts
+    enable_password_verification = true # require current password before changing it
+  }
+}
+
+### database user for cron job connections ###
+
+data "google_secret_manager_secret_version" "db_job_user_pw" {
+  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_job_user_pw_secret_name}"
+  version = "latest"
+}
+
+output "secret_db_job_user_pw" {
+  value     = data.google_secret_manager_secret_version.db_job_user_pw
+  sensitive = true # prevents exposure in logs and state file
+}
+
+resource "google_sql_user" "db_job_user" {
+  name     = "siteusagejobs"
+  instance = google_sql_database_instance.stats_db.name
+  password = data.google_secret_manager_secret_version.db_job_user_pw.secret_data
+
+  password_policy {
+    allowed_failed_attempts      = 5
+    enable_failed_attempts_check = true # lock after too many failed login attempts
+    enable_password_verification = true # require current password before changing it
+  }
+}
+
+### database user for application connections ###
+
+data "google_secret_manager_secret_version" "db_app_user_pw" {
+  secret  = "projects/${var.gcp_project_id}/secrets/${var.db_app_user_pw_secret_name}"
+  version = "latest"
+}
+
+output "secret_db_app_user_pw" {
+  value     = data.google_secret_manager_secret_version.db_app_user_pw
+  sensitive = true # prevents exposure in logs and state file
+}
+
+resource "google_sql_user" "db_app_user" {
+  name     = "siteusagereadonly"
+  instance = google_sql_database_instance.stats_db.name
+  password = data.google_secret_manager_secret_version.db_app_user_pw.secret_data
 
   password_policy {
     allowed_failed_attempts      = 5
