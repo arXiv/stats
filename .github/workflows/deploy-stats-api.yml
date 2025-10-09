@@ -271,35 +271,6 @@ jobs:
         run: terraform init -backend-config="bucket=${{ env.TERRAFORM_BUCKET }}"
         working-directory: terraform/stats_api
 
-      - name: Handle state lock
-        run: |
-          echo "Checking for existing state locks..."
-          
-          # Try to get the current lock info
-          if terraform force-unlock -help >/dev/null 2>&1; then
-            echo "Terraform supports force-unlock command"
-          else
-            echo "Terraform version doesn't support force-unlock, trying alternative approach"
-          fi
-          
-          # Check if there's a lock file in the bucket
-          LOCK_FILE="gs://${{ env.TERRAFORM_BUCKET }}/${{env.IMAGE_NAME}}/default.tflock"
-          if gsutil ls "$LOCK_FILE" >/dev/null 2>&1; then
-            echo "Found existing lock file: $LOCK_FILE"
-            echo "Attempting to remove stale lock..."
-            
-            # Try to remove the lock file
-            if gsutil rm "$LOCK_FILE" >/dev/null 2>&1; then
-              echo "✅ Successfully removed stale lock file"
-            else
-              echo "⚠️  Could not remove lock file automatically"
-              echo "The lock may be held by an active operation"
-            fi
-          else
-            echo "No lock file found, proceeding normally"
-          fi
-        working-directory: terraform/stats_api
-
       - name: Plan
         run: |
           echo "Running terraform plan..."
