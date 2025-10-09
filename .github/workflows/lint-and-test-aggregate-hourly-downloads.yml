@@ -6,13 +6,7 @@ on:
       - main
     paths:
       - "stats-functions/aggregate_hourly_downloads/**"
-
   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: "Log level"
-        required: true
-        default: "info"
 
 permissions:
   contents: read
