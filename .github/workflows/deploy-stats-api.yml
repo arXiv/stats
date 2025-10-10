@@ -138,14 +138,14 @@ jobs:
           # Set project name and terraform bucket based on environment
           if [ "$ENV_NAME" = "production" ]; then
             echo "PROJECT_NAME=arxiv-production" >> $GITHUB_ENV
-            echo "TERRAFORM_BUCKET=arxiv-production" >> $GITHUB_ENV
+            echo "TERRAFORM_BUCKET=prod-arxiv-terraform-state" >> $GITHUB_ENV
           elif [ "$ENV_NAME" = "development" ]; then
             echo "PROJECT_NAME=arxiv-development" >> $GITHUB_ENV
-            echo "TERRAFORM_BUCKET=arxiv-development" >> $GITHUB_ENV
+            echo "TERRAFORM_BUCKET=dev-arxiv-terraform-state" >> $GITHUB_ENV
           else
             # For custom environments, use the environment name as project name
             echo "PROJECT_NAME=$ENV_NAME" >> $GITHUB_ENV
-            echo "TERRAFORM_BUCKET=$ENV_NAME" >> $GITHUB_ENV
+            echo "TERRAFORM_BUCKET=$ENV_NAME-arxiv-terraform-state" >> $GITHUB_ENV
             echo "Custom environment detected, using $ENV_NAME as project name"
           fi
 
