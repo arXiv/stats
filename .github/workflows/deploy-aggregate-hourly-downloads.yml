@@ -8,7 +8,8 @@ on:
       - "stats-functions/aggregate_hourly_downloads/**"
       - "terraform/aggregate_hourly_downloads/**"
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
     paths:
       - "stats-functions/aggregate_hourly_downloads/**"
       - "terraform/aggregate_hourly_downloads/**"
