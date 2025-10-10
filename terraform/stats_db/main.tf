@@ -46,6 +46,7 @@ resource "google_sql_database_instance" "stats_db" {
       enabled            = true
       start_time         = "01:00"
       binary_log_enabled = true
+      transaction_log_retention_days = 3
     }
 
     password_validation_policy {
