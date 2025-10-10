@@ -10,7 +10,7 @@ from arxiv.identifier import Identifier, IdentifierException
 import functions_framework
 from cloudevents.http import CloudEvent
 
-import google.cloud.logging
+from google.cloud import logging as gc_logging
 from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator, _EmptyRowIterator
 
@@ -21,6 +21,7 @@ from stats_entities.site_usage import SiteUsageBase, HourlyDownloads
 
 from entities import ReadBase, DocumentCategory, Metadata
 from models import (
+    Database,
     PaperCategories,
     DownloadData,
     DownloadCounts,
@@ -30,15 +31,17 @@ from models import (
 
 from sqlalchemy import create_engine, Row
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import sessionmaker, aliased
+from sqlalchemy.orm import DeclarativeBase, sessionmaker, aliased
 
 
 logger = logging.getLogger(__name__)
 
 
+class NoRetryError(Exception):
+    pass
+
+
 class AggregateHourlyDownloadsJob:
-    MAX_QUERY_TO_WRITE = os.getenv("MAX_QUERY_TO_WRITE", 1000)
-    HOUR_DELAY = os.getenv("HOUR_DELAY", 3)
     LOGS_QUERY = """
                     SELECT
                         paper_id,
@@ -82,69 +85,70 @@ class AggregateHourlyDownloadsJob:
                 """
 
     def __init__(self):
+        self.max_query_to_write = os.getenv("MAX_QUERY_TO_WRITE", 1000)
+        self.hour_delay = os.getenv("HOUR_DELAY", 3)
+
         self.env = os.getenv("ENV")
-
-        self._set_up_logging()
-
-        logger.info("Initializing aggregate hourly downloads job")
-
-        logger.info("Checking environment variables")
-        _read_db_instance = os.getenv("READ_DB_INSTANCE")
-        _write_db_instance = os.getenv("WRITE_DB_INSTANCE")
-
-        if (self.env == "PROD" and "development" in _write_db_instance) or (
-            self.env == "DEV" and "production" in _write_db_instance
-        ):
-            logger.error(
-                "Referencing a database in another environment! Check database configuration"
-            )
-            return
-
-        logger.info("Initializing bigquery client")
-        project = "arxiv-production" if self.env == "PROD" else "arxiv-development"
-        self.bq_client = bigquery.Client(project=project)
-
-        logger.info("Instantiating database interfaces")
-        _ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
-
-        self._read_db_connector, self._read_db_engine = self._connect_with_connector(
-            _ip_type,
-            _read_db_instance,
+        self.read_db = Database(
+            os.getenv("READ_DB_INSTANCE"),
             os.getenv("READ_DB_USER"),
             os.getenv("READ_DB_PW"),
             os.getenv("READ_DB_NAME"),
         )
-        ReadBase.metadata.create_all(self._read_db_engine)
-        self.ReadSession = sessionmaker(bind=self._read_db_engine)
-
-        self._write_db_connector, self._write_db_engine = self._connect_with_connector(
-            _ip_type,
-            _write_db_instance,
+        self.write_db = Database(
+            os.getenv("WRITE_DB_INSTANCE"),
             os.getenv("WRITE_DB_USER"),
             os.getenv("WRITE_DB_PW"),
             os.getenv("WRITE_DB_NAME"),
         )
-        SiteUsageBase.metadata.create_all(self._write_db_engine)
-        self.WriteSession = sessionmaker(bind=self._write_db_engine)
-
-        logger.info("Initialization of aggregate hourly downloads job complete")
-
-    def _set_up_logging(self):
+        self.project = "arxiv-production" if self.env == "PROD" else "arxiv-development"
+        self.ip_type = (
+            IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
+        )
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
         self.log_locally = os.getenv("LOG_LOCALLY", False)
 
+        self.cloud_logging_client = None
+        self.read_connector = None
+        self.write_connector = None
+        self.bq_client = None
+
+        self._set_up_logging()
+        logger.info("Initialization of aggregate hourly downloads job complete")
+
+    def _set_up_logging(self):
         logging.basicConfig()
         logger.setLevel(self.log_level)
 
         if not (self.log_locally):
             logger.info("Initializing cloud logging")
-            self.cloud_logging_client = google.cloud.logging.Client()
+            self.cloud_logging_client = gc_logging.Client(project=self.project)
             self.cloud_logging_client.setup_logging()
 
+    def _check_environment(self):
+        logger.info("Checking environment variables")
+
+        if (self.env == "PROD" and "development" in self.write_db.instance_name) or (
+            self.env == "DEV" and "production" in self.write_db.instance_name
+        ):
+            logger.error(
+                "Referencing a database in another environment! Check database configuration"
+            )
+            raise NoRetryError
+
+    def _instantiate_sessionmaker(
+        self, db_pool: Engine, base: DeclarativeBase
+    ) -> sessionmaker:
+        try:
+            base.metadata.create_all(db_pool)
+        except Exception:
+            logger.exception("Could not create database metadata!")
+            raise NoRetryError
+
+        return sessionmaker(bind=db_pool)
+
     @staticmethod
-    def _connect_with_connector(
-        ip_type, instance_name, db_user, db_password, db_name
-    ) -> Engine:
+    def instantiate_connection_pool(ip_type, db: Database) -> tuple[Connector, Engine]:
         """
         Initializes a connection pool for a Cloud SQL instance of MySQL.
         Uses the Cloud SQL Python Connector package.
@@ -154,29 +158,31 @@ class AggregateHourlyDownloadsJob:
 
         def getconn() -> pymysql.connections.Connection:
             conn: pymysql.connections.Connection = connector.connect(
-                instance_name,
+                db.instance_name,
                 "pymysql",
-                user=db_user,
-                password=db_password,
-                db=db_name,
+                user=db.username,
+                password=db.password,
+                db=db.db_name,
             )
             return conn
 
         pool = create_engine("mysql+pymysql://", creator=getconn)
+
         return (connector, pool)
 
     def process_table_rows(
         self,
         rows: Union[RowIterator, _EmptyRowIterator],
     ) -> Tuple[List[DownloadData], Set[str], str, int, int, List[datetime]]:
-        """processes rows of data from bigquery
+        """
+        processes rows of data from bigquery
         returns the list of download data, a set of all unique paper_ids and a string of the time periods this covers
         """
         # process and store returned data
         paper_ids = set()  # only look things up for each paper once
-        download_data: List[DownloadData] = (
-            []
-        )  # not a dictionary because no unique keys
+        download_data: List[
+            DownloadData
+        ] = []  # not a dictionary because no unique keys
         problem_rows: List[Tuple[Any], Exception] = []
         problem_row_count = 0
         bad_id_count = 0
@@ -227,52 +233,17 @@ class AggregateHourlyDownloadsJob:
             time_periods,
         )
 
-    def perform_aggregation(
-        self,
-        rows: Union[RowIterator, _EmptyRowIterator],
-    ) -> AggregationResult:
-        logger.info("Processing results of log query")
-        (
-            download_data,
-            paper_ids,
-            time_period_str,
-            bad_id_count,
-            problem_row_count,
-            time_periods,
-        ) = self.process_table_rows(rows)
-        fetched_count = len(download_data)
-        unique_id_count = len(paper_ids)
-        if len(paper_ids) == 0:
-            logger.error("No log data retrieved from bigquery")
-            return  # this will prevent retries
-
-        # find categories for all the papers
-        paper_categories = self.get_paper_categories(paper_ids)
-        if len(paper_categories) == 0:
-            logger.error(f"{time_period_str}: No category data retrieved from database")
-            return
-
-        # aggregate download data
-        aggregated_data = self.aggregate_data(download_data, paper_categories)
-
-        # write all_data to tables
-        add_count = self.insert_into_database(aggregated_data, time_periods)
-        result = AggregationResult(
-            time_period_str,
-            add_count,
-            fetched_count,
-            unique_id_count,
-            bad_id_count,
-            problem_row_count,
-        )
-        return result
-
     def get_paper_categories(self, paper_ids: Set[str]) -> Dict[str, PaperCategories]:
         # get the category data for papers
         meta = aliased(Metadata)
         dc = aliased(DocumentCategory)
 
-        with self.ReadSession() as session:
+        self.read_connector, read_pool = self.instantiate_connection_pool(
+            self.ip_type, self.read_db
+        )
+        ReadSession = self._instantiate_sessionmaker(read_pool, ReadBase)
+
+        with ReadSession() as session:
             logger.info("Executing read database query")
             paper_cats = (
                 session.query(meta.paper_id, dc.category, dc.is_primary)
@@ -384,40 +355,129 @@ class AggregateHourlyDownloadsJob:
             for key, counts in aggregated_data.items()
         ]
 
-        # remove previous data for the time period
-        with self.WriteSession() as session:
+        self.write_connector, write_pool = self.instantiate_connection_pool(
+            self.ip_type, self.write_db
+        )
+        WriteSession = self._instantiate_sessionmaker(write_pool, SiteUsageBase)
+
+        with WriteSession() as session:
             logger.info("Executing write database transaction")
+            # remove previous data for the time period
             session.query(HourlyDownloads).filter(
                 HourlyDownloads.start_dttm.in_(time_periods)
             ).delete(synchronize_session=False)
 
             # add data
             for i in range(
-                0, len(data_to_insert), self.MAX_QUERY_TO_WRITE
+                0, len(data_to_insert), self.max_query_to_write
             ):  # to conform to db stack size limit
                 session.bulk_save_objects(
-                    data_to_insert[i : i + self.MAX_QUERY_TO_WRITE]
+                    data_to_insert[i : i + self.max_query_to_write]
                 )
 
             session.commit()
+
         logger.info("Write database transaction successfully committed; session closed")
 
         return len(data_to_insert)
 
-    def query_logs(self, start_time: str, end_time: str) -> AggregationResult:
+    def perform_aggregation(
+        self,
+        rows: Union[RowIterator, _EmptyRowIterator],
+    ) -> AggregationResult:
+        logger.info("Processing results of log query")
+        (
+            download_data,
+            paper_ids,
+            time_period_str,
+            bad_id_count,
+            problem_row_count,
+            time_periods,
+        ) = self.process_table_rows(rows)
+
+        fetched_count = len(download_data)
+        unique_id_count = len(paper_ids)
+
+        # find categories for all the papers
+        paper_categories = self.get_paper_categories(paper_ids)
+        if len(paper_categories) == 0:
+            logger.error(
+                f"{time_period_str}: No category data retrieved from database!"
+            )
+            raise NoRetryError
+
+        # aggregate download data
+        aggregated_data = self.aggregate_data(download_data, paper_categories)
+
+        # write all_data to tables
+        add_count = self.insert_into_database(aggregated_data, time_periods)
+        result = AggregationResult(
+            time_period_str,
+            add_count,
+            fetched_count,
+            unique_id_count,
+            bad_id_count,
+            problem_row_count,
+        )
+        return result
+
+    def query_logs(self, start_time: str, end_time: str) -> RowIterator:
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
                 bigquery.ScalarQueryParameter("start_time", "STRING", start_time),
                 bigquery.ScalarQueryParameter("end_time", "STRING", end_time),
             ]
         )
+
+        logger.info("Initializing bigquery client")
+        self.bq_client = bigquery.Client(project=self.project)
         logger.info("Executing log query in bigquery")
         query_job = self.bq_client.query(self.LOGS_QUERY, job_config=job_config)
         logger.info("Log query successfully executed")
 
-        return query_job.result()
+        rows = query_job.result()
 
-    def validate_inputs(
+        if rows.total_rows > 0:
+            return rows
+        else:
+            logger.error("No log data returned from bigquery!")
+            raise NoRetryError
+
+    def _validate_cloud_event(self, cloud_event: CloudEvent) -> tuple[str, str]:
+        try:
+            pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
+                tzinfo=timezone.utc
+            )
+            active_hour = pubsub_timestamp - timedelta(
+                hours=self.hour_delay
+            )  # give some time for logs to make it to gcp
+        except Exception:
+            logger.exception("Could not process cloud event!")
+            raise NoRetryError
+
+        start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
+        end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
+
+        return start_time, end_time
+
+    def _validate_dates(self, start_time: str, end_time: str) -> tuple[str, str]:
+        date_format = "%Y-%m-%d%H"
+
+        try:
+            assert len(start_time) == 12 and len(end_time) == 12
+            valid_start_time = datetime.strptime(start_time, date_format)
+            valid_end_time = datetime.strptime(end_time, date_format)
+            assert valid_start_time <= valid_end_time
+        except (AssertionError, ValueError):
+            logger.error("Invalid start or end time(s)! Check input parameters")
+            raise NoRetryError
+
+        start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
+        end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
+
+        return start_time, end_time
+
+    def _validate_inputs(
         self,
         cloud_event: CloudEvent = None,
         start_time: str = None,
@@ -427,41 +487,33 @@ class AggregateHourlyDownloadsJob:
 
         if cloud_event:
             logger.info("Received cloud event trigger")
-            pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
-                tzinfo=timezone.utc
-            )
-
-            active_hour = pubsub_timestamp - timedelta(
-                hours=self.HOUR_DELAY
-            )  # give some time for logs to make it to gcp
-
-            start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
-            end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
+            start_time, end_time = self._validate_cloud_event(cloud_event)
         elif start_time and end_time:
             logger.info("Received start and end times")
-            date_format = "%Y-%m-%d%H"
-
-            try:
-                assert len(start_time) == 12 and len(end_time) == 12
-                valid_start_time = datetime.strptime(start_time, date_format)
-                valid_end_time = datetime.strptime(end_time, date_format)
-                assert valid_start_time <= valid_end_time
-            except (AssertionError, ValueError):
-                logger.error("Invalid date input(s)!")
-                return (None, None)
-            start_time = f"{valid_start_time.strftime('%Y-%m-%d %H')}:00:00"
-            end_time = f"{valid_end_time.strftime('%Y-%m-%d %H')}:59:59"
-
+            start_time, end_time = self._validate_dates(start_time, end_time)
         else:
             logger.error(
                 "Must receive either a cloud event or valid start and end times!"
             )
+            raise NoRetryError
 
         logger.info(
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
         )
-
         return (start_time, end_time)
+
+    def _cleanup(self):
+        if self.cloud_logging_client:
+            self.cloud_logging_client.close()
+
+        if self.read_connector:
+            self.read_connector.close()
+
+        if self.write_connector:
+            self.write_connector.close()
+
+        if self.bq_client:
+            self.bq_client.close()
 
     def run(
         self,
@@ -471,20 +523,23 @@ class AggregateHourlyDownloadsJob:
     ):
         logger.info("Running aggregate hourly downloads job")
 
-        start_time, end_time = self.validate_inputs(
-            cloud_event=cloud_event, start_time=start_time, end_time=end_time
-        )
+        try:
+            self._check_environment()
+            start_time, end_time = self._validate_inputs(
+                cloud_event=cloud_event, start_time=start_time, end_time=end_time
+            )
 
-        if start_time and end_time:
             log_query_result = self.query_logs(start_time, end_time)
             aggregation_result = self.perform_aggregation(log_query_result)
 
-        self._read_db_connector.close()
-        self._write_db_connector.close()
-        logger.info("Database connectors successfully closed")
-
-        if aggregation_result:
             logger.info(aggregation_result.single_run_str())
+
+        except NoRetryError:
+            self._cleanup()
+            return
+
+        finally:
+            self._cleanup()
 
 
 @functions_framework.cloud_event

@@ -17,6 +17,7 @@ from main import (
     AggregateHourlyDownloadsJob,
 )
 
+
 class TestAggregateHourlyDownloadsJob:
     mock_job_instance = mock.MagicMock(autospec=AggregateHourlyDownloadsJob)
 
@@ -50,7 +51,6 @@ class TestAggregateHourlyDownloadsJob:
         }
         assert result == expected
 
-
     def test_paper_categories_basic(self):
         """
         Assert PaperCategories works as expected
@@ -79,7 +79,6 @@ class TestAggregateHourlyDownloadsJob:
         assert item.paper_id == "1234.5678"
         assert item.primary == CATEGORIES["physics.ins-det"]
         assert item.crosses == {CATEGORIES["hep-lat"], CATEGORIES["q-bio.PE"]}
-
 
     def test_paper_categories_subsumed(self):
         """
@@ -119,7 +118,6 @@ class TestAggregateHourlyDownloadsJob:
         assert item.primary == CATEGORIES["nlin.CD"]
         assert item.crosses == set()
 
-
     def test_paper_categories_alias(self):
         """
         Assert that only the canonical archive is used in the case where a category alias is present
@@ -158,7 +156,6 @@ class TestAggregateHourlyDownloadsJob:
         assert item.primary == CATEGORIES["eess.SY"]
         assert item.crosses == set()
 
-
     def test_aggregate_data(self):
         """
         Assert that AggregateHourlyDownloadsJob.aggregate_data works as expected
@@ -175,7 +172,11 @@ class TestAggregateHourlyDownloadsJob:
         paper3.add_primary("hep-lat")
         paper3.add_cross("q-fin.CP")
         paper3.add_cross("math.GM")
-        paper_categories = {"1234.5678": paper1, "1234.5679": paper2, "1234.5680": paper3}
+        paper_categories = {
+            "1234.5678": paper1,
+            "1234.5679": paper2,
+            "1234.5680": paper3,
+        }
 
         hour = datetime(2024, 7, 26, 13, 0)
 
@@ -229,14 +230,15 @@ class TestAggregateHourlyDownloadsJob:
 
         assert result == expected
 
-
     def test_validate_inputs_cloud_event(self):
         """Assert that AggregateHourlyDownloads.validate_inputs executes successfully when cloud event with valid timestamp is provided"""
         self.mock_job_instance.HOUR_DELAY = 3
 
-        mock_attributes = {"type": "mock_type",
-                        "source": "mock_source",
-                        "time": "2025-09-12T16:30:00Z"}
+        mock_attributes = {
+            "type": "mock_type",
+            "source": "mock_source",
+            "time": "2025-09-12T16:30:00Z",
+        }
 
         mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
 
@@ -248,7 +250,7 @@ class TestAggregateHourlyDownloadsJob:
         assert end_time == "2025-09-12 13:59:59"
 
     def test_run_start_and_end_times_valid(self):
-        """Assert that AggregateHourlyDownloads.validate_inputs executes successfully when valid start and end times are provided"""        
+        """Assert that AggregateHourlyDownloads.validate_inputs executes successfully when valid start and end times are provided"""
         start_time = "2025-09-1216"
         end_time = "2025-09-1216"
 
@@ -272,3 +274,53 @@ class TestAggregateHourlyDownloadsJob:
         mock_logger.error.assert_called_once_with("Invalid date input(s)!")
         assert not start_time
         assert not end_time
+
+
+#    def test_validate_inputs_cloud_event(self):
+#         """Assert that AggregateHourlyDownloads.validate_inputs executes successfully when cloud event with valid timestamp is provided"""
+#         self.mock_job_instance.HOUR_DELAY = 3
+
+#         mock_attributes = {"type": "mock_type",
+#                         "source": "mock_source",
+#                         "time": "2025-09-12T16:30:00Z"}
+
+#         mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+#         start_time, end_time = AggregateHourlyDownloadsJob.validate_inputs(
+#             self.mock_job_instance, cloud_event=mock_cloud_event
+#         )
+
+#         assert start_time == "2025-09-12 13:00:00"
+#         assert end_time == "2025-09-12 13:59:59"
+
+#     def test_run_start_and_end_times_valid(self):
+#         """Assert that AggregateHourlyDownloads.validate_inputs executes successfully when valid start and end times are provided"""
+#         start_time = "2025-09-1216"
+#         end_time = "2025-09-1216"
+
+#         start_time, end_time = AggregateHourlyDownloadsJob.validate_inputs(
+#             self.mock_job_instance, start_time=start_time, end_time=end_time
+#         )
+
+#         assert start_time == "2025-09-12 16:00:00"
+#         assert end_time == "2025-09-12 16:59:59"
+
+#     def test_validate_dates_invalid_range(self):
+#         """Assert that AggregateHourlyDownloads._validate_dates raises an assertion error when start time is after end time"""
+#         start_time = "2025-09-1001"
+#         end_time = "2025-09-0901"
+
+#         with pytest.raises(AssertionError):
+#             AggregateHourlyDownloadsJob._validate_dates(
+#                 self.mock_job_instance, start_time=start_time, end_time=end_time
+#             )
+
+#     def test_validate_dates_invalid_length(self):
+#         """Assert that AggregateHourlyDownloads._validate_dates raises an assertion error when hours are not provided"""
+#         start_time = "2025-09-10"
+#         end_time = "2025-09-10"
+
+#         with pytest.raises(AssertionError):
+#             AggregateHourlyDownloadsJob._validate_dates(
+#                 self.mock_job_instance, start_time=start_time, end_time=end_time
+#             )
