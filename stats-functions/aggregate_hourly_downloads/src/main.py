@@ -42,6 +42,7 @@ class NoRetryError(Exception):
 
 
 class AggregateHourlyDownloadsJob:
+    MAX_EVENT_AGE_IN_MINUTES = 50  # to limit retries
     PAPER_ID_REGEX = r"^/[^/]+/([a-zA-Z-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5})"
     DOWNLOAD_TYPE_REGEX = r"^/(html|pdf|src|e-print)/"
     PAPER_ID_OPTIONAL_VERSION_REGEX = PAPER_ID_REGEX + r"(v[0-9]+)?$"
@@ -457,17 +458,22 @@ class AggregateHourlyDownloadsJob:
             logger.error("No log data returned from bigquery!")
             raise NoRetryError
 
+    def _event_time_exceeds_retry_window(self, event_time: datetime) -> bool:
+        """Prevent infinite retries by dismissing event timestamps that are too old"""
+        current_time = datetime.now(timezone.utc)
+        max_event_age = timedelta(minutes=self.MAX_EVENT_AGE_IN_MINUTES)
+
+        if (current_time - event_time) > max_event_age:
+            return True
+        else:
+            return False
+
     def _validate_cloud_event(self, cloud_event: CloudEvent) -> tuple[str, str]:
-        try:
-            pubsub_timestamp = parser.isoparse(cloud_event["time"]).replace(
-                tzinfo=timezone.utc
-            )
-            active_hour = pubsub_timestamp - timedelta(
-                hours=self.hour_delay
-            )  # give some time for logs to make it to gcp
-        except Exception:
-            logger.exception("Could not process cloud event!")
+        event_time = parser.isoparse(cloud_event["time"]).replace(tzinfo=timezone.utc)
+        if self._event_time_exceeds_retry_window(event_time):
             raise NoRetryError
+
+        active_hour = event_time - timedelta(hours=self.hour_delay)
 
         start_time = f"{active_hour.strftime('%Y-%m-%d %H')}:00:00"
         end_time = f"{active_hour.strftime('%Y-%m-%d %H')}:59:59"
@@ -553,7 +559,9 @@ class AggregateHourlyDownloadsJob:
             logger.info(aggregation_result.single_run_str())
 
         except NoRetryError:
-            logger.exception("A NoRetry exception has been raised! Will not retry. Fix the problem and manually run the function to patch data as needed.")
+            logger.exception(
+                "A NoRetry exception has been raised! Will not retry. Fix the problem and manually run the function to patch data as needed."
+            )
             return
 
         finally:
