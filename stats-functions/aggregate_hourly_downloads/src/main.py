@@ -44,9 +44,7 @@ class NoRetryError(Exception):
 class AggregateHourlyDownloadsJob:
     PAPER_ID_REGEX = r"^/[^/]+/([a-zA-Z-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5})"
     DOWNLOAD_TYPE_REGEX = r"^/(html|pdf|src|e-print)/"
-    PAPER_ID_OPTIONAL_VERSION_REGEX = (
-        r"^/[^/]+/([a-zA-Z-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5})(v[0-9]+)?$"
-    )
+    PAPER_ID_OPTIONAL_VERSION_REGEX = PAPER_ID_REGEX + r"(v[0-9]+)?$"
     LOGS_QUERY = """
                     SELECT
                         paper_id,
