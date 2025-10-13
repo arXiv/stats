@@ -485,17 +485,21 @@ class AggregateHourlyDownloadsJob:
     ):
         logger.info("Validating inputs")
 
-        if cloud_event:
-            logger.info("Received cloud event trigger")
-            start_time, end_time = self._validate_cloud_event(cloud_event)
-        elif start_time and end_time:
-            logger.info("Received start and end times")
-            start_time, end_time = self._validate_dates(start_time, end_time)
-        else:
-            logger.error(
-                "Must receive either a cloud event or valid start and end times!"
-            )
-            raise NoRetryError
+        try:
+            if cloud_event:
+                logger.info("Received cloud event trigger")
+                start_time, end_time = self._validate_cloud_event(cloud_event)
+            elif start_time and end_time:
+                logger.info("Received start and end times")
+                start_time, end_time = self._validate_dates(start_time, end_time)
+            else:
+                logger.error(
+                    "Must receive either a cloud event or valid start and end times!"
+                )
+                raise NoRetryError
+
+        except NoRetryError:
+            raise
 
         logger.info(
             f"Query parameters for bigquery: start time={start_time}, end time={end_time}"
@@ -535,7 +539,6 @@ class AggregateHourlyDownloadsJob:
             logger.info(aggregation_result.single_run_str())
 
         except NoRetryError:
-            self._cleanup()
             return
 
         finally:
