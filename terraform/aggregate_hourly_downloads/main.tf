@@ -2,7 +2,7 @@ terraform {
   required_version = "~> 1.13"
   required_providers {
     google = {
-      source = "hashicorp/google"
+      source  = "hashicorp/google"
       version = "~> 7.2"
     }
   }
@@ -84,9 +84,9 @@ resource "google_cloudfunctions2_function" "function" {
   }
 
   service_config {
-    min_instance_count    = 1
+    min_instance_count    = 1 # to reduce cold starts
     available_memory      = "2G"
-    timeout_seconds       = 60
+    timeout_seconds       = 540 # 9 minutes is the maximum allowed
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
