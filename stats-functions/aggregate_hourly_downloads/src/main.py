@@ -470,6 +470,7 @@ class AggregateHourlyDownloadsJob:
 
     def _validate_cloud_event(self, cloud_event: CloudEvent) -> tuple[str, str]:
         event_time = parser.isoparse(cloud_event["time"]).replace(tzinfo=timezone.utc)
+        
         if self._event_time_exceeds_retry_window(event_time):
             raise NoRetryError
 
