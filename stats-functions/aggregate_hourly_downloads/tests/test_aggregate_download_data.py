@@ -265,6 +265,7 @@ def test_validate_cloud_event_valid():
     """Assert that _validate_cloud_event sets start and end time correctly with valid cloud event"""
     mock_job_instance = mock.MagicMock(autospec=AggregateHourlyDownloadsJob)
     mock_job_instance.hour_delay = 3
+    mock_job_instance._event_time_exceeds_retry_window.return_value = False
 
     mock_attributes = {
         "type": "mock_type",
