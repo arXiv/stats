@@ -1,5 +1,8 @@
 name: Deploy stats-api
 
+# Set custom run name to show project name in workflow runs list
+run-name: "Deploy API - ${{ github.event.inputs.env }} - ${{ github.event.inputs.image_tag || github.sha }}"
+
 on:
   push:
     branches:
