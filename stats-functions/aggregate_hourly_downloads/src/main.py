@@ -553,6 +553,7 @@ class AggregateHourlyDownloadsJob:
             logger.info(aggregation_result.single_run_str())
 
         except NoRetryError:
+            logger.error("A NoRetry exception has been raised! Will not retry. Fix the problem and manually run the function to patch data as needed.")
             return
 
         finally:
