@@ -42,6 +42,11 @@ class NoRetryError(Exception):
 
 
 class AggregateHourlyDownloadsJob:
+    PAPER_ID_REGEX = r"^/[^/]+/([a-zA-Z-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5})"
+    DOWNLOAD_TYPE_REGEX = r"^/(html|pdf|src|e-print)/"
+    PAPER_ID_OPTIONAL_VERSION_REGEX = (
+        r"^/[^/]+/([a-zA-Z-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5})(v[0-9]+)?$"
+    )
     LOGS_QUERY = """
                     SELECT
                         paper_id,
@@ -53,9 +58,9 @@ class AggregateHourlyDownloadsJob:
                         (
                         SELECT
                             STRING(json_payload.remote_addr) as remote_addr,
-                            REGEXP_EXTRACT(STRING(json_payload.path), r"^/[^/]+/([a-zA-Z-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5})") as paper_id,
+                            REGEXP_EXTRACT(STRING(json_payload.path), @paper_id_regex) as paper_id,
                             STRING(json_payload.geo_country) as geo_country,
-                            REGEXP_EXTRACT(STRING(json_payload.path), r"^/(html|pdf|src|e-print)/") as download_type,
+                            REGEXP_EXTRACT(STRING(json_payload.path), @download_type_regex) as download_type,
                             FARM_FINGERPRINT(STRING(json_payload.user_agent)) AS user_agent_hash,
                             TIMESTAMP_TRUNC(timestamp, MINUTE) AS start_dttm
                         FROM
@@ -63,10 +68,10 @@ class AggregateHourlyDownloadsJob:
                         WHERE
                             log_id = "fastly_log_ingest"
                             AND STRING(json_payload.state) != "HIT_SYNTH"
-                            AND REGEXP_CONTAINS(STRING(json_payload.path), "^/(html|pdf|src|e-print)/")
+                            AND REGEXP_CONTAINS(STRING(json_payload.path), @download_type_regex)
                             AND REGEXP_CONTAINS(JSON_VALUE(json_payload, "$.status"), "^2[0-9][0-9]$")
                             AND JSON_VALUE(json_payload, "$.status") != "206"
-                            AND REGEXP_CONTAINS(STRING(json_payload.path), r"^/[^/]+/([a-zA-Z-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5})(v[0-9]+)?$")
+                            AND REGEXP_CONTAINS(STRING(json_payload.path), @paper_id_optional_version_regex)
                             AND JSON_VALUE(json_payload, "$.method") = "GET"
                             AND timestamp between TIMESTAMP( @start_time ) and TIMESTAMP( @end_time )
                         GROUP BY
@@ -424,6 +429,17 @@ class AggregateHourlyDownloadsJob:
     def query_logs(self, start_time: str, end_time: str) -> RowIterator:
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
+                bigquery.ScalarQueryParameter(
+                    "paper_id_regex", "STRING", self.PAPER_ID_REGEX
+                ),
+                bigquery.ScalarQueryParameter(
+                    "download_type_regex", "STRING", self.DOWNLOAD_TYPE_REGEX
+                ),
+                bigquery.ScalarQueryParameter(
+                    "paper_id_optional_version_regex",
+                    "STRING",
+                    self.PAPER_ID_OPTIONAL_VERSION_REGEX,
+                ),
                 bigquery.ScalarQueryParameter("start_time", "STRING", start_time),
                 bigquery.ScalarQueryParameter("end_time", "STRING", end_time),
             ]
