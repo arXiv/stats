@@ -101,8 +101,8 @@ jobs:
             # For custom environments, use the environment name as project name
             echo "PROJECT_NAME=$ENV_NAME" >> $GITHUB_ENV
             echo "TERRAFORM_BUCKET=$ENV_NAME-arxiv-terraform-state" >> $GITHUB_ENV
-            TERRAFORM_ARGS="-var=\"gcp_project_id=${{ vars.ENV_NAME }}\" \
-              -var=\"gcp_region=${{ vars.GCP_REGION }}\" \
+            TERRAFORM_ARGS="-var=\"gcp_project_id=$PROJECT_NAME\" \
+              -var=\"gcp_region=$REGION\" \
               -var=\"env=${{ vars.ENV_VAR }}\" \
               -var=\"read_db_instance=${{ vars.READ_DB_INSTANCE }}\" \
               -var=\"read_db_secret_name=${{ vars.READ_DB_SECRET_NAME }}\""
