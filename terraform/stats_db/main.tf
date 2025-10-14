@@ -35,7 +35,6 @@ resource "google_sql_database_instance" "stats_db" {
     tier            = "db-custom-4-26624" # 4 cores, 26 GB RAM (max allowed for 4 cores)
     edition         = "ENTERPRISE"
     disk_autoresize = true
-
     ip_configuration {
       # only allow connections encrypted with SSL/TLS and with valid client certificates
       # https://cloud.google.com/sql/docs/postgres/admin-api/rest/v1beta4/instances#ipconfiguration
@@ -43,9 +42,9 @@ resource "google_sql_database_instance" "stats_db" {
     }
 
     backup_configuration {
-      enabled            = true
-      start_time         = "01:00"
-      binary_log_enabled = true
+      enabled                        = true
+      start_time                     = "01:00"
+      binary_log_enabled             = true
       transaction_log_retention_days = 3
     }
 
@@ -60,6 +59,21 @@ resource "google_sql_database_instance" "stats_db" {
       record_application_tags = true
       record_client_address   = true
       query_string_length     = 4500 # max query length to capture
+    }
+
+    database_flags {
+      name  = "cloudsql_iam_authentication"
+      value = "on"
+    }
+
+    final_backup_config {
+      enabled        = true
+      retention_days = 30
+    }
+
+    maintenance_window {
+      day  = 7
+      hour = 4
     }
   }
   root_password = data.google_secret_manager_secret_version.db_root_pw.secret_data
@@ -150,4 +164,20 @@ resource "google_sql_user" "db_readonly_user" {
     enable_failed_attempts_check = true # lock after too many failed login attempts
     enable_password_verification = true # require current password before changing it
   }
+}
+
+### iam group ###
+
+resource "google_sql_user" "iam_group" {
+  name     = "developers@arxiv.org"
+  instance = google_sql_database_instance.stats_db.name
+  type     = "CLOUD_IAM_GROUP"
+}
+
+resource "google_project_iam_binding" "cloud_sql_user" {
+  project = var.gcp_project_id
+  role    = "roles/cloudsql.instanceUser"
+  members = [
+    "group:developers@arxiv.org"
+  ]
 }
