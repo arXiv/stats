@@ -15,13 +15,9 @@ on:
       - "terraform/stats_ui/**"
   workflow_dispatch:
     inputs:
-      env:
-        description: "Environment"
-        required: true
-        type: choice
-        options:
-          - "development"
-          - "production"
+      environment:
+        type: environment
+        description: Select the environment
 
 permissions:
   contents: read

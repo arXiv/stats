@@ -13,13 +13,9 @@ on:
       - "terraform/stats_db/**"
   workflow_dispatch:
     inputs:
-      env:
-        description: "Environment"
-        required: true
-        type: choice
-        options:
-          - "development"
-          - "production"
+      environment:
+        type: environment
+        description: Select the environment
 
 jobs:
   format-check:
