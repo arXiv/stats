@@ -15,13 +15,9 @@ on:
       - "terraform/aggregate_hourly_downloads/**"
   workflow_dispatch:
     inputs:
-      env:
-        description: "Environment"
-        required: true
-        type: choice
-        options:
-          - "development"
-          - "production"
+      environment:
+        type: environment
+        description: Select the environment
 
 permissions:
   contents: read
@@ -47,7 +43,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.events.inputs.env || 'development' }}
+    environment: ${{ inputs.environment || 'development' }}
     if: github.ref == 'refs/heads/main'
     needs: format-check
 

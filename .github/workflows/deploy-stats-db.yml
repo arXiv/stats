@@ -13,13 +13,9 @@ on:
       - "terraform/stats_db/**"
   workflow_dispatch:
     inputs:
-      env:
-        description: "Environment"
-        required: true
-        type: choice
-        options:
-          - "development"
-          - "production"
+      environment:
+        type: environment
+        description: Select the environment
 
 jobs:
   format-check:
@@ -45,7 +41,7 @@ jobs:
       contents: read
       id-token: write
     runs-on: ubuntu-latest
-    environment: ${{ github.events.inputs.env || 'development' }}
+    environment: ${{ inputs.environment || 'development' }}
     needs: format-check
 
     steps:
@@ -107,7 +103,7 @@ jobs:
       contents: read
       id-token: write
     runs-on: ubuntu-latest
-    environment: ${{ github.events.inputs.env || 'development' }}
+    environment: ${{ inputs.environment || 'development' }}
     if: github.ref == 'refs/heads/main'
     needs: manual-approval
 
