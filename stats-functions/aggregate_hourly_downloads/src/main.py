@@ -567,6 +567,7 @@ class AggregateHourlyDownloadsJob:
 
         finally:
             self._cleanup()
+            logger.info("Cleanup complete")
 
 
 @functions_framework.cloud_event
