@@ -15,7 +15,7 @@ variable "env" {
 
 variable "commit_sha" {
   description = "Commit hash"
-  type = string
+  type        = string
 }
 
 variable "read_db_user" {
