@@ -146,7 +146,7 @@ class AggregateHourlyDownloadsJob:
         try:
             base.metadata.create_all(db_pool)
         except Exception:
-            logger.exception("Could not create database metadata!")
+            logger.exception("Could not create database metadata! Check database configuration")
             raise NoRetryError
 
         return sessionmaker(bind=db_pool)
