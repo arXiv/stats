@@ -101,6 +101,10 @@ jobs:
               -var=\"read_db_secret_name=${{ vars.READ_DB_SECRET_NAME }}\""
           fi
 
+          # Add image_path to TERRAFORM_ARGS for all environments
+          TERRAFORM_ARGS="$TERRAFORM_ARGS \
+            -var=\"image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}\""
+
           echo "TERRAFORM_ARGS=$TERRAFORM_ARGS" >> $GITHUB_ENV
 
       - name: Set up Google Cloud SDK
@@ -217,14 +221,12 @@ jobs:
       - name: Plan
         run: |
           echo "Running terraform plan..."
-          terraform plan ${{ env.TERRAFORM_ARGS }} \
-            -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
+          terraform plan ${{ env.TERRAFORM_ARGS }}
         working-directory: terraform/stats_api
 
       - name: Apply
         run: |
           echo "Running terraform apply..."
           terraform apply ${{ env.TERRAFORM_ARGS }} \
-            -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}" \
             -auto-approve
         working-directory: terraform/stats_api
