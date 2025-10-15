@@ -18,11 +18,8 @@ on:
       - "terraform/stats_api/**"
   workflow_dispatch:
     inputs:
-      environment:
-        type: environment
-        description: Select the environment
       env:
-        description: "Environment (for manual override)"
+        description: "Environment"
         required: false
         type: string
         default: ""
@@ -63,7 +60,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: format-check
-    environment: ${{ inputs.environment || (github.ref == 'refs/heads/main' && 'development') || '' }}
+    environment: ${{ inputs.env }}
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -75,10 +72,6 @@ jobs:
           # Determine environment from inputs or GitHub environment
           if [ -n "${{ inputs.env }}" ]; then
             ENV_NAME="${{ inputs.env }}"
-          elif [ -n "${{ inputs.environment }}" ]; then
-            ENV_NAME="${{ inputs.environment }}"
-          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            ENV_NAME="development"
           else
             echo "Error: No environment specified"
             exit 1
