@@ -18,11 +18,8 @@ on:
       - "terraform/stats_api/**"
   workflow_dispatch:
     inputs:
-      environment:
-        type: environment
-        description: Select the environment
       env:
-        description: "Environment (for manual override)"
+        description: "Environment"
         required: false
         type: string
         default: ""
@@ -63,7 +60,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: format-check
-    environment: ${{ inputs.environment || (github.ref == 'refs/heads/main' && 'development') || '' }}
+    environment: ${{ inputs.env }}
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -75,10 +72,6 @@ jobs:
           # Determine environment from inputs or GitHub environment
           if [ -n "${{ inputs.env }}" ]; then
             ENV_NAME="${{ inputs.env }}"
-          elif [ -n "${{ inputs.environment }}" ]; then
-            ENV_NAME="${{ inputs.environment }}"
-          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            ENV_NAME="development"
           else
             echo "Error: No environment specified"
             exit 1
@@ -107,6 +100,10 @@ jobs:
               -var=\"read_db_instance=${{ vars.READ_DB_INSTANCE }}\" \
               -var=\"read_db_secret_name=${{ vars.READ_DB_SECRET_NAME }}\""
           fi
+
+          # Add image_path to TERRAFORM_ARGS for all environments
+          TERRAFORM_ARGS="$TERRAFORM_ARGS \
+            -var=\"image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}\""
 
           echo "TERRAFORM_ARGS=$TERRAFORM_ARGS" >> $GITHUB_ENV
 
@@ -224,14 +221,12 @@ jobs:
       - name: Plan
         run: |
           echo "Running terraform plan..."
-          terraform plan ${{ env.TERRAFORM_ARGS }} \
-            -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
+          terraform plan ${{ env.TERRAFORM_ARGS }}
         working-directory: terraform/stats_api
 
       - name: Apply
         run: |
           echo "Running terraform apply..."
           terraform apply ${{ env.TERRAFORM_ARGS }} \
-            -var="image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}" \
             -auto-approve
         working-directory: terraform/stats_api
