@@ -20,7 +20,7 @@ on:
     inputs:
       env:
         description: "Environment"
-        required: false
+        required: true
         type: string
         default: ""
       image_tag:
