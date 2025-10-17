@@ -94,11 +94,9 @@ jobs:
             # For custom environments, use the environment name as project name
             echo "PROJECT_NAME=$ENV_NAME" >> $GITHUB_ENV
             echo "TERRAFORM_BUCKET=$ENV_NAME-arxiv-terraform-state" >> $GITHUB_ENV
-            TERRAFORM_ARGS="-var=\"gcp_project_id=$ENV_NAME\" \
-              -var=\"gcp_region=$REGION\" \
-              -var=\"env=${{ vars.ENV_VAR }}\" \
-              -var=\"read_db_instance=${{ vars.READ_DB_INSTANCE }}\" \
-              -var=\"read_db_secret_name=${{ vars.READ_DB_SECRET_NAME }}\""
+            TERRAFORM_ARGS="-var-file=envs/dev.tfvars
+              -var=\"gcp_project_id=$ENV_NAME\" \
+              -var=\"gcp_region=$REGION\""
           fi
 
           # Add image_path to TERRAFORM_ARGS for all environments
@@ -107,91 +105,14 @@ jobs:
 
           echo "TERRAFORM_ARGS=$TERRAFORM_ARGS" >> $GITHUB_ENV
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
-
-      - name: Check for GitHub secrets
-        run: |
-          echo "Checking for GitHub secrets..."
-          
-          # Check if GitHub secrets are available
-          if [ -n "${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}" ] && [ -n "${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}" ]; then
-            echo "PROVIDER_NAME=${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}" >> $GITHUB_ENV
-            echo "SERVICE_ACCOUNT=${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}" >> $GITHUB_ENV
-            echo "✅ Using GitHub secrets"
-          else
-            echo "❌ Error: ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET and ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET not found"
-            exit 1
-          fi
-
       - name: Authenticate with project-specific Workload Identity
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ env.PROVIDER_NAME }}
-          service_account: ${{ env.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.PROVIDER_NAME }}
+          service_account: ${{ vars.SERVICE_ACCOUNT }}
 
-      - name: Get secret values from arxiv-development
-        run: |
-          echo "Getting secret values from arxiv-development..."
-          echo "Current authentication:"
-          gcloud auth list
-          echo ""
-          echo "Current project:"
-          gcloud config get-value project
-          echo ""
-          
-          # Switch to arxiv-development project to read secrets
-          gcloud config set project arxiv-development
-          echo "Switched to arxiv-development project"
-          
-          # Read secret names from Terraform variables file - extract only the actual secret names
-          SECRETS=$(grep -A 20 'variable "secrets_to_copy"' terraform/stats_api/variables.tf | grep 'name =' | grep -v 'name = string' | sed 's/.*name = "\(.*\)".*/\1/' | tr -d ' ')
-          echo "Found secrets to get: $SECRETS"
-          for secret in $SECRETS; do
-            echo "Getting secret value: $secret"
-            # Get the secret value from arxiv-development and store in environment variable
-            SECRET_VALUE=$(gcloud secrets versions access latest --secret="$secret" --project="arxiv-development")
-            # Store in environment variable for later use
-            echo "SECRET_${secret//-/_}_VALUE=$SECRET_VALUE" >> $GITHUB_ENV
-            echo "✅ Retrieved secret value: $secret"
-          done
-
-      - name: Impersonate project service account for deployment
-        run: |
-          # Set the project service account for deployment
-          PROJECT_SA="deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
-          echo "Impersonating project service account: $PROJECT_SA"
-          
-          # Set impersonation for all gcloud commands
-          echo "GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=$PROJECT_SA" >> $GITHUB_ENV
-          
-          # Also set it in gcloud config
-          gcloud config set auth/impersonate_service_account $PROJECT_SA
-          
-          # Switch back to target project
-          gcloud config set project ${{ env.PROJECT_NAME }}
-
-      - name: Create secrets in target project
-        run: |
-          echo "Creating secrets in target project..."
-          # Read secret names from Terraform variables file - extract only the actual secret names
-          SECRETS=$(grep -A 20 'variable "secrets_to_copy"' terraform/stats_api/variables.tf | grep 'name =' | grep -v 'name = string' | sed 's/.*name = "\(.*\)".*/\1/' | tr -d ' ')
-          echo "Found secrets to create: $SECRETS"
-          for secret in $SECRETS; do
-            echo "Processing secret: $secret"
-            # Check if secret exists in target project
-            if ! gcloud secrets describe "$secret" --project="${{ env.PROJECT_NAME }}" >/dev/null 2>&1; then
-              echo "Secret doesn't exist in target project, creating it..."
-              # Get the secret value from environment variable
-              SECRET_VAR_NAME="SECRET_${secret//-/_}_VALUE"
-              SECRET_VALUE="${!SECRET_VAR_NAME}"
-              # Create the secret in target project with the actual value
-              echo "$SECRET_VALUE" | gcloud secrets create "$secret" --project="${{ env.PROJECT_NAME }}" --replication-policy="automatic" --data-file=-
-              echo "✅ Created and populated secret: $secret"
-            else
-              echo "✅ Secret already exists in target project: $secret"
-            fi
-          done
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Set up terraform
         uses: hashicorp/setup-terraform@v3
@@ -199,29 +120,8 @@ jobs:
       - name: Check version
         run: terraform --version
 
-      - name: Configure terraform
-        run: |
-          echo "provider \"google\" {" > provider_override.tf
-          echo "  project = \"${{ env.PROJECT_NAME }}\"" >> provider_override.tf
-          echo "  region  = \"${{ vars.GCP_REGION }}\"" >> provider_override.tf
-          echo "}" >> provider_override.tf
-          
-          echo "Terraform configuration:"
-          echo "  Project: ${{ env.PROJECT_NAME }}"
-          echo "  Region: ${{ vars.GCP_REGION }}"
-          echo "  Commit SHA: ${{ inputs.image_tag || github.sha }}"    
-          echo "  Container Image: gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}"
-          echo "  TERRAFORM_ARGS: ${{ env.TERRAFORM_ARGS }}"
-        working-directory: terraform/stats_api
-
       - name: Initialize remote backend
         run: terraform init -backend-config="bucket=${{ env.TERRAFORM_BUCKET }}"
-        working-directory: terraform/stats_api
-
-      - name: Plan
-        run: |
-          echo "Running terraform plan..."
-          terraform plan ${{ env.TERRAFORM_ARGS }}
         working-directory: terraform/stats_api
 
       - name: Apply
