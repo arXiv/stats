@@ -136,20 +136,6 @@ jobs:
       - name: Check version
         run: terraform --version
 
-      - name: Configure terraform
-        run: |
-          echo "provider \"google\" {" > provider_override.tf
-          echo "  project = \"${{ env.PROJECT_NAME }}\"" >> provider_override.tf
-          echo "  region  = \"${{ vars.GCP_REGION }}\"" >> provider_override.tf
-          echo "}" >> provider_override.tf
-          
-          echo "Terraform configuration:"
-          echo "  Project: ${{ env.PROJECT_NAME }}"
-          echo "  Region: ${{ vars.GCP_REGION }}"
-          echo "  Commit SHA: ${{ github.sha }}"    
-          echo "  TERRAFORM_ARGS: ${{ env.TERRAFORM_ARGS }}"
-        working-directory: terraform/aggregate_hourly_downloads
-
       # - name: Initialize remote backend
       #   run: terraform init -backend-config="bucket=${{ vars.ENV_VAR }}-arxiv-terraform-state"
       #   working-directory: terraform/aggregate_hourly_downloads
