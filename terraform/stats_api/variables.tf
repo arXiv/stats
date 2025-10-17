@@ -27,17 +27,3 @@ variable "read_db_secret_name" {
   description = "Reference to uri in Secret Manager for the read database"
   type        = string
 }
-
-variable "secrets_to_copy" {
-  description = "List of secrets to copy from arxiv-development if they don't exist in target project"
-  type = list(object({
-    name = string
-    description = string
-  }))
-  default = [
-    {
-      name = "latexml_db_uri"
-      description = "LaTeXML DB URI"
-    }
-  ]
-}
