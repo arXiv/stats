@@ -105,17 +105,17 @@ jobs:
 
           echo "TERRAFORM_ARGS=$TERRAFORM_ARGS" >> $GITHUB_ENV
 
-      - name: Authenticate with project-specific Workload Identity
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ vars.PROVIDER_NAME }}
-          service_account: ${{ vars.SERVICE_ACCOUNT }}
-
       # - name: Authenticate with project-specific Workload Identity
       #   uses: google-github-actions/auth@v3
       #   with:
-      #     workload_identity_provider: ${{ env.PROVIDER_NAME }}
-      #     service_account: ${{ env.SERVICE_ACCOUNT }}
+      #     workload_identity_provider: ${{ vars.PROVIDER_NAME }}
+      #     service_account: ${{ vars.SERVICE_ACCOUNT }}
+
+      - name: Authenticate with project-specific Workload Identity
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.PROVIDER_NAME }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
