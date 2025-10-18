@@ -137,37 +137,7 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Get project number
-        run: |
-          echo "Getting project number for project: ${{ env.PROJECT_NAME }}"
-          PROJECT_NUMBER=$(gcloud projects describe ${{ env.PROJECT_NAME }} --format="value(projectNumber)")
-          echo "PROJECT_NUMBER=$PROJECT_NUMBER" >> $GITHUB_ENV
-          echo "Project number: $PROJECT_NUMBER"
-
-      - name: Check workload identity pool exists
-        run: |
-          echo "Checking if workload identity pool exists in target project..."
-          if gcloud iam workload-identity-pools describe github --location=global --project=${{ env.PROJECT_NAME }} >/dev/null 2>&1; then
-            echo "✅ Workload identity pool exists"
-          else
-            echo "❌ Workload identity pool does not exist, creating it..."
-            # This would need to be done via terraform or gcloud commands
-            echo "Workload identity pool needs to be created first"
-            exit 1
-          fi
-
-      - name: Check workload identity provider exists
-        run: |
-          echo "Checking if workload identity provider exists in target project..."
-          if gcloud iam workload-identity-pools providers describe github-actions-provider --location=global --workload-identity-pool=github --project=${{ env.PROJECT_NAME }} >/dev/null 2>&1; then
-            echo "✅ Workload identity provider exists"
-          else
-            echo "❌ Workload identity provider does not exist, creating it..."
-            echo "Workload identity provider needs to be created first"
-            exit 1
-          fi
-
-      - name: Authenticate with target project workload identity
+      - name: Authenticate and impersonate deployment service account
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github/providers/github-actions-provider
