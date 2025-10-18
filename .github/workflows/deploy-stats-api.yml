@@ -105,36 +105,36 @@ jobs:
 
           echo "TERRAFORM_ARGS=$TERRAFORM_ARGS" >> $GITHUB_ENV
 
-      - name: Authenticate with project-specific Workload Identity
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
-          service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
-      #     workload_identity_provider: ${{ vars.PROVIDER_NAME }}
-      #     service_account: ${{ vars.SERVICE_ACCOUNT }}
-
-      - name: Impersonate project service account for deployment
-        run: |
-          # Set the project service account for deployment
-          PROJECT_SA="deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
-          echo "Impersonating project service account: $PROJECT_SA"
-          
-          # Set impersonation for all gcloud commands
-          echo "GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=$PROJECT_SA" >> $GITHUB_ENV
-          
-          # Also set it in gcloud config
-          gcloud config set auth/impersonate_service_account $PROJECT_SA
-          
-          # Switch back to target project
-          gcloud config set project ${{ env.PROJECT_NAME }}
-
-      # - name: Authenticate and impersonate
+      # - name: Authenticate with project-specific Workload Identity
       #   uses: google-github-actions/auth@v3
       #   with:
       #     workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
       #     service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
-      #     project_id: ${{ env.PROJECT_NAME }}
-      #     delegates: deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
+      # #     workload_identity_provider: ${{ vars.PROVIDER_NAME }}
+      # #     service_account: ${{ vars.SERVICE_ACCOUNT }}
+
+      # - name: Impersonate project service account for deployment
+      #   run: |
+      #     # Set the project service account for deployment
+      #     PROJECT_SA="deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
+      #     echo "Impersonating project service account: $PROJECT_SA"
+          
+      #     # Set impersonation for all gcloud commands
+      #     echo "GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=$PROJECT_SA" >> $GITHUB_ENV
+          
+      #     # Also set it in gcloud config
+      #     gcloud config set auth/impersonate_service_account $PROJECT_SA
+          
+      #     # Switch back to target project
+      #     gcloud config set project ${{ env.PROJECT_NAME }}
+
+      - name: Authenticate and impersonate
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
+          service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
+          project_id: ${{ env.PROJECT_NAME }}
+          delegates: deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
