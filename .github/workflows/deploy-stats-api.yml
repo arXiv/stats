@@ -133,14 +133,24 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
           service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
+          # project_id: ${{ env.PROJECT_NAME }}
+          # delegates: deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
+
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Authenticate and impersonate deployment service account
+      - name: Get project number
+        run: |
+          echo "Getting project number for project: ${{ env.PROJECT_NAME }}"
+          PROJECT_NUMBER=$(gcloud projects describe ${{ env.PROJECT_NAME }} --format="value(projectNumber)")
+          echo "PROJECT_NUMBER=$PROJECT_NUMBER" >> $GITHUB_ENV
+          echo "Project number: $PROJECT_NUMBER"
+
+      - name: Authenticate with target project workload identity
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github/providers/github-actions-provider
+          workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-actions/providers/github-actions-provider
           service_account: github-actions-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
           project_id: ${{ env.PROJECT_NAME }}
           delegates: deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
