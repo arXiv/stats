@@ -151,13 +151,13 @@ jobs:
           service_account: github-actions-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
           project_id: ${{ env.PROJECT_NAME }}
 
-      - name: Switch to target project
-        run: |
-          echo "Switching to target project: ${{ env.PROJECT_NAME }}"
-          gcloud config set project ${{ env.PROJECT_NAME }}
-          echo "Current project: $(gcloud config get-value project)"
-          echo "Current authentication:"
-          gcloud auth list
+      # - name: Switch to target project
+      #   run: |
+      #     echo "Switching to target project: ${{ env.PROJECT_NAME }}"
+      #     gcloud config set project ${{ env.PROJECT_NAME }}
+      #     echo "Current project: $(gcloud config get-value project)"
+      #     echo "Current authentication:"
+      #     gcloud auth list
 
       - name: Set up terraform
         uses: hashicorp/setup-terraform@v3
