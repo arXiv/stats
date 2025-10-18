@@ -147,7 +147,7 @@ jobs:
       - name: Check workload identity pool exists
         run: |
           echo "Checking if workload identity pool exists in target project..."
-          if gcloud iam workload-identity-pools describe github-actions --location=global --project=${{ env.PROJECT_NAME }} >/dev/null 2>&1; then
+          if gcloud iam workload-identity-pools describe github --location=global --project=${{ env.PROJECT_NAME }} >/dev/null 2>&1; then
             echo "✅ Workload identity pool exists"
           else
             echo "❌ Workload identity pool does not exist, creating it..."
@@ -159,7 +159,7 @@ jobs:
       - name: Check workload identity provider exists
         run: |
           echo "Checking if workload identity provider exists in target project..."
-          if gcloud iam workload-identity-pools providers describe github-actions-provider --location=global --workload-identity-pool=github-actions --project=${{ env.PROJECT_NAME }} >/dev/null 2>&1; then
+          if gcloud iam workload-identity-pools providers describe github-actions-provider --location=global --workload-identity-pool=github --project=${{ env.PROJECT_NAME }} >/dev/null 2>&1; then
             echo "✅ Workload identity provider exists"
           else
             echo "❌ Workload identity provider does not exist, creating it..."
@@ -170,7 +170,7 @@ jobs:
       - name: Authenticate with target project workload identity
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-actions/providers/github-actions-provider
+          workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github/providers/github-actions-provider
           service_account: github-actions-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
           project_id: ${{ env.PROJECT_NAME }}
           delegates: deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
