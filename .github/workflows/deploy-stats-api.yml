@@ -173,6 +173,8 @@ jobs:
       - name: Apply
         run: |
           echo "Running terraform apply..."
+          echo "Setting GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
+          export GOOGLE_IMPERSONATE_SERVICE_ACCOUNT="deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
           terraform apply ${{ env.TERRAFORM_ARGS }} \
             -auto-approve
         working-directory: terraform/stats_api
