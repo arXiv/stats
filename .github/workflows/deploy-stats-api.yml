@@ -128,14 +128,11 @@ jobs:
       #     # Switch back to target project
       #     gcloud config set project ${{ env.PROJECT_NAME }}
 
-      - name: Authenticate and impersonate
+      - name: Authenticate with arxiv-development
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
           service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
-          # project_id: ${{ env.PROJECT_NAME }}
-          # delegates: deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
-
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
@@ -176,8 +173,6 @@ jobs:
       - name: Apply
         run: |
           echo "Running terraform apply..."
-          echo "Setting GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
-          export GOOGLE_IMPERSONATE_SERVICE_ACCOUNT="deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
           terraform apply ${{ env.TERRAFORM_ARGS }} \
             -auto-approve
         working-directory: terraform/stats_api
