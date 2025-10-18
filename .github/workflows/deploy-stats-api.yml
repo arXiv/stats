@@ -150,7 +150,6 @@ jobs:
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github/providers/github-actions-provider
           service_account: github-actions-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
           project_id: ${{ env.PROJECT_NAME }}
-          delegates: deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com
 
       - name: Switch to target project
         run: |
@@ -173,8 +172,6 @@ jobs:
       - name: Apply
         run: |
           echo "Running terraform apply..."
-          echo "Setting GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
-          export GOOGLE_IMPERSONATE_SERVICE_ACCOUNT="deployment-sa@${{ env.PROJECT_NAME }}.iam.gserviceaccount.com"
           terraform apply ${{ env.TERRAFORM_ARGS }} \
             -auto-approve
         working-directory: terraform/stats_api
