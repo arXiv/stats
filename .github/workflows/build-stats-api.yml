@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       custom_sha:
-        description: 'Custom SHA to use for tagging (leave empty to use current commit)'
+        description: 'Custom SHA (image rebuilds only)'
         required: false
         type: string
 
