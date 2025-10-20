@@ -1,4 +1,4 @@
-name: Build stats-api
+name: Build and push stats-api
 
 run-name: "${{ github.ref_name }} - ${{ github.sha }}"
 
