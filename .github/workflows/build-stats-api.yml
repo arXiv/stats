@@ -88,7 +88,8 @@ jobs:
           if [ "${{ github.ref_name }}" = "main" ]; then
             # For main branch, deploy to multiple environments
             echo "envs=development" >> $GITHUB_OUTPUT
-            echo "image_tag=latest" >> $GITHUB_OUTPUT
+            # echo "envs=development,arxiv-staging" >> $GITHUB_OUTPUT
+            echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
             echo "Deploying to multiple environments with latest tag"
           else
 
@@ -117,6 +118,7 @@ jobs:
             fi
 
             eph_env="${GITHUB_REPOSITORY//\//-}-$([ "${{ github.event_name }}" = "pull_request" ] && echo "$GITHUB_HEAD_REF" || echo "$GITHUB_REF_NAME")"
+            eph_env=$(echo "$eph_env" | tr '[:upper:]' '[:lower:]')
             echo "Checking for GCP project: $eph_env"
             
             # Check if GCP project exists
