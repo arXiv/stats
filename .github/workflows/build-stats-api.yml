@@ -108,10 +108,10 @@ jobs:
               # This is a PR to another branch - check if there's a PR to main
               pr_to_main_exists=$(gh pr list --head "${{ github.head_ref }}" --base main --state open --json number --jq length)
               if [ "$pr_to_main_exists" -gt 0 ]; then
-                echo "PR to main exists, skipping this PR to other branch"
+                echo "PR to main exists, skipping this deployment in preference of the 'PR to main'"
                 exit 0
               fi
-              echo "No PR to main exists, proceeding to deploy this 'PR to other branch'"
+              echo "No PR to main exists, proceeding with deployment"
             else
               # This is a branch build - check if there's a PR to main
               pr_to_main_exists=$(gh pr list --head "${{ github.ref_name }}" --base main --state open --json number --jq length)
