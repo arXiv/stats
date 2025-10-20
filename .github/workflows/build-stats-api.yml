@@ -9,7 +9,7 @@ on:
   pull_request:
     paths:
       - "stats-api/**"
-  # workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,8 +19,8 @@ permissions:
 env:
   DOCKERFILE: "Dockerfile.api"
   IMAGE_NAME: "stats-api"
-  PORT: "8080"
-  TARGET: "runtime"
+  # PORT: "8080"
+  # TARGET: "runtime"
 
 jobs:
   format-check:
