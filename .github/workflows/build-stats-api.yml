@@ -84,6 +84,6 @@ jobs:
     uses: arXiv/arxiv-iac/.github/workflows/service-deployment-routing.yml@workflow4
     with:
       image_tag: ${{ inputs.custom_sha || github.sha }}
-      deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
+      deploy_workflow: deploy-stats-api.yml
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
