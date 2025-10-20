@@ -1,6 +1,6 @@
 name: Build and push stats-api
 
-#run-name: "${{ github.ref_name }} - ${{ github.sha }}"
+run-name: "${{ github.ref_name }} - ${{ github.sha }}"
 
 on:
   push:
