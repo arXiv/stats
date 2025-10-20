@@ -6,12 +6,10 @@ on:
   push:
     paths:
       - "stats-api/**"
-      - "terraform/stats_api/**"
   pull_request:
     paths:
       - "stats-api/**"
-      - "terraform/stats_api/**"
-  workflow_dispatch:
+  # workflow_dispatch:
 
 permissions:
   contents: read
