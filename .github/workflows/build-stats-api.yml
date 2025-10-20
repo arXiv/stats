@@ -85,6 +85,9 @@ jobs:
     needs: build-push
 
     steps:
+      - name: Dump All Default Environment Variables
+        run: env
+
       - name: Check Environment
         id: check_env
         run: |
@@ -94,7 +97,7 @@ jobs:
             echo "image_tag=latest" >> $GITHUB_OUTPUT
             echo "Deploying to multiple environments with latest tag"
           else
-            eph_env="${{ github.repository_name }}-${{ github.ref_name }}"
+            eph_env="${{ github.repository_name }}-${{ github.head_ref }}"
             echo "Checking for GCP project: $eph_env"
             
             # Check if GCP project exists
