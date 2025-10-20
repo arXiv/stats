@@ -66,7 +66,7 @@ jobs:
           docker build --target ${TARGET} --build-arg PORT=${PORT} -f ${DOCKERFILE} \
           --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
           -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ github.sha }} \
-          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest .
+          ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', vars.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} .
 
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
