@@ -80,7 +80,7 @@ jobs:
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
-      - name: Check Deployment Target
+      - name: Deployment Routing
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: check_env
@@ -130,7 +130,7 @@ jobs:
             fi
           fi
 
-      - name: Trigger Concurrent Deployments
+      - name: Trigger Deployment
         if: steps.check_env.outputs.envs != ''
         run: |
           IFS=',' read -ra ENVS <<< "${{ steps.check_env.outputs.envs }}"
