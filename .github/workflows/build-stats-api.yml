@@ -15,11 +15,12 @@ on:
     paths:
       - "stats-api/**"
       - "terraform/stats_api/**"
-#   workflow_dispatch:
-#     inputs:
-#       environment:
-#         type: environment
-#         description: Select the environment
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+        description: Select the environment
+        required: true
 
 permissions:
   contents: read
@@ -51,7 +52,7 @@ jobs:
 
   build-push:
     runs-on: ubuntu-latest
-    environment: development
+    environment: ${{ inputs.environment || 'development' }}
 
     steps:
       - name: Checkout code
