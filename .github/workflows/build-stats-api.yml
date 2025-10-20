@@ -26,7 +26,7 @@ env:
   IMAGE_NAME: "stats-api"
   PORT: "8080"
   TARGET: "runtime"
-  DEPLOY_WORKFLOW: "./.github/workflows/deploy-stats-api.yml"
+  DEPLOY_WORKFLOW: "deploy-stats-api.yml"
 
 jobs:
   format-check:
