@@ -97,7 +97,7 @@ jobs:
             echo "image_tag=latest" >> $GITHUB_OUTPUT
             echo "Deploying to multiple environments with latest tag"
           else
-            eph_env="${{ github.repository_name }}-${{ github.head_ref }}"
+            eph_env="${GITHUB_REPOSITORY//\//-}-$GITHUB_HEAD_REF"
             echo "Checking for GCP project: $eph_env"
             
             # Check if GCP project exists
