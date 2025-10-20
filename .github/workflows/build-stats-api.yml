@@ -26,6 +26,7 @@ env:
   IMAGE_NAME: "stats-api"
   PORT: "8080"
   TARGET: "runtime"
+  DEPLOY_WORKFLOW: "./.github/workflows/deploy-stats-api.yml"
 
 jobs:
   format-check:
@@ -77,3 +78,13 @@ jobs:
 
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-push
+    uses: mg2553/arxiv-iac/.github/workflows/service-deployment-routing.yml@workflow4
+    with:
+      image_tag: ${{ inputs.custom_sha || github.sha }}
+      deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
