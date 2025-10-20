@@ -10,6 +10,11 @@ on:
     paths:
       - "stats-api/**"
   workflow_dispatch:
+    inputs:
+      custom_sha:
+        description: 'Custom SHA to use for tagging (leave empty to use current commit)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -65,7 +70,7 @@ jobs:
 
           docker build --target ${TARGET} --build-arg PORT=${PORT} -f ${DOCKERFILE} \
           --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
-          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ github.sha }} \
+          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ inputs.custom_sha || github.sha }} \
           ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', vars.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} .
 
       - name: Push image
