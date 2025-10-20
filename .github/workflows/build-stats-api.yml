@@ -100,11 +100,26 @@ jobs:
             echo "Deploying to multiple environments with latest tag"
           else
 
-            # on branch build OR PR build exit deployment if a "PR to main" exists AND this is not that "PR to main" build
-            pr_exists=$(gh pr list --head "${{ github.ref_name }}" --base main --state open --json number --jq length)
-            if [ "$pr_exists" -gt 0 ] && [ "${{ github.event_name }}" != "pull_request" ]; then
-              echo "PR to main exists for this branch, but this is not the PR build - exiting"
-              exit 0
+            # Check deployment logic based on event type and PR status
+            if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.base_ref }}" = "main" ]; then
+              # This is a PR to main - deploy it
+              echo "This is a PR to main - proceeding with deployment"
+            elif [ "${{ github.event_name }}" = "pull_request" ]; then
+              # This is a PR to another branch - check if there's a PR to main
+              pr_to_main_exists=$(gh pr list --head "${{ github.head_ref }}" --base main --state open --json number --jq length)
+              if [ "$pr_to_main_exists" -gt 0 ]; then
+                echo "PR to main exists, skipping this PR to other branch"
+                exit 0
+              fi
+              echo "No PR to main exists, proceeding to deploy this 'PR to other branch'"
+            else
+              # This is a branch build - check if there's a PR to main
+              pr_to_main_exists=$(gh pr list --head "${{ github.ref_name }}" --base main --state open --json number --jq length)
+              if [ "$pr_to_main_exists" -gt 0 ]; then
+                echo "PR to main exists, skipping deployment of this 'branch build'"
+                exit 0
+              fi
+              echo "No PR to main exists, proceeding with deployment"
             fi
 
             eph_env="${GITHUB_REPOSITORY//\//-}-$([ "${{ github.event_name }}" = "pull_request" ] && echo "$GITHUB_HEAD_REF" || echo "$GITHUB_REF_NAME")"
