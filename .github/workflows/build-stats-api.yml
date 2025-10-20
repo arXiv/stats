@@ -1,0 +1,72 @@
+name: Build and push stats-api
+
+run-name: "${{ github.ref_name }} - ${{ github.sha }}"
+
+on:
+  push:
+    paths:
+      - "stats-api/**"
+  pull_request:
+    paths:
+      - "stats-api/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+env:
+  DOCKERFILE: "Dockerfile.api"
+  IMAGE_NAME: "stats-api"
+  PORT: "8080"
+  TARGET: "runtime"
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Check version
+        run: terraform --version
+
+      - name: Format check
+        run: terraform fmt -check
+
+  build-push:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.PROVIDER_NAME }}
+          service_account: ${{ vars.SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+
+      - name: Build image, caching from latest
+        run: |
+          docker pull gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest
+
+          docker build --target ${TARGET} --build-arg PORT=${PORT} -f ${DOCKERFILE} \
+          --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
+          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ github.sha }} \
+          ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', vars.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} .
+
+      - name: Push image
+        run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
