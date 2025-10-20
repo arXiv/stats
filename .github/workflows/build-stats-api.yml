@@ -80,10 +80,52 @@ jobs:
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
   deploy:
+    runs-on: ubuntu-latest
     needs: build-push
-    uses: arXiv/arxiv-iac/.github/workflows/service-deployment-routing.yml@workflow4
-    with:
-      image_tag: ${{ inputs.custom_sha || github.sha }}
-      deploy_workflow: deploy-stats-api.yml
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Check Environment
+        id: check_env
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            # For main branch, deploy to multiple environments
+            echo "envs=development" >> $GITHUB_OUTPUT
+            echo "image_tag=latest" >> $GITHUB_OUTPUT
+            echo "Deploying to multiple environments with latest tag"
+          else
+            eph_env="${{ github.repository_name }}-${{ github.ref_name }}"
+            echo "Checking for GCP project: $eph_env"
+            
+            # Check if GCP project exists
+            if gcloud projects describe "$eph_env" --quiet 2>/dev/null; then
+              echo "envs=$eph_env" >> $GITHUB_OUTPUT
+              echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+              echo "Ephemeral environment found: $eph_env"
+
+              # if we are in a branch build, but a "PR to main" exists then we should exit, 
+              # as we want to give PR builds preference
+              pr_exists=$(gh pr list --head "${{ github.ref_name }}" --base main --state open --json number --jq length)
+              if [ "$pr_exists" -gt 0 ]; then
+                echo "PR to main exists, exiting"
+                exit 0
+              fi
+
+            else
+              echo "envs=" >> $GITHUB_OUTPUT
+              echo "image_tag=" >> $GITHUB_OUTPUT
+              echo "No ephemeral environment found for: $eph_env"
+              exit 0
+            fi
+          fi
+
+      - name: Trigger Concurrent Deployments
+        if: steps.check_env.outputs.envs != ''
+        run: |
+          IFS=',' read -ra ENVS <<< "${{ steps.check_env.outputs.envs }}"
+          for env in "${ENVS[@]}"; do
+            echo "Triggering deployment to: $env"
+            gh workflow run ${{ inputs.deploy_workflow }} \
+              --ref ${{ github.ref }} \
+              -f env="$env" \
+              -f image_tag="${{ steps.check_env.outputs.image_tag }}"
+          done
