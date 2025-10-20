@@ -100,12 +100,12 @@ jobs:
             echo "Deploying to multiple environments with latest tag"
           else
 
-            # on branch build exit deployment when a "PR to main" exists
-            pr_exists=$(gh pr list --head "${{ github.ref_name }}" --base main --state open --json number --jq length)
-            if [ "$pr_exists" -gt 0 ]; then
-              echo "PR to main exists, exiting"
-              exit 0
-            fi
+            # # on branch build exit deployment when a "PR to main" exists
+            # pr_exists=$(gh pr list --head "${{ github.ref_name }}" --base main --state open --json number --jq length)
+            # if [ "$pr_exists" -gt 0 ]; then
+            #   echo "PR to main exists, exiting"
+            #   exit 0
+            # fi
 
             eph_env="${GITHUB_REPOSITORY//\//-}-$([ "${{ github.event_name }}" = "pull_request" ] && echo "$GITHUB_HEAD_REF" || echo "$GITHUB_REF_NAME")"
             echo "Checking for GCP project: $eph_env"
