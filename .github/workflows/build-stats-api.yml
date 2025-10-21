@@ -21,6 +21,7 @@ permissions:
   pull-requests: write
   id-token: write
   actions: write
+  workflow: write
 
 env:
   DOCKERFILE: "Dockerfile.api"
