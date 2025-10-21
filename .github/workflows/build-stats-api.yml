@@ -84,9 +84,15 @@ jobs:
       # don't deploy image rebuilds
       - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
-        uses: arXiv/arxiv-iac/.github/actions/service-deployment-routing@6033868b3654576ac38f96e14c78fb6a1abea26f
-        with:
-          image_tag: ${{ inputs.custom_sha || github.sha }}
-          deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
-          workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
-          service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run service-deployment-routing.yml \
+            --repo arXiv/arxiv-iac \
+            -f image_tag="${{ inputs.custom_sha || github.sha }}" \
+            -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
+            -f repository="${{ github.repository }}" \
+            -f ref_name="${{ github.ref_name }}" \
+            -f event_name="${{ github.event_name }}" \
+            -f base_ref="${{ github.base_ref }}" \
+            -f head_ref="${{ github.head_ref }}"
