@@ -1,21 +1,9 @@
 name: Deploy stats-api
 
 # Set custom run name to show project name in workflow runs list
-run-name: "${{ inputs.env }} - ${{ github.sha }}"
+run-name: "${{ inputs.env }} - ${{ inputs.image_tag }}"
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - "stats-api/**"
-  #     - "terraform/stats_api/**"
-  # pull_request:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - "stats-api/**"
-  #     - "terraform/stats_api/**"
   workflow_dispatch:
     inputs:
       env:
@@ -101,7 +89,7 @@ jobs:
 
           # Add image_path to TERRAFORM_ARGS for all environments
           TERRAFORM_ARGS="$TERRAFORM_ARGS \
-            -var=\"image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{ inputs.image_tag || github.sha }}\""
+            -var=\"image_path=gcr.io/arxiv-development/${{env.IMAGE_NAME}}:${{inputs.image_tag}}\""
 
           echo "TERRAFORM_ARGS=$TERRAFORM_ARGS" >> $GITHUB_ENV
 
