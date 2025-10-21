@@ -84,7 +84,7 @@ jobs:
       # don't deploy image rebuilds
       - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
-        uses: arXiv/iac-public/.github/actions/service-deployment-routing@main  
+        uses: arXiv/arxiv-iac/.github/actions/service-deployment-routing@main
         with:
           image_tag: ${{ inputs.custom_sha || github.sha }}
           deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
