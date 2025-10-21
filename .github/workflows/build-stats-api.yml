@@ -81,21 +81,12 @@ jobs:
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
+      # don't deploy image rebuilds
       - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api repos/arXiv/arxiv-iac/dispatches \
-            --method POST \
-            -f event_type=deploy \
-            -f ref=workflow4 \
-            -f client_payload='{
-              "image_tag": "${{ github.sha }}",
-              "deploy_workflow": "${{ env.DEPLOY_WORKFLOW }}",
-              "repository": "${{ github.repository }}",
-              "ref_name": "${{ github.ref_name }}",
-              "event_name": "${{ github.event_name }}",
-              "base_ref": "${{ github.event.pull_request.base.ref || '' }}",
-              "head_ref": "${{ github.event.pull_request.head.ref || '' }}"
-            }'
+        uses: arXiv/iac-public/.github/actions/service-deployment-routing@main  
+        with:
+          image_tag: ${{ inputs.custom_sha || github.sha }}
+          deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
+          workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
+          service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
