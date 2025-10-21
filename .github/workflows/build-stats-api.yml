@@ -1,6 +1,6 @@
 name: Build and push stats-api
 
-run-name: "Build stats-api ${{ github.ref_name }} - ${{ inputs.custom_sha || github.sha }}"
+run-name: "Build stats-api ${{ github.ref_name }} ${{ inputs.custom_sha || github.sha }}"
 
 on:
   push:
@@ -27,6 +27,7 @@ env:
   IMAGE_NAME: "stats-api"
   PORT: "8080"
   TARGET: "runtime"
+  DEPLOY_WORKFLOW: "deploy-stats-api.yml"
 
 jobs:
   format-check:
@@ -86,6 +87,6 @@ jobs:
         uses: arXiv/iac-public/.github/actions/service-deployment-routing@main  
         with:
           image_tag: ${{ inputs.custom_sha || github.sha }}
-          deploy_workflow: deploy-stats-api.yml
+          deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
           workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
           service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
