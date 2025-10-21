@@ -85,5 +85,5 @@ jobs:
     with:
       image_tag: ${{ inputs.custom_sha || github.sha }}
       deploy_workflow: deploy-stats-api.yml
-    secrets:
+    secrets: inherit
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
