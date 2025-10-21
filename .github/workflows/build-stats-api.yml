@@ -81,25 +81,20 @@ jobs:
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
-  # don't deploy image rebuilds
-  deploy:
-    runs-on: ubuntu-latest
-    if: ${{ !inputs.custom_sha }}
-    needs: build-push
-    steps:
       - name: Trigger Service Deployment Routing
-        env:
-          GH_TOKEN: ${{ github.token }}
+        if: ${{ !inputs.custom_sha }}
         run: |
-          gh api repos/arXiv/arxiv-iac/actions/workflows/service-deployment-routing.yml/dispatches \
-            --method POST \
-            -f ref=workflow4 \
-            -f inputs='{
-              "image_tag":"${{ github.sha }}",
-              "deploy_workflow":"${{ env.DEPLOY_WORKFLOW }}",
-              "repository":"${{ github.repository }}",
-              "branch":"${{ github.ref_name }}",
-              "event_name":"${{ github.event_name }}",
-              "base_ref":"${{ github.base_ref }}",
-              "head_ref":"${{ github.head_ref }}"
-            }'
+          if ! gh workflow run .github/workflows/service-deployment-routing.yml \
+            --repo arXiv/arxiv-iac \
+            --ref ref=workflow4 \
+            -f image_tag="${{ github.sha }}" \
+            -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
+            -f repository="${{ github.repository }}" \
+            -f ref_name="${{ github.ref_name }}" \
+            -f event_name="${{ github.event_name }}" \
+            -f base_ref="${{ github.base_ref }}" \
+            -f head_ref="${{ github.head_ref }}"; then
+            echo "Failed to trigger Service Deployment Routing workflow"
+            exit 1
+          fi
+        shell: bash
