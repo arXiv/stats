@@ -89,6 +89,7 @@ jobs:
           gh api repos/arXiv/arxiv-iac/dispatches \
             --method POST \
             -f event_type=deploy \
+            -f ref=workflow4 \
             -f client_payload='{
               "image_tag": "${{ github.sha }}",
               "deploy_workflow": "${{ env.DEPLOY_WORKFLOW }}",
