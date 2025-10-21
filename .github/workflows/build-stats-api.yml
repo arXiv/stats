@@ -83,9 +83,14 @@ jobs:
 
       - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
-        uses: arXiv/iac-public/.github/actions/service-deployment-routing@main  
-        with:
-          image_tag: ${{ inputs.custom_sha || github.sha }}
-          deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
-          workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
-          service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
+        run: |
+          gh workflow run service-deployment-routing.yml \
+            --repo arXiv/arxiv-iac \
+            --ref main \
+            -f image_tag="${{ github.sha }}" \
+            -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
+            -f repository="${{ github.repository }}" \
+            -f ref_name="${{ github.ref_name }}" \
+            -f event_name="${{ github.event_name }}" \
+            -f base_ref="${{ github.event.pull_request.base.ref || '' }}" \
+            -f head_ref="${{ github.event.pull_request.head.ref || '' }}"
