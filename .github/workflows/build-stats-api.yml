@@ -96,7 +96,7 @@ jobs:
                 "repository": "${{ github.repository }}",
                 "ref_name": "${{ github.ref_name }}",
                 "event_name": "${{ github.event_name }}",
-                "base_ref": "${{ github.event.pull_request.base.ref || "" }}",
-                "head_ref": "${{ github.event.pull_request.head.ref || "" }}"
+                "base_ref": "${{ github.event.pull_request.base.ref || '' }}",
+                "head_ref": "${{ github.event.pull_request.head.ref || '' }}"
               }
             }'
