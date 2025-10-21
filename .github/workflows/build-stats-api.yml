@@ -88,6 +88,8 @@ jobs:
     needs: build-push
     steps:
       - name: Trigger Service Deployment Routing
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh api repos/arXiv/arxiv-iac/actions/workflows/service-deployment-routing.yml/dispatches \
             --method POST \
