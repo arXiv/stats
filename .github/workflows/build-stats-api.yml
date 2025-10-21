@@ -83,6 +83,8 @@ jobs:
 
       - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh workflow run service-deployment-routing.yml \
             --repo arXiv/arxiv-iac \
