@@ -87,6 +87,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Testing GitHub CLI access..."
+          gh auth status
+          echo "Checking repository access..."
+          gh repo view arXiv/arxiv-iac --json name,visibility || echo "Failed to access repository"
+          echo "Running workflow..."
           gh workflow run service-deployment-routing.yml \
             --repo arXiv/arxiv-iac \
             -f image_tag="${{ inputs.custom_sha || github.sha }}" \
