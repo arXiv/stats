@@ -81,22 +81,20 @@ jobs:
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
-      - name: Trigger Service Deployment Routing
-        if: ${{ !inputs.custom_sha }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api repos/arXiv/arxiv-iac/dispatches \
-            --method POST \
-            -f event_type=deploy-service \
-            -f ref=workflow4 \
-            -f client_payload='{
-              "image_tag":"${{ github.sha }}",
-              "deploy_workflow":"${{ env.DEPLOY_WORKFLOW }}",
-              "repository":"${{ github.repository }}",
-              "ref_name":"${{ github.ref_name }}",
-              "event_name":"${{ github.event_name }}",
-              "base_ref":"${{ github.base_ref }}",
-              "head_ref":"${{ github.head_ref }}"
-            }'
-        shell: bash
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-push
+    if: ${{ !inputs.custom_sha }}
+    uses: arXiv/arxiv-iac/.github/workflows/service-deployment-routing.yml@workflow4
+    with:
+      image_tag: ${{ inputs.custom_sha || github.sha }}
+      deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
+      repository: ${{ github.repository }}
+      ref_name: ${{ github.ref_name }}
+      event_name: ${{ github.event_name }}
+      base_ref: ${{ github.base_ref }}
+      head_ref: ${{ github.head_ref }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
+      ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
