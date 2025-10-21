@@ -85,7 +85,7 @@ jobs:
       - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ARXIV_IAC_PAT }}
         run: |
           echo "Testing GitHub CLI access..."
           gh auth status
