@@ -86,7 +86,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh workflow run service-deployment-routing.yml \
+          gh workflow run "Service Deployment Routing" \
             --repo arXiv/arxiv-iac \
             --ref main \
             -f image_tag="${{ github.sha }}" \
