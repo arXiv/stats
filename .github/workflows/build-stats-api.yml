@@ -90,16 +90,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api repos/arXiv/arxiv-iac/dispatches \
-            --method POST \
-            -f event_type=deploy-service \
-            -f ref=workflow4 \
-            -f client_payload='{
-              "image_tag":"${{ inputs.custom_sha || github.sha }}",
-              "deploy_workflow":"${{ env.DEPLOY_WORKFLOW }}",
-              "repository":"${{ github.repository }}",
-              "ref_name":"${{ github.ref_name }}",
-              "event_name":"${{ github.event_name }}",
-              "base_ref":"${{ github.base_ref }}",
-              "head_ref":"${{ github.head_ref }}"
-            }'
+          gh workflow run .github/workflows/service-deployment-routing.yml \
+            --repo arXiv/arxiv-iac \
+            --ref workflow4 \
+            -f image_tag="${{ github.sha }}" \
+            -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
+            -f repository="${{ github.repository }}" \
+            -f ref_name="${{ github.ref_name }}" \
+            -f event_name="${{ github.event_name }}" \
+            -f base_ref="${{ github.base_ref }}" \
+            -f head_ref="${{ github.head_ref }}"
