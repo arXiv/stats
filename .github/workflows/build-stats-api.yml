@@ -88,7 +88,7 @@ jobs:
         run: |
           if ! gh workflow run .github/workflows/service-deployment-routing.yml \
             --repo arXiv/arxiv-iac \
-            --ref ref=workflow4 \
+            --ref workflow4 \
             -f image_tag="${{ github.sha }}" \
             -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
             -f repository="${{ github.repository }}" \
