@@ -81,7 +81,7 @@ jobs:
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
       - name: Deployment Routing
-        uses: arXiv/iac-public/.github/actions/deployment-routing@main  
+        uses: arXiv/iac-public/.github/actions/service-deployment-routing@main  
         with:
           image_tag: ${{ inputs.custom_sha || github.sha }}
           deploy_workflow: deploy-stats-api.yml
