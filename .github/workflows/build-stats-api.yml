@@ -21,7 +21,6 @@ permissions:
   pull-requests: write
   id-token: write
   actions: write
-  workflow: write
 
 env:
   DOCKERFILE: "Dockerfile.api"
@@ -82,18 +81,11 @@ jobs:
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
-      - name: Trigger Service Deployment Routing
+      - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh workflow run "Service Deployment Routing" \
-            --repo arXiv/arxiv-iac \
-            --ref workflow4 \
-            -f image_tag="${{ github.sha }}" \
-            -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
-            -f repository="${{ github.repository }}" \
-            -f ref_name="${{ github.ref_name }}" \
-            -f event_name="${{ github.event_name }}" \
-            -f base_ref="${{ github.base_ref }}" \
-            -f head_ref="${{ github.head_ref }}"
+        uses: arXiv/iac-public/.github/actions/service-deployment-routing@main  
+        with:
+          image_tag: ${{ inputs.custom_sha || github.sha }}
+          deploy_workflow: ${{ env.DEPLOY_WORKFLOW }}
+          workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
+          service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
