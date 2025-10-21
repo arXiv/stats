@@ -94,6 +94,7 @@ jobs:
           echo "Running workflow..."
           gh workflow run service-deployment-routing.yml \
             --repo arXiv/arxiv-iac \
+            --ref workflow4 \
             -f image_tag="${{ inputs.custom_sha || github.sha }}" \
             -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
             -f repository="${{ github.repository }}" \
