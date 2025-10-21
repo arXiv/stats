@@ -1,7 +1,7 @@
 name: Deploy stats-api
 
 # Set custom run name to show project name in workflow runs list
-run-name: "${{ inputs.env }} - ${{ inputs.image_tag }}"
+run-name: "Deploy${{ inputs.image_tag }} - ${{ inputs.env }}"
 
 on:
   workflow_dispatch:
