@@ -79,10 +79,8 @@ jobs:
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
-  deploy:
-    needs: build-push
-    uses: arXiv/arxiv-iac/.github/workflows/service-deployment-routing.yml@workflow4
-    with:
-      image_tag: ${{ inputs.custom_sha || github.sha }}
-      deploy_workflow: deploy-stats-api.yml
-    secrets: inherit
+      - name: Deployment Routing
+        uses: arXiv/arxiv-iac/.github/actions/deployment-routing@workflow4
+        with:
+          image_tag: ${{ inputs.custom_sha || github.sha }}
+          deploy_workflow: deploy-stats-api.yml
