@@ -84,3 +84,5 @@ jobs:
         with:
           image_tag: ${{ inputs.custom_sha || github.sha }}
           deploy_workflow: deploy-stats-api.yml
+          workload_identity_provider: ${{ secrets.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
+          service_account: ${{ secrets.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
