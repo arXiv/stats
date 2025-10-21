@@ -83,20 +83,16 @@ jobs:
 
       - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
+        env:
+          GH_TOKEN: ${{ secrets.ARXIV_IAC_TOKEN }}
         run: |
-          curl -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ github.token }}" \
-            https://api.github.com/repos/arXiv/arxiv-iac/actions/workflows/199452931/dispatches \
-            -d '{
-              "ref": "main",
-              "inputs": {
-                "image_tag": "${{ github.sha }}",
-                "deploy_workflow": "${{ env.DEPLOY_WORKFLOW }}",
-                "repository": "${{ github.repository }}",
-                "ref_name": "${{ github.ref_name }}",
-                "event_name": "${{ github.event_name }}",
-                "base_ref": "${{ github.event.pull_request.base.ref || '' }}",
-                "head_ref": "${{ github.event.pull_request.head.ref || '' }}"
-              }
-            }'
+          gh workflow run "Service Deployment Routing" \
+            --repo arXiv/arxiv-iac \
+            --ref main \
+            -f image_tag="${{ github.sha }}" \
+            -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
+            -f repository="${{ github.repository }}" \
+            -f ref_name="${{ github.ref_name }}" \
+            -f event_name="${{ github.event_name }}" \
+            -f base_ref="${{ github.event.pull_request.base.ref || '' }}" \
+            -f head_ref="${{ github.event.pull_request.head.ref || '' }}"
