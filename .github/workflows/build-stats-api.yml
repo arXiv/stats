@@ -26,7 +26,6 @@ env:
   IMAGE_NAME: "stats-api"
   PORT: "8080"
   TARGET: "runtime"
-  DEPLOY_WORKFLOW: "deploy-stats-api.yml"
 
 jobs:
   format-check:
@@ -80,68 +79,11 @@ jobs:
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
 
-      - name: Deployment Routing
-        env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: check_env
-        run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            # For main branch, deploy to multiple environments
-            echo "envs=development" >> $GITHUB_OUTPUT
-            # echo "envs=development,arxiv-staging" >> $GITHUB_OUTPUT
-            echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
-            echo "Deploying to multiple environments with latest tag"
-          else
-
-            # Check deployment logic based on event type and PR status
-            if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.base_ref }}" = "main" ]; then
-              # This is a PR to main - deploy it
-              echo "This is a PR to main - proceeding with deployment"
-            elif [ "${{ github.event_name }}" = "pull_request" ]; then
-              # This is a PR to another branch - check if there's a PR to main
-              pr_to_main_exists=$(gh pr list --head "${{ github.head_ref }}" --base main --state open --json number --jq length)
-              if [ "$pr_to_main_exists" -gt 0 ]; then
-                echo "PR to main exists, skipping this deployment in preference of the 'PR to main'"
-                exit 0
-              fi
-              echo "No PR to main exists, proceeding with deployment"
-            else
-              # This is a branch build - check if there are ANY PRs involving this branch
-              prs_as_head=$(gh pr list --head "${{ github.ref_name }}" --state open --json number --jq length)
-              prs_as_base=$(gh pr list --base "${{ github.ref_name }}" --state open --json number --jq length)
-              total_prs=$((prs_as_head + prs_as_base))
-              if [ "$total_prs" -gt 0 ]; then
-                echo "Found $total_prs PR(s) involving branch '${{ github.ref_name }}' - skipping deployment"
-                exit 0
-              fi
-              echo "No PR to main exists, proceeding with deployment"
-            fi
-
-            eph_env="${GITHUB_REPOSITORY//\//-}-$([ "${{ github.event_name }}" = "pull_request" ] && echo "$GITHUB_HEAD_REF" || echo "$GITHUB_REF_NAME")"
-            eph_env=$(echo "$eph_env" | tr '[:upper:]' '[:lower:]')
-            echo "Checking for GCP project: $eph_env"
-            
-            # Check if GCP project exists
-            if gcloud projects describe "$eph_env" --quiet 2>/dev/null; then
-              echo "envs=$eph_env" >> $GITHUB_OUTPUT
-              echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
-              echo "Ephemeral environment found: $eph_env"
-            else
-              echo "envs=" >> $GITHUB_OUTPUT
-              echo "image_tag=" >> $GITHUB_OUTPUT
-              echo "No ephemeral environment found for: $eph_env"
-              exit 0
-            fi
-          fi
-
-      - name: Trigger Deployment
-        if: steps.check_env.outputs.envs != ''
-        run: |
-          IFS=',' read -ra ENVS <<< "${{ steps.check_env.outputs.envs }}"
-          for env in "${ENVS[@]}"; do
-            echo "Triggering deployment to: $env"
-            gh workflow run ${{ inputs.deploy_workflow }} \
-              --ref ${{ github.ref }} \
-              -f env="$env" \
-              -f image_tag="${{ steps.check_env.outputs.image_tag }}"
-          done
+  deploy:
+    needs: build-push
+    uses: arXiv/arxiv-iac/.github/workflows/service-deployment-routing.yml@workflow4
+    with:
+      image_tag: ${{ inputs.custom_sha || github.sha }}
+      deploy_workflow: deploy-stats-api.yml
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
