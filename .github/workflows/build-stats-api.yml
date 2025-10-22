@@ -89,7 +89,7 @@ jobs:
         run: |
           gh workflow run service-deployment-routing.yml \
             --repo arXiv/arxiv-iac \
-            --ref workflow5 \
+            --ref main \
             -f image_tag="${{ github.sha }}" \
             -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
             -f repository="${{ github.repository }}" \
