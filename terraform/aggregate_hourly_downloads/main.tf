@@ -121,7 +121,7 @@ resource "google_cloudfunctions2_function" "function" {
 }
 
 resource "google_storage_bucket" "bucket" {
-  name                        = "dev-stats-aggregate-hourly-downloads" # prefixed with env because buckets must be globally unique
+  name                        = lower("${var.env}-stats-aggregate-hourly-downloads") # prefixed with env because buckets must be globally unique
   location                    = "US"
   uniform_bucket_level_access = true
 }
