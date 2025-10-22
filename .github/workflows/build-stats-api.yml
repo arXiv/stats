@@ -49,6 +49,7 @@ jobs:
   build-push:
     needs: format-check
     runs-on: ubuntu-latest
+    environment: development
 
     steps:
       - name: Checkout code
