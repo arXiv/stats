@@ -1,6 +1,6 @@
 name: Build and push stats-api
 
-run-name: "${{ github.ref_name }} - ${{ github.sha }}"
+run-name: "Build stats-api ${{ github.ref_name }} ${{ inputs.custom_sha || github.sha }}"
 
 on:
   push:
@@ -10,17 +10,24 @@ on:
     paths:
       - "stats-api/**"
   workflow_dispatch:
+    inputs:
+      custom_sha:
+        description: 'Custom SHA (image rebuilds only)'
+        required: false
+        type: string
 
 permissions:
   contents: read
   pull-requests: write
   id-token: write
+  actions: write
 
 env:
   DOCKERFILE: "Dockerfile.api"
   IMAGE_NAME: "stats-api"
   PORT: "8080"
   TARGET: "runtime"
+  DEPLOY_WORKFLOW: "deploy-stats-api.yml"
 
 jobs:
   format-check:
@@ -40,12 +47,15 @@ jobs:
         run: terraform fmt -check
 
   build-push:
+    needs: format-check
     runs-on: ubuntu-latest
     environment: development
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.custom_sha || github.sha }}
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
@@ -65,8 +75,25 @@ jobs:
 
           docker build --target ${TARGET} --build-arg PORT=${PORT} -f ${DOCKERFILE} \
           --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
-          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ github.sha }} \
+          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ inputs.custom_sha || github.sha }} \
           ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', vars.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} .
 
       - name: Push image
         run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
+
+      # don't deploy image rebuilds
+      - name: Deployment Routing
+        if: ${{ !inputs.custom_sha }}
+        env:
+          GH_TOKEN: ${{ secrets.ARXIV_IAC_PAT }}
+        run: |
+          gh workflow run service-deployment-routing.yml \
+            --repo arXiv/arxiv-iac \
+            --ref main \
+            -f image_tag="${{ github.sha }}" \
+            -f deploy_workflow="${{ env.DEPLOY_WORKFLOW }}" \
+            -f repository="${{ github.repository }}" \
+            -f ref_name="${{ github.ref_name }}" \
+            -f event_name="${{ github.event_name }}" \
+            -f base_ref="${{ github.base_ref }}" \
+            -f head_ref="${{ github.head_ref }}"
