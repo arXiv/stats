@@ -144,7 +144,8 @@ class AggregateHourlyDownloadsJob:
         self, db_pool: Engine, base: DeclarativeBase
     ) -> sessionmaker:
         try:
-            base.metadata.create_all(db_pool)
+            # base.metadata.create_all(db_pool)
+            pass
         except Exception:
             logger.exception("Could not create database metadata! Check database configuration")
             raise NoRetryError
@@ -160,6 +161,8 @@ class AggregateHourlyDownloadsJob:
         # initialize Cloud SQL Python Connector object
         connector = Connector(ip_type=ip_type, refresh_strategy="LAZY")
 
+        socket = f"/cloudsql/{db.instance_name}"
+
         def getconn() -> pymysql.connections.Connection:
             conn: pymysql.connections.Connection = connector.connect(
                 db.instance_name,
@@ -167,6 +170,8 @@ class AggregateHourlyDownloadsJob:
                 user=db.username,
                 password=db.password,
                 db=db.db_name,
+                ssl_disabled=True,
+                unix_socket=socket
             )
             return conn
 
@@ -364,22 +369,22 @@ class AggregateHourlyDownloadsJob:
         )
         WriteSession = self._instantiate_sessionmaker(write_pool, SiteUsageBase)
 
-        with WriteSession() as session:
-            logger.info("Executing write database transaction")
-            # remove previous data for the time period
-            session.query(HourlyDownloads).filter(
-                HourlyDownloads.start_dttm.in_(time_periods)
-            ).delete(synchronize_session=False)
+        # with WriteSession() as session:
+        #     logger.info("Executing write database transaction")
+        #     # remove previous data for the time period
+        #     session.query(HourlyDownloads).filter(
+        #         HourlyDownloads.start_dttm.in_(time_periods)
+        #     ).delete(synchronize_session=False)
 
-            # add data
-            for i in range(
-                0, len(data_to_insert), self.max_query_to_write
-            ):  # to conform to db stack size limit
-                session.bulk_save_objects(
-                    data_to_insert[i : i + self.max_query_to_write]
-                )
+        #     # add data
+        #     for i in range(
+        #         0, len(data_to_insert), self.max_query_to_write
+        #     ):  # to conform to db stack size limit
+        #         session.bulk_save_objects(
+        #             data_to_insert[i : i + self.max_query_to_write]
+        #         )
 
-            session.commit()
+        #     session.commit()
 
         logger.info("Write database transaction successfully committed; session closed")
 
@@ -540,6 +545,29 @@ class AggregateHourlyDownloadsJob:
         if self.bq_client:
             self.bq_client.close()
 
+    def test_connections(self):
+        try:
+            # logger.info("testing write connection")
+            # self.write_connector, write_pool = self.instantiate_connection_pool(self.ip_type, self.write_db)
+            # WriteSession = self._instantiate_sessionmaker(write_pool, SiteUsageBase)
+            # with WriteSession() as session:
+            #     logger.info("Executing write database transaction")
+            #     result = session.query(HourlyDownloads).limit(10).all()
+            #     logger.info(f"write result: {result}")
+            # logger.info("test write complete")
+            
+            logger.info("testing read connection")
+            self.read_connector, read_pool = self.instantiate_connection_pool(self.ip_type, self.read_db)
+            ReadSession = self._instantiate_sessionmaker(read_pool, ReadBase)
+            with ReadSession() as session:
+                logger.info("Executing read database transaction")
+                result = session.query(DocumentCategory).limit(10).all()
+                logger.info(f"read result: {result}")
+            logger.info("test read complete")
+        
+        except Exception:
+            raise NoRetryError
+        
     def run(
         self,
         cloud_event: CloudEvent = None,
@@ -553,6 +581,8 @@ class AggregateHourlyDownloadsJob:
             start_time, end_time = self._validate_inputs(
                 cloud_event=cloud_event, start_time=start_time, end_time=end_time
             )
+            
+            self.test_connections()
 
             log_query_result = self.query_logs(start_time, end_time)
             aggregation_result = self.perform_aggregation(log_query_result)
