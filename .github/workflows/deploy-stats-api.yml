@@ -134,6 +134,7 @@ jobs:
 
       - name: Apply
         run: |
+          terraform untaint google_cloud_run_v2_service.stats_api
           echo "Running terraform apply..."
           terraform apply ${{ env.TERRAFORM_ARGS }} \
             -auto-approve
