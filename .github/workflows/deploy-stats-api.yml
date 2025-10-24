@@ -49,7 +49,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: format-check
     environment: ${{ inputs.env }}
-    #if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && ((inputs.env != 'production' && inputs.env != 'prod' && inputs.env != 'staging' && inputs.env != 'stage') || inputs.image_tag != 'latest')
     if: >
       (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') &&
       ((inputs.env != 'production' && inputs.env != 'prod' && inputs.env != 'staging' && inputs.env != 'stage') || inputs.image_tag != 'latest')
