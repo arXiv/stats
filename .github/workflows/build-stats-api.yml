@@ -23,11 +23,12 @@ permissions:
   actions: write
 
 env:
+  DEPLOY_WORKFLOW: "deploy-stats-api.yml"
   DOCKERFILE: "Dockerfile.api"
+  GCP_PROJECT_ID: "arxiv-development"
   IMAGE_NAME: "stats-api"
   PORT: "8080"
   TARGET: "runtime"
-  DEPLOY_WORKFLOW: "deploy-stats-api.yml"
 
 jobs:
   format-check:
@@ -49,7 +50,6 @@ jobs:
   build-push:
     needs: format-check
     runs-on: ubuntu-latest
-    environment: development
 
     concurrency:
       group: build-${{ github.workflow }}-${{ github.ref }}
@@ -75,15 +75,15 @@ jobs:
 
       - name: Build image, caching from latest
         run: |
-          docker pull gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest
+          docker pull gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:latest
 
           docker build --target ${TARGET} --build-arg PORT=${PORT} -f ${DOCKERFILE} \
-          --cache-from gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:latest \
-          -t gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}:${{ inputs.custom_sha || github.sha }} \
-          ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', vars.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} .
+          --cache-from gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:latest \
+          -t gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:${{ inputs.custom_sha || github.sha }} \
+          ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', env.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} .
 
       - name: Push image
-        run: docker push --all-tags gcr.io/${{ vars.GCP_PROJECT_ID }}/${IMAGE_NAME}
+        run: docker push --all-tags gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}
 
       # don't deploy image rebuilds
       - name: Deployment Routing
