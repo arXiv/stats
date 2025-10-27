@@ -17,8 +17,6 @@ on:
         type: string
 
 permissions:
-  #contents: read
-  #pull-requests: write
   id-token: write
   actions: write
 
