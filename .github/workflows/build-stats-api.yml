@@ -85,7 +85,7 @@ jobs:
       - name: Push image
         run: docker push --all-tags gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}
 
-      # don't deploy image rebuilds
+      # CI Deployment Routing ... manual builds of a commit are not CD candidates
       - name: Deployment Routing
         if: ${{ !inputs.custom_sha }}
         uses: arXiv/iac-public/.github/actions/service-deployment-routing@main  
