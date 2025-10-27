@@ -20,7 +20,7 @@ permissions:
   #contents: read
   #pull-requests: write
   id-token: write
-  #actions: write
+  actions: read
 
 env:
   DEPLOY_WORKFLOW: "deploy-stats-api.yml"
