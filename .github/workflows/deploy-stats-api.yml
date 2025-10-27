@@ -79,7 +79,7 @@ jobs:
             echo "PROJECT_NAME=arxiv-stage" >> $GITHUB_ENV
             echo "TERRAFORM_BUCKET=stage-arxiv-terraform-state" >> $GITHUB_ENV
             TERRAFORM_ARGS="-var-file=envs/staging.tfvars"
-          elif [ "$ENV_NAME" = "development" ]; then
+          elif [ "$ENV_NAME" = "development" ] || [ "$ENV_NAME" = "develop" ] || [ "$ENV_NAME" = "dev" ]; then
             echo "PROJECT_NAME=arxiv-development" >> $GITHUB_ENV
             echo "TERRAFORM_BUCKET=dev-arxiv-terraform-state" >> $GITHUB_ENV
             TERRAFORM_ARGS="-var-file=envs/dev.tfvars"
