@@ -16,10 +16,10 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: read
+permissions: read-all
+  #contents: read
   #pull-requests: write
-  #id-token: write
+  #id-token
   #actions: write
 
 env:
