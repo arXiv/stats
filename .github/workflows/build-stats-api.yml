@@ -4,9 +4,13 @@ run-name: "Build stats-api ${{ github.ref_name }} ${{ inputs.custom_sha || githu
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "stats-api/**"
   pull_request:
+    branches:
+      - main
     paths:
       - "stats-api/**"
   workflow_dispatch:
@@ -73,8 +77,11 @@ jobs:
 
       - name: Build image, caching from latest
         run: |
+          docker pull gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
+
           docker build --target ${TARGET} --build-arg PORT=${PORT} -f ${DOCKERFILE} \
-          -t gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:${{ inputs.custom_sha || github.sha }} \
+          --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
+          -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ inputs.custom_sha || github.sha }} \
           ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', env.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} .
 
       - name: Push image
