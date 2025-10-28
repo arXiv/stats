@@ -27,7 +27,10 @@ class HourlyDownloads(SiteUsageBase):
     cross_count = Column(Integer)
     start_dttm = Column(DateTime, primary_key=True)
 
-    __table_args__ = PrimaryKeyConstraint("country", "download_type", "category", "start_dttm")
+    __table_args__ = (
+        PrimaryKeyConstraint("country", "download_type", "category", "start_dttm"),
+    )
+
 
 class HourlyEdgeRequests(SiteUsageBase):
     __tablename__ = "hourly_edge_requests"
@@ -38,4 +41,4 @@ class HourlyEdgeRequests(SiteUsageBase):
     access_type = Column(String(1), nullable=False)
     connections = Column(Integer, nullable=False)
 
-    __table_args__ = PrimaryKeyConstraint("ymd", "hour", "node_num", "access_type")
+    __table_args__ = (PrimaryKeyConstraint("ymd", "hour", "node_num", "access_type"),)
