@@ -1,13 +1,7 @@
-from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    Date,
-    DateTime,
-    Enum,
-    PrimaryKeyConstraint,
-)
+from sqlalchemy import Column, String, Integer, Date, DateTime, Enum, ForeignKey
+from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.orm import declarative_base
+
 
 SiteUsageBase = declarative_base()
 
@@ -27,18 +21,29 @@ class HourlyDownloads(SiteUsageBase):
     cross_count = Column(Integer)
     start_dttm = Column(DateTime, primary_key=True)
 
-    __table_args__ = (
-        PrimaryKeyConstraint("country", "download_type", "category", "start_dttm"),
+
+class HistoricalHourlyRequests(SiteUsageBase):
+    __tablename__ = "historical_hourly_requests"
+
+    ymd = Column(Date, primary_key=True)
+    hour = Column(Integer, primary_key=True)
+    node_num = Column(Integer, primary_key=True)
+    access_type = Column(String(1), primary_key=True)
+    connections = Column(Integer)
+
+
+class HourlyRequests(SiteUsageBase):
+    __tablename__ = "hourly_requests"
+
+    start_dttm = Column(DateTime, primary_key=True)
+    source_id = Column(
+        TINYINT(unsigned=True), ForeignKey("request_sources.id"), primary_key=True
     )
+    request_count = Column(Integer)
 
 
-class HourlyEdgeRequests(SiteUsageBase):
-    __tablename__ = "hourly_edge_requests"
+class RequestSources(SiteUsageBase):
+    __tablename__ = "request_sources"
 
-    ymd = Column(Date, nullable=False)
-    hour = Column(Integer, nullable=False)
-    node_num = Column(Integer, nullable=False)
-    access_type = Column(String(1), nullable=False)
-    connections = Column(Integer, nullable=False)
-
-    __table_args__ = (PrimaryKeyConstraint("ymd", "hour", "node_num", "access_type"),)
+    id = Column(TINYINT(unsigned=True), primary_key=True, autoincrement=False)
+    description = Column(String(255))
