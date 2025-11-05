@@ -13,6 +13,7 @@ import pymysql
 
 import fastly
 from fastly.api import stats_api
+from fastly.model.stats import Stats
 
 from sqlalchemy import create_engine, delete
 from sqlalchemy.engine.base import Engine
@@ -20,11 +21,16 @@ from sqlalchemy.orm import sessionmaker
 
 from stats_entities.site_usage import HourlyRequests
 
-from pydantic import ValidationError
-from models import Database, FastlyStatsResponse
-
 
 logger = logging.getLogger(__name__)
+
+
+class Database:
+    def __init__(self, instance_name, username, password, db_name):
+        self.instance_name = instance_name
+        self.username = username
+        self.password = password
+        self.db_name = db_name
 
 
 class NoRetryError(Exception):
@@ -55,6 +61,7 @@ class HourlyEdgeRequestsJob:
 
         self.cloud_logging_client = None
         self.write_connector = None
+        self.fastly_api_client = None
 
         self._set_up_logging()
         logger.info("Initialization of hourly edge requests job complete")
@@ -94,6 +101,8 @@ class HourlyEdgeRequestsJob:
             logger.error("Fastly API token missing! Check environment configuration")
             raise NoRetryError
         
+        self.fastly_api_client = fastly.ApiClient(self.fastly_config)
+
     def _get_timestamps(self, hour: datetime) -> tuple[int, int]:
         """transform datetime into start and end unix/epoch timestamps"""
         start_time = int(hour.replace(minute=0, second=0, microsecond=0).timestamp())
@@ -101,29 +110,21 @@ class HourlyEdgeRequestsJob:
 
         return start_time, end_time
 
-    def get_fastly_stats(self, hour: datetime) -> FastlyStatsResponse:
+    def get_fastly_stats(self, hour: datetime) -> Stats:
         start_time, end_time = self._get_timestamps(hour)
 
-        with fastly.ApiClient(self.fastly_config) as api_client:
-            api_instance = stats_api.StatsApi(api_client)
+        with self.fastly_api_client as client:
+            api_instance = stats_api.StatsApi(client)
             options = {
                 "service_id": self.FASTLY_SERVICE_ID["arxiv.org"],
                 "start_time": start_time,
                 "end_time": end_time,
             }
 
-            try:
-                api_response = api_instance.get_service_stats(**options)
-                return FastlyStatsResponse(**api_response)
+            return api_instance.get_service_stats(**options) # TODO add pydantic typing
 
-            except ValidationError:
-                logger.exception(
-                    "Fastly response payload cannot be validated! Check format and retry"
-                )
-                raise NoRetryError
-
-    def sum_requests(self, response: FastlyStatsResponse) -> int:
-        return sum(pop["edge_requests"] for pop in response.model_dump())
+    def sum_requests(self, response: Stats) -> int:
+        return sum(response.stats[pop].edge_requests for pop in response.stats.keys())
 
     def write_to_db(self, request_count: int, hour: datetime) -> int:
         self.write_connector, write_pool = self.instantiate_connection_pool(
@@ -191,7 +192,7 @@ class HourlyEdgeRequestsJob:
         self,
         cloud_event: CloudEvent = None,
         hour: str = None,
-    ):
+    ) -> datetime:
         try:
             if cloud_event:
                 logger.info("Received cloud event trigger")
@@ -200,7 +201,7 @@ class HourlyEdgeRequestsJob:
                 logger.info("Received hour input")
                 hour = self._validate_dates(hour)
             else:
-                logger.error("Must receive either a cloud event or valid input time!")
+                logger.error("Must receive either a cloud event or valid hour input!")
                 raise NoRetryError
 
         except NoRetryError:
@@ -215,6 +216,9 @@ class HourlyEdgeRequestsJob:
 
         if self.write_connector:
             self.write_connector.close()
+
+        if self.fastly_api_client:
+            self.fastly_api_client.close()
 
     def run(self, cloud_event: CloudEvent = None, hour: str = None):
         try:
