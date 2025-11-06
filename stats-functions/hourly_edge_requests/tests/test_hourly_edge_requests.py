@@ -2,30 +2,36 @@ import os
 import sys
 import pytest
 
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from unittest.mock import patch, MagicMock
+from datetime import datetime, timezone
 from cloudevents.http import CloudEvent
 
 from fastly.model.stats import Stats
+from fastly.model.results import Results
 from models import FastlyStatsApiResponse
-
-from datetime import datetime, timezone
-
 from main import HourlyEdgeRequestsJob, NoRetryError
 
 
 mock_fastly_response_valid = Stats(
     **{
-        "ACC": {
-            "edge_requests": 31,
-            "extra_field": 54602588,
-            "another_extra_field": 18272,
-        },
-        "AMS": {
-            "edge_requests": 31,
-            "extra_field": 54602588,
-        },
+        "stats": {
+            "ACC": Results(
+                **{
+                    "edge_requests": 31,
+                    "extra_field": 54602588,
+                    "another_extra_field": 18272,
+                }
+            ),
+            "AMS": Results(
+                **{
+                    "edge_requests": 31,
+                    "extra_field": 54602588,
+                }
+            ),
+        }
     }
 )
 
@@ -64,14 +70,18 @@ def test_get_fastly_stats_valid_response(mock_fastly, mock_fastly_stats_api):
 def test_get_fastly_stats_missing_edge_requests(mock_fastly, mock_fastly_stats_api):
     mock_fastly_response_missing_edge_requests = Stats(
         **{
-            "ACC": {
-                "edge_requests": 31,
-                "extra_field": 54602588,
-                "another_extra_field": 18272,
-            },
-            "AMS": {
-                "extra_field": 54602588,
-            },
+            "ACC": Results(
+                **{
+                    "edge_requests": 31,
+                    "extra_field": 54602588,
+                    "another_extra_field": 18272,
+                }
+            ),
+            "AMS": Results(
+                **{
+                    "extra_field": 54602588,
+                }
+            ),
         }
     )
     mock_job_instance = MagicMock(autospec=HourlyEdgeRequestsJob)
@@ -90,7 +100,7 @@ def test_sum_requests():
 
     result = HourlyEdgeRequestsJob.sum_requests(
         mock_job_instance,
-        FastlyStatsApiResponse(**{"stats": mock_fastly_response_valid.to_dict()}),
+        FastlyStatsApiResponse(**mock_fastly_response_valid.to_dict()),
     )
 
     assert result == 62

@@ -114,14 +114,14 @@ class HourlyEdgeRequestsJob:
             response = api_instance.get_service_stats(**options)
 
             try:
-                return FastlyStatsApiResponse(**{"stats": response.to_dict()})
+                return FastlyStatsApiResponse(**response.to_dict())
             except ValidationError:
                 logger.exception(
                     "Could not validate response payload! Check response format"
                 )
                 raise NoRetryError
 
-    def sum_requests(self, response: Stats) -> int:
+    def sum_requests(self, response: FastlyStatsApiResponse) -> int:
         return sum(response.stats[pop].edge_requests for pop in response.stats.keys())
 
     def write_to_db(self, request_count: int, hour: datetime) -> int:
