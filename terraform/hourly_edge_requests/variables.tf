@@ -1,0 +1,39 @@
+variable "gcp_project_id" {
+  description = "GCP Project ID corresponding to environment"
+  type        = string
+}
+
+variable "gcp_region" {
+  description = "GCP Region for resource deployments"
+  type        = string
+}
+
+variable "env" {
+  description = "Deployment environment - DEV or PROD"
+  type        = string
+}
+
+variable "commit_sha" {
+  description = "Commit hash"
+  type        = string
+}
+
+variable "write_db_user" {
+  description = "Username for the database data is written to"
+  type        = string
+}
+
+variable "write_db_pw_secret_name" {
+  description = "Reference to password in Secret Manager for the database data is written to"
+  type        = string
+}
+
+variable "write_db_instance" {
+  description = "Instance name for the database data is written to"
+  type        = string
+}
+
+variable "write_db_name" {
+  description = "Database name for the database data is written to"
+  type        = string
+}
