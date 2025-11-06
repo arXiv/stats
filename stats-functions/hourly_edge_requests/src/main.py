@@ -20,17 +20,10 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker
 
 from stats_entities.site_usage import HourlyRequests
-
+from models import Database, FastlyStatsApiResponse
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
-
-
-class Database:
-    def __init__(self, instance_name, username, password, db_name):
-        self.instance_name = instance_name
-        self.username = username
-        self.password = password
-        self.db_name = db_name
 
 
 class NoRetryError(Exception):
@@ -61,7 +54,6 @@ class HourlyEdgeRequestsJob:
 
         self.cloud_logging_client = None
         self.write_connector = None
-        self.fastly_api_client = None
 
         self._set_up_logging()
         logger.info("Initialization of hourly edge requests job complete")
@@ -100,8 +92,6 @@ class HourlyEdgeRequestsJob:
         if not self.fastly_config.api_token:
             logger.error("Fastly API token missing! Check environment configuration")
             raise NoRetryError
-        
-        self.fastly_api_client = fastly.ApiClient(self.fastly_config)
 
     def _get_timestamps(self, hour: datetime) -> tuple[int, int]:
         """transform datetime into start and end unix/epoch timestamps"""
@@ -113,7 +103,7 @@ class HourlyEdgeRequestsJob:
     def get_fastly_stats(self, hour: datetime) -> Stats:
         start_time, end_time = self._get_timestamps(hour)
 
-        with self.fastly_api_client as client:
+        with fastly.ApiClient(self.fastly_config) as client:
             api_instance = stats_api.StatsApi(client)
             options = {
                 "service_id": self.FASTLY_SERVICE_ID["arxiv.org"],
@@ -121,7 +111,15 @@ class HourlyEdgeRequestsJob:
                 "end_time": end_time,
             }
 
-            return api_instance.get_service_stats(**options) # TODO add pydantic typing
+            response = api_instance.get_service_stats(**options)
+
+            try:
+                return FastlyStatsApiResponse(**{"stats": response.to_dict()})
+            except ValidationError:
+                logger.exception(
+                    "Could not validate response payload! Check response format"
+                )
+                raise NoRetryError
 
     def sum_requests(self, response: Stats) -> int:
         return sum(response.stats[pop].edge_requests for pop in response.stats.keys())
@@ -176,7 +174,7 @@ class HourlyEdgeRequestsJob:
         # subtract delay
         return event_time - timedelta(hours=self.hour_delay)
 
-    def _validate_dates(self, hour: str) -> datetime:
+    def _validate_date(self, hour: str) -> datetime:
         date_format = "%Y-%m-%d%H"
 
         try:
@@ -199,7 +197,7 @@ class HourlyEdgeRequestsJob:
                 hour = self._validate_cloud_event(cloud_event)
             elif hour:
                 logger.info("Received hour input")
-                hour = self._validate_dates(hour)
+                hour = self._validate_date(hour)
             else:
                 logger.error("Must receive either a cloud event or valid hour input!")
                 raise NoRetryError
