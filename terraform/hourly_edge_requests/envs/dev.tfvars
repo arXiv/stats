@@ -1,0 +1,7 @@
+gcp_project_id          = "arxiv-development"
+gcp_region              = "us-central1"
+env                     = "DEV"
+write_db_user           = "insertupdate"
+write_db_pw_secret_name = "stats-db-insertupdate-pw"
+write_db_instance       = "arxiv-development:us-central1:stats-db"
+write_db_name           = "site_usage"
