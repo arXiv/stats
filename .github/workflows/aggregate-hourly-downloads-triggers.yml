@@ -1,0 +1,37 @@
+name: Aggregate hourly downloads triggers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "stats-functions/aggregate_hourly_downloads/**"
+      - "terraform/aggregate_hourly_downloads/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "stats-functions/aggregate_hourly_downloads/**"
+      - "terraform/aggregate_hourly_downloads/**"
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+        description: Select the environment
+
+jobs:
+  call-lint-test:
+    name: Lint and Test
+    uses: ./.github/workflows/lint-test-function.yml
+    with:
+      function_name: aggregate_hourly_downloads
+
+  call-deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy-function.yml
+    with:
+      function_name: aggregate_hourly_downloads
+      environment: ${{ inputs.environment }}
+      PROVIDER_NAME: ${{ vars.PROVIDER_NAME }}
+      SERVICE_ACCOUNT: ${{ vars.SERVICE_ACCOUNT }}
+      ENV_VAR: ${{ vars.ENV_VAR }}
