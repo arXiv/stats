@@ -23,7 +23,7 @@ from stats_entities.site_usage import HourlyRequests
 from models import Database, FastlyStatsApiResponse
 from pydantic import ValidationError
 
-logger = logging.getLogger(__name__) # test
+logger = logging.getLogger(__name__)
 
 
 class NoRetryError(Exception):
