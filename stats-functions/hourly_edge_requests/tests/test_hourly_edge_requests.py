@@ -128,7 +128,6 @@ def test_validate_cloud_event():
 
 @patch("main.datetime")
 def test_event_time_exceeds_retry_window_true(mock_datetime_method):
-    """ """
     mock_datetime_method.now.return_value = datetime(
         2025, 10, 15, 10, 30, 0, tzinfo=timezone.utc
     )
@@ -146,7 +145,6 @@ def test_event_time_exceeds_retry_window_true(mock_datetime_method):
 
 @patch("main.datetime")
 def test_event_time_exceeds_retry_window_false(mock_datetime_method):
-    """ """
     mock_datetime_method.now.return_value = datetime(
         2025, 10, 15, 10, 30, 0, tzinfo=timezone.utc
     )

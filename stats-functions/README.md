@@ -2,7 +2,7 @@
 
 This library contains python scripts which collect arXiv site usage data and persist it to the `stats-db.site_usage` database.
 
-All are cron jobs implemented as GCP Cloud Functions with pubsub triggers. Trigger messages are published by GCP Scheduler Jobs. All infrastructure as code can be found in `terrform/`.
+All are cron jobs implemented as GCP Cloud Functions with pubsub triggers. Trigger messages are published by GCP Scheduler Jobs. All infrastructure as code can be found in `terraform/`.
 
 ### Aggregate Hourly Downloads
 

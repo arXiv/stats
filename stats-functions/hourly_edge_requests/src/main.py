@@ -124,7 +124,7 @@ class HourlyEdgeRequestsJob:
     def sum_requests(self, response: FastlyStatsApiResponse) -> int:
         return sum(response.stats[pop].edge_requests for pop in response.stats.keys())
 
-    def write_to_db(self, request_count: int, hour: datetime) -> int:
+    def write_to_db(self, hour: datetime, request_count: int):
         self.write_connector, write_pool = self.instantiate_connection_pool(
             self.ip_type, self.write_db
         )
@@ -142,9 +142,9 @@ class HourlyEdgeRequestsJob:
 
             # add new data to be inserted to the session queue
             new_hourly_requests = HourlyRequests(
-                start_dttm=hour, source_id=1, request_count=request_count
+                start_dttm=hour, source_id=0, request_count=request_count
             )
-            session.add_all(new_hourly_requests)
+            session.add(new_hourly_requests)
             logger.info(f"Requests for hour {hour}: {request_count}")
 
             # commit both the deletion and the insertion as a single transaction
@@ -205,6 +205,9 @@ class HourlyEdgeRequestsJob:
         except NoRetryError:
             raise
 
+        # round down to the start of the hour
+        hour = hour.replace(minute=0, second=0, microsecond=0)
+
         logger.info(f"Query parameters for fastly: hour={hour}")
         return hour
 
@@ -215,22 +218,23 @@ class HourlyEdgeRequestsJob:
         if self.write_connector:
             self.write_connector.close()
 
-        if self.fastly_api_client:
-            self.fastly_api_client.close()
-
     def run(self, cloud_event: CloudEvent = None, hour: str = None):
         try:
             hour = self._validate_inputs(cloud_event=cloud_event, hour=hour)
             self._configure_fastly()
             response = self.get_fastly_stats(hour)
             request_count = self.sum_requests(response)
-            self.write_to_db(request_count)
+            self.write_to_db(hour, request_count)
 
         except NoRetryError:
             logger.exception(
                 "A NoRetry exception has been raised! Will not retry. Fix the problem and manually run the function to patch data as needed."
             )
             return
+
+        finally:
+            self._cleanup()
+            logger.info("Cleanup complete")
 
 
 @functions_framework.cloud_event
