@@ -34,7 +34,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, aliased
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__) # test
 
 
 class NoRetryError(Exception):
