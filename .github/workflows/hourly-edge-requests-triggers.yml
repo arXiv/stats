@@ -24,14 +24,10 @@ jobs:
     name: Lint and Test
     uses: ./.github/workflows/lint-test-function.yml
     with:
-      function_name: aggregate_hourly_downloads
+      function_name: hourly_edge_requests
 
   call-deploy:
     name: Deploy
     uses: ./.github/workflows/deploy-function.yml
     with:
-      function_name: aggregate_hourly_downloads
-      environment: ${{ inputs.environment }}
-      PROVIDER_NAME: ${{ vars.PROVIDER_NAME }}
-      SERVICE_ACCOUNT: ${{ vars.SERVICE_ACCOUNT }}
-      ENV_VAR: ${{ vars.ENV_VAR }}
+      function_name: hourly_edge_requests
