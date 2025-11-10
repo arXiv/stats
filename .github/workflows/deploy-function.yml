@@ -32,7 +32,7 @@ on:
         description: "Docker image tag (latest or the commit SHA)"
         required: false
         type: string
-        default: "latest"
+        default: "latest" # TODO update
 
 permissions:
   contents: read
@@ -59,7 +59,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'development' }}
+    environment: ${{ inputs.env || 'development' }}
     if: github.ref == 'refs/heads/main'
     needs: format-check
 
@@ -81,8 +81,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ inputs.PROVIDER_NAME }}
-          service_account: ${{ inputs.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.PROVIDER_NAME }}
+          service_account: ${{ vars.SERVICE_ACCOUNT }}
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
@@ -94,9 +94,9 @@ jobs:
         run: terraform --version
 
       - name: Initialize remote backend
-        run: terraform init -backend-config="bucket=${{ inputs.ENV_VAR }}-arxiv-terraform-state"
+        run: terraform init -backend-config="bucket=${{ vars.ENV_VAR }}-arxiv-terraform-state"
         working-directory: "terraform/${{ inputs.function_name }}"
 
       - name: Apply
-        run: terraform apply -var-file=envs/${{ inputs.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}" -auto-approve
+        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}" -auto-approve # TODO update sha
         working-directory: "terraform/${{ inputs.function_name }}"
