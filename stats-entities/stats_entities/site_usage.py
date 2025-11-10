@@ -42,8 +42,15 @@ class HourlyRequests(SiteUsageBase):
     request_count = Column(Integer)
 
 
-class RequestSources(SiteUsageBase):
-    __tablename__ = "request_sources"
+class RequestSource(SiteUsageBase):
+    __tablename__ = "request_source"
 
     id = Column(TINYINT(unsigned=True), primary_key=True, autoincrement=False)
     description = Column(String(255))
+
+
+class MonthlyDownloads(SiteUsageBase):
+    __tablename__ = "monthly_downloads"
+
+    month = Column(Date, primary_key=True)
+    count = Column(Integer, nullable=False)
