@@ -7,19 +7,32 @@ on:
         type: string
         description: Name of the function directory (e.g. aggregate_hourly_downloads)
         required: true
-      environment:
-        type: string
-        description: Environment for deployment
-        required: false # is set by the caller workflow or uses default below
-      ENV_VAR:
-        type: string
+      env:
+        description: "Environment"
         required: true
-      PROVIDER_NAME:
         type: string
-        required: true
-      SERVICE_ACCOUNT:
+        default: ""
+      image_tag:
+        description: "Docker image tag (latest or the commit SHA)"
+        required: false
         type: string
+        default: "latest"
+  workflow_dispatch:
+    inputs:
+      function_name:
+        type: string
+        description: Name of the function directory (e.g. aggregate_hourly_downloads)
         required: true
+      env:
+        description: "Environment"
+        required: true
+        type: string
+        default: ""
+      image_tag:
+        description: "Docker image tag (latest or the commit SHA)"
+        required: false
+        type: string
+        default: "latest"
 
 permissions:
   contents: read
@@ -42,7 +55,7 @@ jobs:
 
       - name: Format check
         run: terraform fmt -check
-        working-directory: ${{ format('terraform/{0}', inputs.function_name) }}
+        working-directory: "terraform/${{ inputs.function_name }}"
 
   deploy:
     runs-on: ubuntu-latest
@@ -82,8 +95,8 @@ jobs:
 
       - name: Initialize remote backend
         run: terraform init -backend-config="bucket=${{ inputs.ENV_VAR }}-arxiv-terraform-state"
-        working-directory: ${{ format('terraform/{0}', inputs.function_name) }}
+        working-directory: "terraform/${{ inputs.function_name }}"
 
       - name: Apply
         run: terraform apply -var-file=envs/${{ inputs.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}" -auto-approve
-        working-directory: ${{ format('terraform/{0}', inputs.function_name) }}
+        working-directory: "terraform/${{ inputs.function_name }}"
