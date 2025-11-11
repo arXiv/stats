@@ -14,11 +14,11 @@ on:
     paths:
       - "stats-functions/hourly_edge_requests/**"
       - "terraform/hourly_edge_requests/**"
-  workflow_dispatch:
-    inputs:
-      environment:
-        type: environment
-        description: Select the environment
+  # workflow_dispatch:
+  #   inputs:
+  #     environment:
+  #       type: environment
+  #       description: Select the environment
 
 jobs:
   call-lint-test:
