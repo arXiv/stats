@@ -21,19 +21,7 @@ permissions:
   contents: read      
 
 jobs:
-  # debug-trigger:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Get changed files
-  #       id: changed-files
-  #       uses: tj-actions/changed-files@v44
-
-  #     - name: List all changed files
-  #       run: |
-  #         echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
-
   call-lint-test:
-    #needs: debug-trigger
     name: Lint and Test
     uses: ./.github/workflows/lint-test-function.yml
     with:
