@@ -37,13 +37,13 @@ class HourlyRequests(SiteUsageBase):
 
     start_dttm = Column(DateTime, primary_key=True)
     source_id = Column(
-        TINYINT(unsigned=True), ForeignKey("request_sources.id"), primary_key=True
+        TINYINT(unsigned=True), ForeignKey("requests_source.id"), primary_key=True
     )
     request_count = Column(Integer)
 
 
-class RequestSource(SiteUsageBase):
-    __tablename__ = "request_source"
+class RequestsSource(SiteUsageBase):
+    __tablename__ = "requests_source"
 
     id = Column(TINYINT(unsigned=True), primary_key=True, autoincrement=False)
     description = Column(String(255))
