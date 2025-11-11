@@ -49,8 +49,8 @@ class RequestsSource(SiteUsageBase):
     description = Column(String(255))
 
 
-class MonthlyDownloads(SiteUsageBase):
-    __tablename__ = "monthly_downloads"
+class MonthlySubmissions(SiteUsageBase):
+    __tablename__ = "monthly_submissions"
 
     month = Column(Date, primary_key=True)
     count = Column(Integer, nullable=False)
