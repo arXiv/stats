@@ -21,19 +21,19 @@ permissions:
   contents: read
 
 jobs:
-  debug-trigger:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v44
+  # debug-trigger:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Get changed files
+  #       id: changed-files
+  #       uses: tj-actions/changed-files@v44
 
-      - name: List all changed files
-        run: |
-          echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
+  #     - name: List all changed files
+  #       run: |
+  #         echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
 
   call-lint-test:
-    needs: debug-trigger
+    #needs: debug-trigger
     name: Lint and Test
     uses: ./.github/workflows/lint-test-function.yml
     with:
@@ -56,9 +56,3 @@ jobs:
           function_name: hourly_edge_requests
           workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
           service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
-
-  # call-deploy:
-  #   name: Deploy
-  #   uses: ./.github/workflows/deploy-function.yml
-  #   with:
-  #     function_name: hourly_edge_requests
