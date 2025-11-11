@@ -15,9 +15,9 @@ from sqlalchemy import create_engine, select, delete
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
-from entities import Document, MonthlySubmissions
+from entities import Document
 
-# from stats_entities.site_usage import MonthlySubmissions
+from stats_entities.site_usage import MonthlySubmissions
 from models import Database
 
 logger = logging.getLogger(__name__)

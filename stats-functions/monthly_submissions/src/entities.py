@@ -16,13 +16,3 @@ class Document(ReadBase):
     dated = Column(Integer, nullable=False, index=True)
     primary_subject_class = Column(String(16))
     created = Column(DateTime)
-
-
-WriteBase = declarative_base()
-
-
-class MonthlySubmissions(WriteBase):
-    __tablename__ = "monthly_submissions"
-
-    month = Column(DateTime, primary_key=True)
-    count = Column(Integer, nullable=False)
