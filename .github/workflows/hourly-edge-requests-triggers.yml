@@ -20,6 +20,10 @@ on:
   #       type: environment
   #       description: Select the environment
 
+permissions:
+  id-token: write
+  actions: write
+
 jobs:
   # call-lint-test:
   #   name: Lint and Test
@@ -36,12 +40,11 @@ jobs:
       cancel-in-progress: true
 
     steps:
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
-          service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
+      # - name: Authenticate to Google Cloud
+      #   uses: google-github-actions/auth@v3
+      #   with:
+      #     workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
+      #     service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
 
       - name: Deployment Routing
         uses: arXiv/iac-public/.github/actions/service-deployment-routing@ARXIVCE-4101  
