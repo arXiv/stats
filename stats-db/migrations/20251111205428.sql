@@ -11,7 +11,7 @@ CREATE TABLE `requests_source` (
   PRIMARY KEY (`id`)
 ) CHARSET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 -- Modify "hourly_requests" table
-ALTER TABLE `hourly_requests` DROP FOREIGN KEY `hourly_requests_ibfk_1`, DROP INDEX `hourly_requests_ibfk_1`;
+ALTER TABLE `hourly_requests` DROP FOREIGN KEY `hourly_requests_ibfk_1`, DROP INDEX `source_id`;
 -- Modify "hourly_requests" table
 ALTER TABLE `hourly_requests` ADD CONSTRAINT `hourly_requests_ibfk_1` FOREIGN KEY (`source_id`) REFERENCES `requests_source` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION;
 -- Drop "request_sources" table
