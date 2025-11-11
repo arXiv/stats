@@ -1,4 +1,5 @@
 name: Aggregate hourly downloads triggers
+run-name: "Aggregate Hourly Downloads ${{ github.ref_name }} ${{ github.sha }}"
 
 on:
   push:
@@ -21,8 +22,19 @@ jobs:
     with:
       function_name: aggregate_hourly_downloads
 
-  call-deploy:
-    name: Deploy
-    uses: ./.github/workflows/deploy-function.yml
+  deployment-routing:
+    name: Deployment Routing
+    needs: call-lint-test
+    uses: arXiv/iac-public/.github/actions/service-deployment-routing@ARXIVCE-4101  
     with:
+      image_tag: ${{ github.sha }}
+      deploy_workflow: deploy-function.yml
       function_name: aggregate_hourly_downloads
+      workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
+      service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
+
+  # call-deploy:
+  #   name: Deploy
+  #   uses: ./.github/workflows/deploy-function.yml
+  #   with:
+  #     function_name: aggregate_hourly_downloads
