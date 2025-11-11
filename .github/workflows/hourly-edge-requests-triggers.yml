@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: build-${{ github.workflow }}-${{ github.ref }}
+      group: deploy-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
 
     steps:
