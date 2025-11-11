@@ -20,14 +20,14 @@ permissions:
   actions: write
 
 jobs:
-  # call-lint-test:
-  #   name: Lint and Test
-  #   uses: ./.github/workflows/lint-test-function.yml
-  #   with:
-  #     function_name: hourly_edge_requests
+  call-lint-test:
+    name: Lint and Test
+    uses: ./.github/workflows/lint-test-function.yml
+    with:
+      function_name: hourly_edge_requests
 
   deployment-routing:
-    #needs: call-lint-test
+    needs: call-lint-test
     runs-on: ubuntu-latest
 
     concurrency:
