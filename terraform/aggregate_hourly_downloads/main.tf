@@ -12,8 +12,8 @@ terraform {
 }
 
 provider "google" {
-  project = var.gcp_project_id
-  region  = var.gcp_region
+  project = var.gcp_project_id # default inherited by all resources
+  region  = var.gcp_region     # default inherited by all resources
 }
 
 ### service account ###
@@ -68,8 +68,8 @@ resource "google_project_iam_member" "cloudsql_client" {
 ### cloud function ###
 
 resource "google_cloudfunctions2_function" "function" {
-  name        = "stats-aggregate-hourly-downloads"
-  location    = var.gcp_region
+  name        = "stats-aggregate-hourly-downloads" # name should use kebab-case so generated Cloud Run service name will be the same
+  location    = var.gcp_region                     # needs to be explicitly declared for Cloud Run
   description = "Cloud function to parse download data from logs and persist to a database"
 
   build_config {
@@ -84,9 +84,9 @@ resource "google_cloudfunctions2_function" "function" {
   }
 
   service_config {
-    min_instance_count    = 1
+    min_instance_count    = 1 # to reduce cold starts
     available_memory      = "2G"
-    timeout_seconds       = 540
+    timeout_seconds       = 540 # 9 minutes is the maximum allowed
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
@@ -101,7 +101,7 @@ resource "google_cloudfunctions2_function" "function" {
     secret_environment_variables {
       key        = "READ_DB_PW"
       project_id = var.gcp_project_id
-      secret     = var.read_db_pw_secret_name
+      secret     = var.read_db_pw_secret_name # wouldn't have to pass this in as a var if we had consistent secret naming across envs
       version    = "latest"
     }
     secret_environment_variables {
@@ -121,7 +121,7 @@ resource "google_cloudfunctions2_function" "function" {
 }
 
 resource "google_storage_bucket" "bucket" {
-  name                        = lower("${var.env}-stats-aggregate-hourly-downloads")
+  name                        = lower("${var.env}-stats-aggregate-hourly-downloads") # prefixed with env because buckets must be globally unique
   location                    = "US"
   uniform_bucket_level_access = true
 }
@@ -141,7 +141,7 @@ resource "google_pubsub_topic" "topic" {
 resource "google_cloud_scheduler_job" "invoke_cloud_function" {
   name        = "invoke-stats-aggregate-hourly-downloads"
   description = "Publish an hourly message to invoke the aggregate-hourly-downloads cloud function"
-  schedule    = "1 * * * *"
+  schedule    = "1 * * * *" # every hour at one minute past
   time_zone   = "UTC"
 
   pubsub_target {
