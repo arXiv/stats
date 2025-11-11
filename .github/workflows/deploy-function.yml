@@ -18,7 +18,7 @@ on:
         description: "Commit SHA"
         required: true
         type: string
-        default: ${{ github.sha }}
+        default: ""
 
       # The deploy runs based on the commit/SHA of the workflow branch running this deploy workflow.
       # If you have to redeploy a specific commit/SHA then create a branch from that commit/SHA.
@@ -40,6 +40,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
 
       - name: Set up terraform
         uses: hashicorp/setup-terraform@v3
