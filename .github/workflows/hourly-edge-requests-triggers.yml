@@ -22,28 +22,29 @@ on:
 
 jobs:
   call-lint-test:
+    
     name: Lint and Test
     uses: ./.github/workflows/lint-test-function.yml
     with:
       function_name: hourly_edge_requests
 
-  deployment-routing:
-    needs: call-lint-test
-    runs-on: ubuntu-latest
+  # deployment-routing:
+  #   needs: call-lint-test
+  #   runs-on: ubuntu-latest
 
-    concurrency:
-      group: deploy-${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
+  #   concurrency:
+  #     group: deploy-${{ github.workflow }}-${{ github.ref }}
+  #     cancel-in-progress: true
 
-    steps:
-      - name: Deployment Routing
-        uses: arXiv/iac-public/.github/actions/service-deployment-routing@ARXIVCE-4101  
-        with:
-          image_tag: ${{ github.sha }}
-          deploy_workflow: deploy-function.yml
-          function_name: hourly_edge_requests
-          workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
-          service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
+  #   steps:
+  #     - name: Deployment Routing
+  #       uses: arXiv/iac-public/.github/actions/service-deployment-routing@ARXIVCE-4101  
+  #       with:
+  #         image_tag: ${{ github.sha }}
+  #         deploy_workflow: deploy-function.yml
+  #         function_name: hourly_edge_requests
+  #         workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
+  #         service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
 
   # call-deploy:
   #   name: Deploy
