@@ -115,7 +115,7 @@ class MonthlySubmissionsJob:
             # mark existing rows for deletion
             delete_stmt = delete(MonthlySubmissions).where(
                 MonthlySubmissions.month == month
-            )  # TODO update
+            )
             result = session.execute(delete_stmt)
             logger.info(f"Number of existing rows to be deleted: {result.rowcount}")
 
