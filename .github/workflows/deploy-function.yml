@@ -64,7 +64,7 @@ jobs:
     environment: ${{ inputs.env }}
     if: >
       (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') &&
-      ((inputs.env != 'production' && inputs.env != 'prod' && inputs.env != 'staging' && inputs.env != 'stage') || inputs.commit_sha != 'LATEST_WF_BRANCH_SHA')
+      ((inputs.env != 'production' && inputs.env != 'prod' && inputs.env != 'staging' && inputs.env != 'stage') || inputs.commit_sha != '')
     needs: format-check
 
     steps:
