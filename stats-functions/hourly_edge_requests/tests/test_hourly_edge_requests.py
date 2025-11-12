@@ -39,21 +39,21 @@ mock_fastly_response_valid = Stats(
 def test_get_timestamps():
     mock_job_instance = MagicMock(autospec=HourlyEdgeRequestsJob)
 
-    mock_hour = datetime(2025, 11, 4, 12)
+    mock_hour = datetime(2025, 11, 4, 12, 0, 0, 0, tzinfo=timezone.utc)
 
     start_time, end_time = HourlyEdgeRequestsJob._get_timestamps(
         mock_job_instance, mock_hour
     )
 
-    assert start_time == 1762275600
-    assert end_time == 1762279199
+    assert start_time == 1762257600
+    assert end_time == 1762261199
 
 
 @patch("main.stats_api")
 @patch("main.fastly")
 def test_get_fastly_stats_valid_response(mock_fastly, mock_fastly_stats_api):
     mock_job_instance = MagicMock(autospec=HourlyEdgeRequestsJob)
-    mock_job_instance._get_timestamps.return_value = (1762275600, 1762279199)
+    mock_job_instance._get_timestamps.return_value = (1762257600, 1762261199)
 
     mock_fastly_stats_api.StatsApi.return_value.get_service_stats.return_value = (
         mock_fastly_response_valid
@@ -85,7 +85,7 @@ def test_get_fastly_stats_missing_edge_requests(mock_fastly, mock_fastly_stats_a
         }
     )
     mock_job_instance = MagicMock(autospec=HourlyEdgeRequestsJob)
-    mock_job_instance._get_timestamps.return_value = (1762275600, 1762279199)
+    mock_job_instance._get_timestamps.return_value = (1762257600, 1762261199)
 
     mock_fastly_stats_api.StatsApi.return_value.get_service_stats.return_value = (
         mock_fastly_response_missing_edge_requests
