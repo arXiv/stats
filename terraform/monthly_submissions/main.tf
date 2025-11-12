@@ -1,0 +1,139 @@
+terraform {
+  required_version = "~> 1.13"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 7.2"
+    }
+  }
+  backend "gcs" {
+    prefix = "stats-monthly-submissions"
+  }
+}
+
+provider "google" {
+  project = var.gcp_project_id # default inherited by all resources
+  region  = var.gcp_region     # default inherited by all resources
+}
+
+### service account ###
+
+resource "google_service_account" "account" {
+  account_id   = "stats-submissions"
+  display_name = "Service account to deploy monthly-submissions cloud function"
+}
+
+resource "google_cloudfunctions2_function_iam_member" "invoker" {
+  cloud_function = google_cloudfunctions2_function.function.name
+  role           = "roles/cloudfunctions.invoker"
+  member         = "serviceAccount:${google_service_account.account.email}"
+}
+
+resource "google_cloud_run_service_iam_member" "cloud_run_invoker" {
+  service = google_cloudfunctions2_function.function.name
+  role    = "roles/run.invoker"
+  member  = "serviceAccount:${google_service_account.account.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "read_db" {
+  secret_id = var.read_db_pw_secret_name
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.account.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "write_db" {
+  secret_id = var.write_db_pw_secret_name
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.account.email}"
+}
+
+resource "google_project_iam_member" "cloudsql_client" {
+  project = var.gcp_project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.account.email}"
+}
+
+### cloud function ###
+
+resource "google_cloudfunctions2_function" "function" {
+  name        = "stats-monthly-submissions" # name should use kebab-case so generated Cloud Run service name will be the same
+  location    = var.gcp_region                     # needs to be explicitly declared for Cloud Run
+  description = "Cloud function to sum submissions and persist to a database"
+
+  build_config {
+    runtime     = "python311"
+    entry_point = "get_monthly_submissions"
+    source {
+      storage_source {
+        bucket = google_storage_bucket.bucket.name
+        object = google_storage_bucket_object.object.name
+      }
+    }
+  }
+
+  service_config {
+    min_instance_count    = 1 # to reduce cold starts
+    available_memory      = "2G"
+    timeout_seconds       = 540 # 9 minutes is the maximum allowed
+    ingress_settings      = "ALLOW_INTERNAL_ONLY"
+    service_account_email = google_service_account.account.email
+    environment_variables = {
+      ENV               = var.env
+      READ_DB_USER      = var.read_db_user
+      READ_DB_INSTANCE  = var.read_db_instance
+      READ_DB_NAME      = var.read_db_name
+      WRITE_DB_USER     = var.write_db_user
+      WRITE_DB_INSTANCE = var.write_db_instance
+      WRITE_DB_NAME     = var.write_db_name
+    }
+    secret_environment_variables {
+      key        = "READ_DB_PW"
+      project_id = var.gcp_project_id
+      secret     = var.read_db_pw_secret_name # wouldn't have to pass this in as a var if we had consistent secret naming across envs
+      version    = "latest"
+    }
+    secret_environment_variables {
+      key        = "WRITE_DB_PW"
+      project_id = var.gcp_project_id
+      secret     = var.write_db_pw_secret_name
+      version    = "latest"
+    }
+  }
+
+  event_trigger {
+    trigger_region = "us-central1"
+    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic   = google_pubsub_topic.topic.id
+    retry_policy   = "RETRY_POLICY_RETRY"
+  }
+}
+
+resource "google_storage_bucket" "bucket" {
+  name                        = lower("${var.env}-stats-monthly-submissions") # prefixed with env because buckets must be globally unique
+  location                    = "US"
+  uniform_bucket_level_access = true
+}
+
+resource "google_storage_bucket_object" "object" {
+  name   = "monthly-submissions-src-${var.commit_sha}.zip"
+  bucket = google_storage_bucket.bucket.name
+  source = "src.zip"
+}
+
+### scheduled pubsub ###
+
+resource "google_pubsub_topic" "topic" {
+  name = "stats-monthly-submissions"
+}
+
+resource "google_cloud_scheduler_job" "invoke_cloud_function" {
+  name        = "invoke-stats-monthly-submissions"
+  description = "Publish a message to invoke the monthly-submissions cloud function"
+  schedule    = "0 1 1-3 * *" # at 1am on the first, second, and third day of each month
+  time_zone   = "UTC"
+
+  pubsub_target {
+    topic_name = google_pubsub_topic.topic.id
+    data       = base64encode("invoke")
+  }
+}

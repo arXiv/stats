@@ -209,7 +209,7 @@ class MonthlySubmissionsJob:
 
 
 @functions_framework.cloud_event
-def get_hourly_edge_requests(cloud_event: CloudEvent):
+def get_monthly_submissions(cloud_event: CloudEvent):
     job = MonthlySubmissionsJob()
     job.run(cloud_event=cloud_event)
 
