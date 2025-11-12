@@ -180,6 +180,8 @@ class HourlyEdgeRequestsJob:
         try:
             assert len(hour) == 12
             valid_hour = datetime.strptime(hour, date_format)
+
+            # assumes utc timezone
             return valid_hour.replace(tzinfo=timezone.utc)
 
         except (AssertionError, ValueError):

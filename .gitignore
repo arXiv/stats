@@ -28,3 +28,6 @@
 
 # mac os
 **/.DS_Store
+
+# build artifacts
+**/src.zip
