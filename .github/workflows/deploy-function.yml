@@ -1,13 +1,16 @@
 name: Format check and deploy cloud functions
 
-run-name: "Deploy ${{ inputs.function_name }} ${{ inputs.env }} ${{ inputs.commit_sha }}"
+run-name: "Deploy ${{ inputs.function_name }} ${{ inputs.env }} ${{ inputs.commit_sha || github.sha }}"
 
 on:
   workflow_dispatch:
     inputs:
       function_name:
-        type: string
-        description: Name of the function directory (e.g. aggregate_hourly_downloads)
+        type: choice
+        description: Name of the function directory
+        options:
+          - aggregate_hourly_downloads
+          - hourly_edge_requests
         required: true
       env:
         description: "Environment"
@@ -15,7 +18,7 @@ on:
         type: string
         default: ""
       commit_sha:
-        description: "Commit SHA"
+        description: "Commit SHA (blank for current workflow branch SHA)"
         required: true
         type: string
         default: ""
@@ -28,6 +31,9 @@ on:
       #   type: string
       #   default: "latest" # TODO update
 
+env:
+  COMMIT_SHA_TO_DEPLOY: ${{ inputs.commit_sha || github.sha }}
+  
 permissions:
   contents: read
   pull-requests: write
@@ -41,7 +47,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.commit_sha }}
+          ref: ${{ env.COMMIT_SHA_TO_DEPLOY }}
 
       - name: Set up terraform
         uses: hashicorp/setup-terraform@v3
@@ -58,14 +64,14 @@ jobs:
     environment: ${{ inputs.env }}
     if: >
       (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') &&
-      ((inputs.env != 'production' && inputs.env != 'prod' && inputs.env != 'staging' && inputs.env != 'stage') || inputs.image_tag != 'latest')
+      ((inputs.env != 'production' && inputs.env != 'prod' && inputs.env != 'staging' && inputs.env != 'stage') || inputs.commit_sha != 'LATEST_WF_BRANCH_SHA')
     needs: format-check
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.commit_sha }}
+          ref: ${{ env.COMMIT_SHA_TO_DEPLOY }}
 
       - name: Zip function source
         # zips all files inside the 'src/' directory into src.zip
@@ -116,7 +122,7 @@ jobs:
 
           # Add image_path to TERRAFORM_ARGS for all environments
           TERRAFORM_ARGS="$TERRAFORM_ARGS \
-            -var=\"commit_sha=${{ inputs.commit_sha }}\""
+            -var=\"commit_sha=${{ env.COMMIT_SHA_TO_DEPLOY }}\""
 
           echo "TERRAFORM_ARGS=$TERRAFORM_ARGS" >> $GITHUB_ENV
         
