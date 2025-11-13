@@ -42,10 +42,11 @@ jobs:
 
     steps:
       - name: Deployment Routing
-        uses: arXiv/iac-public/.github/actions/service-deployment-routing@main
+        uses: arXiv/iac-public/.github/actions/service-deployment-routing@ARXIVCE-4101
         with:
           image_tag: ${{ github.sha }}
           deploy_workflow: deploy-function.yml
           function_name: hourly_edge_requests
+          function_name_env: ${{ inputs.environment }}
           workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
           service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
