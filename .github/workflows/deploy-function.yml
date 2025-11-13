@@ -3,14 +3,16 @@ name: Format check and deploy cloud functions
 run-name: "Deploy ${{ inputs.function_name }} ${{ inputs.env }} ${{ inputs.commit_sha || github.sha }}"
 
 on:
-  workflow_dispatch:
+  #workflow_dispatch:
+  workflow_call:  
     inputs:
       function_name:
-        type: choice
+        #type: choice
+        type: string
         description: Name of the function directory
-        options:
-          - aggregate_hourly_downloads
-          - hourly_edge_requests
+        #options:
+        #  - aggregate_hourly_downloads
+        #  - hourly_edge_requests
         required: true
       env:
         description: "Environment"
