@@ -23,14 +23,6 @@ on:
         type: string
         default: ""
 
-      # The deploy runs based on the commit/SHA of the workflow branch running this deploy workflow.
-      # If you have to redeploy a specific commit/SHA then create a branch from that commit/SHA.
-      # image_tag:
-      #   description: "Docker image tag (latest or the commit SHA)"
-      #   required: false
-      #   type: string
-      #   default: "latest" # TODO update
-
 env:
   COMMIT_SHA_TO_DEPLOY: ${{ inputs.commit_sha || github.sha }}
   
@@ -118,7 +110,7 @@ jobs:
             TERRAFORM_ARGS="-var-file=envs/dev.tfvars \
               -var=\"gcp_project_id=$ENV_NAME\" \
               -var=\"gcp_region=$REGION\" \
-              -var=\"read_db_pw_secret_name=master-db-readonly-password\" \
+              -var=\"read_db_pw_secret_name=master-db-readonly-pw\" \
               -var=\"read_db_instance=$ENV_NAME:$REGION:master-db\" \
               -var=\"write_db_instance=$ENV_NAME:$REGION:stats-db\""
           fi
