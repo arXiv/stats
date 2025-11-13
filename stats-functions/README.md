@@ -19,7 +19,7 @@ Use the existing workflow(s) at `.github/workflows`.
 1. Manually zip the source files for the job and copy that zip to `terraform/aggregate_hourly_downloads`:
     ```
     cd stats-functions/{function}/src
-    zip src.zip {list of source files}
+    zip -r src.zip .
     ```
 1. Initialize the remote backend. The environment will be either `dev` or `prod`. Add the `-reconfigure` flag if needed.
     ```
