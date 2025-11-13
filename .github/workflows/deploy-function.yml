@@ -110,6 +110,7 @@ jobs:
             TERRAFORM_ARGS="-var-file=envs/dev.tfvars \
               -var=\"gcp_project_id=$ENV_NAME\" \
               -var=\"gcp_region=$REGION\" \
+              -var=\"env=$ENV_NAME\" \
               -var=\"write_db_instance=$ENV_NAME:$REGION:stats-db\""
 
             # not all cloud functions have the same variables
