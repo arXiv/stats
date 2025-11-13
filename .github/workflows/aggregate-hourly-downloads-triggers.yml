@@ -42,7 +42,7 @@ jobs:
   
       steps:
         - name: Deployment Routing
-          uses: arXiv/iac-public/.github/actions/service-deployment-routing@ARXIVCE-4101
+          uses: arXiv/iac-public/.github/actions/service-deployment-routing@main
           with:
             image_tag: ${{ github.sha }}
             deploy_workflow: deploy-function.yml
