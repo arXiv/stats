@@ -1,4 +1,5 @@
 name: Aggregate hourly downloads triggers
+run-name: "Aggregate Hourly Downloads ${{ github.ref_name }} ${{ github.sha }}"
 
 on:
   push:
@@ -19,6 +20,11 @@ on:
         type: environment
         description: Select the environment
 
+permissions:
+  id-token: write
+  actions: write
+  contents: read      
+
 jobs:
   call-lint-test:
     name: Lint and Test
@@ -26,12 +32,21 @@ jobs:
     with:
       function_name: aggregate_hourly_downloads
 
-  call-deploy:
-    name: Deploy
-    uses: ./.github/workflows/deploy-function.yml
-    with:
-      function_name: aggregate_hourly_downloads
-      environment: ${{ inputs.environment }}
-      PROVIDER_NAME: ${{ vars.PROVIDER_NAME }}
-      SERVICE_ACCOUNT: ${{ vars.SERVICE_ACCOUNT }}
-      ENV_VAR: ${{ vars.ENV_VAR }}
+  deployment-routing:
+      needs: call-lint-test
+      runs-on: ubuntu-latest
+  
+      concurrency:
+        group: deploy-${{ github.workflow }}-${{ github.ref }}
+        cancel-in-progress: true
+  
+      steps:
+        - name: Deployment Routing
+          uses: arXiv/iac-public/.github/actions/service-deployment-routing@main
+          with:
+            image_tag: ${{ github.sha }}
+            deploy_workflow: deploy-function.yml
+            function_name: aggregate_hourly_downloads
+            function_name_env: ${{ inputs.environment }}
+            workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
+            service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}      
