@@ -89,8 +89,7 @@ jobs:
             echo "TERRAFORM_BUCKET=$ENV_NAME-arxiv-terraform-state" >> $GITHUB_ENV
             TERRAFORM_ARGS="-var-file=envs/dev.tfvars \
               -var=\"gcp_project_id=$ENV_NAME\" \
-              -var=\"gcp_region=$REGION\" \
-              -var=\"read_db_instance=$ENV_NAME:$REGION:latexml-db\""
+              -var=\"gcp_region=$REGION\""
           fi
 
           # Add image_path to TERRAFORM_ARGS for all environments
