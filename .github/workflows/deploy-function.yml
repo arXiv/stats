@@ -35,7 +35,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.env || 'development' }}
+    environment: ${{ inputs.environment || 'development' }}
     if: github.ref == 'refs/heads/main'
 
     steps:
