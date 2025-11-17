@@ -7,7 +7,7 @@ terraform {
     }
   }
   backend "gcs" {
-    prefix = "stats-hourly-edge-requests"
+    prefix = "stats-monthly-submissions"
   }
 }
 
@@ -19,8 +19,8 @@ provider "google" {
 ### service account ###
 
 resource "google_service_account" "account" {
-  account_id   = "stats-requests"
-  display_name = "Service account to deploy hourly-edge-requests cloud function"
+  account_id   = "stats-submissions"
+  display_name = "Service account to deploy monthly-submissions cloud function"
 }
 
 resource "google_cloudfunctions2_function_iam_member" "invoker" {
@@ -35,8 +35,8 @@ resource "google_cloud_run_service_iam_member" "cloud_run_invoker" {
   member  = "serviceAccount:${google_service_account.account.email}"
 }
 
-resource "google_secret_manager_secret_iam_member" "fastly_token" {
-  secret_id = "fastly_readonly_token"
+resource "google_secret_manager_secret_iam_member" "read_db" {
+  secret_id = var.read_db_pw_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.account.email}"
 }
@@ -56,13 +56,13 @@ resource "google_project_iam_member" "cloudsql_client" {
 ### cloud function ###
 
 resource "google_cloudfunctions2_function" "function" {
-  name        = "stats-hourly-edge-requests" # name should use kebab-case so generated Cloud Run service name will be the same
-  location    = var.gcp_region               # needs to be explicitly declared for Cloud Run
-  description = "Cloud function to get hourly edge requests from Fastly API and persist to a database"
+  name        = "stats-monthly-submissions" # name should use kebab-case so generated Cloud Run service name will be the same
+  location    = var.gcp_region                     # needs to be explicitly declared for Cloud Run
+  description = "Cloud function to sum submissions and persist to a database"
 
   build_config {
     runtime     = "python311"
-    entry_point = "get_hourly_edge_requests"
+    entry_point = "get_monthly_submissions"
     source {
       storage_source {
         bucket = google_storage_bucket.bucket.name
@@ -79,14 +79,17 @@ resource "google_cloudfunctions2_function" "function" {
     service_account_email = google_service_account.account.email
     environment_variables = {
       ENV               = var.env
+      READ_DB_USER      = var.read_db_user
+      READ_DB_INSTANCE  = var.read_db_instance
+      READ_DB_NAME      = var.read_db_name
       WRITE_DB_USER     = var.write_db_user
       WRITE_DB_INSTANCE = var.write_db_instance
       WRITE_DB_NAME     = var.write_db_name
     }
     secret_environment_variables {
-      key        = "FASTLY_TOKEN"
+      key        = "READ_DB_PW"
       project_id = var.gcp_project_id
-      secret     = "fastly_readonly_token"
+      secret     = var.read_db_pw_secret_name # wouldn't have to pass this in as a var if we had consistent secret naming across envs
       version    = "latest"
     }
     secret_environment_variables {
@@ -106,13 +109,13 @@ resource "google_cloudfunctions2_function" "function" {
 }
 
 resource "google_storage_bucket" "bucket" {
-  name                        = lower("${var.env}-stats-hourly-edge-requests") # prefixed with env because buckets must be globally unique
+  name                        = lower("${var.env}-stats-monthly-submissions") # prefixed with env because buckets must be globally unique
   location                    = "US"
   uniform_bucket_level_access = true
 }
 
 resource "google_storage_bucket_object" "object" {
-  name   = "stats-hourly-edge-requests-src-${var.commit_sha}.zip"
+  name   = "monthly-submissions-src-${var.commit_sha}.zip"
   bucket = google_storage_bucket.bucket.name
   source = "src.zip"
 }
@@ -120,13 +123,13 @@ resource "google_storage_bucket_object" "object" {
 ### scheduled pubsub ###
 
 resource "google_pubsub_topic" "topic" {
-  name = "stats-hourly-edge-requests"
+  name = "stats-monthly-submissions"
 }
 
 resource "google_cloud_scheduler_job" "invoke_cloud_function" {
-  name        = "invoke-stats-hourly-edge-requests"
-  description = "Publish an hourly message to invoke the aggregate-hourly-downloads cloud function"
-  schedule    = "5 * * * *" # every hour at five minutes past
+  name        = "invoke-stats-monthly-submissions"
+  description = "Publish a message to invoke the monthly-submissions cloud function"
+  schedule    = "0 1 1-3 * *" # at 1am on the first, second, and third day of each month
   time_zone   = "UTC"
 
   pubsub_target {

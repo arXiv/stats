@@ -12,7 +12,7 @@ on:
       - main
     paths:
       - "stats-functions/aggregate_hourly_downloads/**"
-      - "terraform/aggregate_hourly_downloads/**"
+      - "terraform/aggregate_hourly_downloads/**"     
 
 jobs:
   call-lint-test:
