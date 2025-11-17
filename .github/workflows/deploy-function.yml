@@ -1,4 +1,4 @@
-name: Format check and deploy cloud functions
+name: Deploy cloud functions
 
 on:
   workflow_call:
@@ -7,32 +7,26 @@ on:
         type: string
         description: Name of the function directory (e.g. aggregate_hourly_downloads)
         required: true
-      env:
-        description: "Environment"
-        required: true
-        type: string
-        default: ""
-      image_tag:
-        description: "Docker image tag (latest or the commit SHA)"
+      commit_sha:
+        description: "Commit SHA to deploy (leave blank for latest)"
         required: false
         type: string
-        default: "latest"
   workflow_dispatch:
     inputs:
       function_name:
         type: string
         description: Name of the function directory (e.g. aggregate_hourly_downloads)
         required: true
-      env:
-        description: "Environment"
-        required: true
-        type: string
-        default: ""
-      image_tag:
-        description: "Docker image tag (latest or the commit SHA)"
+      commit_sha:
+        description: "Commit SHA to deploy (leave blank for latest)"
         required: false
         type: string
-        default: "latest" # TODO update
+      environment:
+        type: environment
+        description: Select the environment
+
+env:
+  COMMIT_SHA_TO_DEPLOY: ${{ inputs.commit_sha || github.sha }}
 
 permissions:
   contents: read
@@ -40,28 +34,10 @@ permissions:
   id-token: write
 
 jobs:
-  format-check:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Check version
-        run: terraform --version
-
-      - name: Format check
-        run: terraform fmt -check
-        working-directory: "terraform/${{ inputs.function_name }}"
-
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.env || 'development' }}
     if: github.ref == 'refs/heads/main'
-    needs: format-check
 
     steps:
       - name: Checkout code
@@ -70,13 +46,10 @@ jobs:
       - name: Zip function source
         # zips all files inside the 'src/' directory into src.zip
         run: |
-          SOURCE_DIR="stats-functions/${{ inputs.function_name }}"
-          TERRAFORM_DIR="terraform/${{ inputs.function_name }}"
-
-          cd "$SOURCE_DIR/src"
+          cd "stats-functions/${{ inputs.function_name }}/src"
           zip -r src.zip .
 
-          mv src.zip "../../../$TERRAFORM_DIR/src.zip"
+          mv src.zip "../../../terraform/${{ inputs.function_name }}/src.zip"
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
@@ -94,9 +67,13 @@ jobs:
         run: terraform --version
 
       - name: Initialize remote backend
-        run: terraform init -backend-config="bucket=${{ vars.ENV_VAR }}-arxiv-terraform-state"
+        run: terraform init -backend-config="bucket=$ENV_VAR-arxiv-terraform-state"
+        working-directory: "terraform/${{ inputs.function_name }}"
+
+      - name: Format check
+        run: terraform fmt -check
         working-directory: "terraform/${{ inputs.function_name }}"
 
       - name: Apply
-        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ github.sha }}" -auto-approve # TODO update sha
+        run: terraform apply -var-file=envs/$ENV_VAR.tfvars -var="commit_sha=$COMMIT_SHA_TO_DEPLOY" -auto-approve
         working-directory: "terraform/${{ inputs.function_name }}"
