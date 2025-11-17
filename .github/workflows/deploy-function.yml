@@ -74,5 +74,5 @@ jobs:
         working-directory: "terraform/${{ inputs.function_name }}"
 
       - name: Apply
-        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=$COMMIT_SHA_TO_DEPLOY" -auto-approve
+        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ env.COMMIT_SHA_TO_DEPLOY }}" -auto-approve
         working-directory: "terraform/${{ inputs.function_name }}"
