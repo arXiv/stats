@@ -8,22 +8,14 @@ on:
     paths:
       - "stats-functions/hourly_edge_requests/**"
       - "terraform/hourly_edge_requests/**"
+      - ".github/workflows/deploy-function.yml"
   pull_request:
     branches:
       - main
     paths:
       - "stats-functions/hourly_edge_requests/**"
       - "terraform/hourly_edge_requests/**"
-  workflow_dispatch:
-    inputs:
-      environment:
-        type: environment
-        description: Select the environment
-
-permissions:
-  id-token: write
-  actions: write
-  contents: read
+      - ".github/workflows/lint-test-function.yml"
 
 jobs:
   call-lint-test:
@@ -32,21 +24,8 @@ jobs:
     with:
       function_name: hourly_edge_requests
 
-  deployment-routing:
-    needs: call-lint-test
-    runs-on: ubuntu-latest
-
-    concurrency:
-      group: deploy-${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
-
-    steps:
-      - name: Deployment Routing
-        uses: arXiv/iac-public/.github/actions/service-deployment-routing@main
-        with:
-          image_tag: ${{ github.sha }}
-          deploy_workflow: deploy-function.yml
-          function_name: hourly_edge_requests
-          function_name_env: ${{ inputs.environment }}
-          workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
-          service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
+  call-deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy-function.yml
+    with:
+      function_name: hourly_edge_requests
