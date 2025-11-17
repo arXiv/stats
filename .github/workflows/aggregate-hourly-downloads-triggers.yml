@@ -7,13 +7,15 @@ on:
     paths:
       - "stats-functions/aggregate_hourly_downloads/**"
       - "terraform/aggregate_hourly_downloads/**"
+      - ".github/workflows/deploy-function.yml"
   pull_request:
     branches:
       - main
     paths:
       - "stats-functions/aggregate_hourly_downloads/**"
       - "terraform/aggregate_hourly_downloads/**"
-
+      - ".github/workflows/lint-test-function.yml"
+      
 jobs:
   call-lint-test:
     name: Lint and Test

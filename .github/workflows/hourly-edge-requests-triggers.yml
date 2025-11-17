@@ -8,12 +8,14 @@ on:
     paths:
       - "stats-functions/hourly_edge_requests/**"
       - "terraform/hourly_edge_requests/**"
+      - ".github/workflows/deploy-function.yml"
   pull_request:
     branches:
       - main
     paths:
       - "stats-functions/hourly_edge_requests/**"
       - "terraform/hourly_edge_requests/**"
+      - ".github/workflows/lint-test-function.yml"
 
 jobs:
   call-lint-test:
