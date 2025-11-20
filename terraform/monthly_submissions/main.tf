@@ -57,7 +57,7 @@ resource "google_project_iam_member" "cloudsql_client" {
 
 resource "google_cloudfunctions2_function" "function" {
   name        = "stats-monthly-submissions" # name should use kebab-case so generated Cloud Run service name will be the same
-  location    = var.gcp_region                     # needs to be explicitly declared for Cloud Run
+  location    = var.gcp_region              # needs to be explicitly declared for Cloud Run
   description = "Cloud function to sum submissions and persist to a database"
 
   build_config {
