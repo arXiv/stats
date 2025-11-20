@@ -1,5 +1,4 @@
 name: Hourly edge requests triggers
-run-name: "Hourly Edge Requests ${{ github.ref_name }} ${{ github.sha }}"
 
 on:
   push:
@@ -19,13 +18,13 @@ on:
 
 jobs:
   call-lint-test:
-    name: Lint and Test
+    name: Hourly edge requests ${{ github.ref_name }} ${{ github.sha }}
     uses: ./.github/workflows/lint-test-function.yml
     with:
       function_name: hourly_edge_requests
 
   call-deploy:
-    name: Deploy
+    name: Hourly edge requests ${{ github.ref_name }} ${{ github.sha }}
     uses: ./.github/workflows/deploy-function.yml
     with:
       function_name: hourly_edge_requests
