@@ -1,0 +1,30 @@
+name: Monthly submissions triggers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "stats-functions/monthly_submissions/**"
+      - "terraform/monthly_submissions/**"
+      - ".github/workflows/deploy-function.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "stats-functions/monthly_submissions/**"
+      - "terraform/monthly_submissions/**"
+      - ".github/workflows/lint-test-function.yml"
+
+jobs:
+  call-lint-test:
+    name: Monthly submissions ${{ github.ref_name }} ${{ github.sha }}
+    uses: ./.github/workflows/lint-test-function.yml
+    with:
+      function_name: monthly_submissions
+
+  call-deploy:
+    name: Monthly submissions ${{ github.ref_name }} ${{ github.sha }}
+    uses: ./.github/workflows/deploy-function.yml
+    with:
+      function_name: monthly_submissions

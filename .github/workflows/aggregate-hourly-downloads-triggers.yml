@@ -15,16 +15,16 @@ on:
       - "stats-functions/aggregate_hourly_downloads/**"
       - "terraform/aggregate_hourly_downloads/**"
       - ".github/workflows/lint-test-function.yml"
-      
+
 jobs:
   call-lint-test:
-    name: Lint and Test
+    name: Hourly downloads ${{ github.ref_name }} ${{ github.sha }}
     uses: ./.github/workflows/lint-test-function.yml
     with:
       function_name: aggregate_hourly_downloads
 
   call-deploy:
-    name: Deploy
+    name: Hourly downloads ${{ github.ref_name }} ${{ github.sha }}
     uses: ./.github/workflows/deploy-function.yml
     with:
       function_name: aggregate_hourly_downloads
