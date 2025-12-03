@@ -1,4 +1,4 @@
-name: Stats API triggers
+name: Stats api triggers
 
 on:
   push:
