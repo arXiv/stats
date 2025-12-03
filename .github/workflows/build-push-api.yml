@@ -1,0 +1,71 @@
+name: Build and push
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        description: Commit SHA to deploy (leave blank for latest)
+        required: false
+        type: string
+      dockerfile:
+        description: Path to Dockerfile
+        required: false
+        type: string
+      image_name:
+        description: Name to be given to created image
+        required: false
+        type: string
+      port:
+        description: Container port
+        required: false
+        type: string
+      target:
+        description: Multistage build target
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+
+env:
+  GCP_PROJECT_ID: arxiv-development
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha || github.sha }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.PROVIDER_NAME }}
+          service_account: ${{ vars.SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+
+      - name: Build image, caching from latest
+        run: |
+          docker pull gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:latest
+
+          BRANCH_TAG="$(printf "%.128s" "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" | sed 's/^[.-]*//')"
+
+          docker build --target ${{ inputs.target }} --build-arg PORT=${{ inputs.port }} -f ${{ inputs.dockerfile }} \
+          --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:latest \
+          -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:${{ inputs.commit_sha || github.sha }} \
+          -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:${BRANCH_TAG} \
+          ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', env.GCP_PROJECT_ID, inputs.image_name) || '' }} .
+
+      - name: Push image
+        # only push if merged to main
+        if: github.ref == "refs/heads/main"
+        run: docker push --all-tags gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}

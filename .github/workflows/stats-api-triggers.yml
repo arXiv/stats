@@ -1,0 +1,60 @@
+name: Stats API triggers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "stats-api/stats_api/**"
+      - "terraform/stats_api/**"
+      - ".github/workflows/deploy.yml"
+      - ".github/workflows/build-push-api.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "stats-api/stats_api/**"
+      - "terraform/stats_api/**"
+      - ".github/workflows/lint-test-python.yml"
+      - ".github/workflows/build-push-api.yml"
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Commit SHA to deploy (leave blank for latest)
+        required: false
+        type: string
+      jobs_to_run:
+        description: Job(s) to run
+        required: true
+        type: choice
+        options:
+          - "build and push"
+          - "build, push, deploy"
+          - "deploy only"
+
+jobs:
+  call-lint-test:
+    name: Stats API ${{ github.ref_name }} ${{ github.sha }}
+    uses: ./.github/workflows/lint-test-python.yml
+    with:
+      service_name: stats_api
+
+  call-build-push:
+    if: ${{ inputs.jobs_to_run == "build and push" || inputs.jobs_to_run == "build, push, deploy" }}
+    name: Stats API ${{ github.ref_name }} ${{ github.sha }}
+    uses: ./.github/workflows/build-push-api.yml
+    with:
+      service_name: stats_api
+      dockerfile: "Dockerfile.api"
+      image_name: "stats-api"
+      port: "8080"
+      target: "runtime"
+      commit_sha: ${{ inputs.commit_sha || github.sha }}
+
+  call-deploy:
+    if: ${{ inputs.jobs_to_run == "build, push, deploy" || inputs.jobs_to_run == "deploy only" }}
+    name: Stats API ${{ github.ref_name }} ${{ github.sha }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      service_name: stats_api
+      commit_sha: ${{ inputs.commit_sha || github.sha }}
