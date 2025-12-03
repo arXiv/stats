@@ -12,7 +12,7 @@ on:
         required: false
         type: string
       image_name:
-        description: Name to be given to created image
+        description: Image name
         required: false
         type: string
       port:

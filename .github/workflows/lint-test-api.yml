@@ -1,18 +1,8 @@
-name: Lint and test Python services
+name: Lint and test stats api
 
 on:
   workflow_call:
-    inputs:
-      service_name:
-        type: string
-        description: The name of the service directory (e.g. stats_api)
-        required: true
   workflow_dispatch:
-    inputs:
-      service_name:
-        type: string
-        description: Name of the service directory (e.g. stats_api)
-        required: true
 
 permissions:
   contents: read
@@ -25,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: "Set up Python"
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version-file: "stats-api/pyproject.toml"
