@@ -38,7 +38,7 @@ jobs:
     uses: ./.github/workflows/lint-test-api.yml
 
   call-build-push:
-    if: ${{ inputs.jobs_to_run == "build and push" || inputs.jobs_to_run == "build, push, deploy" }}
+    if: ${{ github.event_name != "workflow_dispatch" || inputs.jobs_to_run == "build and push" || inputs.jobs_to_run == "build, push, deploy" }}
     name: Stats API ${{ github.ref_name }} ${{ github.sha }}
     uses: ./.github/workflows/build-push-api.yml
     with:
@@ -50,7 +50,7 @@ jobs:
       commit_sha: ${{ inputs.commit_sha || github.sha }}
 
   call-deploy:
-    if: ${{ inputs.jobs_to_run == "build, push, deploy" || inputs.jobs_to_run == "deploy only" }}
+    if: ${{ github.event_name != "workflow_dispatch" || inputs.jobs_to_run == "build, push, deploy" || inputs.jobs_to_run == "deploy only" }}
     name: Stats API ${{ github.ref_name }} ${{ github.sha }}
     uses: ./.github/workflows/deploy.yml
     with:
