@@ -18,13 +18,13 @@ on:
 
 jobs:
   call-lint-test:
-    name: Monthly submissions ${{ github.ref_name }} ${{ github.sha }}
+    name: Lint test monthly submissions
     uses: ./.github/workflows/lint-test-function.yml
     with:
       function_name: monthly_submissions
 
   call-deploy:
-    name: Monthly submissions ${{ github.ref_name }} ${{ github.sha }}
+    name: Deploy monthly submissions
     uses: ./.github/workflows/deploy-function.yml
     with:
       function_name: monthly_submissions

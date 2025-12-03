@@ -18,13 +18,13 @@ on:
 
 jobs:
   call-lint-test:
-    name: Hourly downloads ${{ github.ref_name }} ${{ github.sha }}
+    name: Lint test hourly downloads
     uses: ./.github/workflows/lint-test-function.yml
     with:
       function_name: aggregate_hourly_downloads
 
   call-deploy:
-    name: Hourly downloads ${{ github.ref_name }} ${{ github.sha }}
+    name: Deploy hourly downloads
     uses: ./.github/workflows/deploy-function.yml
     with:
       function_name: aggregate_hourly_downloads

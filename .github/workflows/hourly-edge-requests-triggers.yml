@@ -18,13 +18,13 @@ on:
 
 jobs:
   call-lint-test:
-    name: Hourly edge requests ${{ github.ref_name }} ${{ github.sha }}
+    name: Lint test hourly edge requests
     uses: ./.github/workflows/lint-test-function.yml
     with:
       function_name: hourly_edge_requests
 
   call-deploy:
-    name: Hourly edge requests ${{ github.ref_name }} ${{ github.sha }}
+    name: Deploy hourly edge requests
     uses: ./.github/workflows/deploy-function.yml
     with:
       function_name: hourly_edge_requests
