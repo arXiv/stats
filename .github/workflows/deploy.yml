@@ -7,6 +7,10 @@ on:
         type: string
         description: Name of the service directory (e.g. stats_api)
         required: true
+      image_name:
+        description: Image name
+        required: false
+        type: string
       commit_sha:
         description: Commit SHA to deploy (leave blank for latest)
         required: false
@@ -17,6 +21,10 @@ on:
         type: string
         description: Name of the service directory (e.g. stats_api)
         required: true
+      image_name:
+        description: Image name
+        required: false
+        type: string
       commit_sha:
         description: Commit SHA to deploy (leave blank for latest)
         required: false
@@ -26,7 +34,7 @@ on:
         description: Select the environment
 
 env:
-  IMAGE_URI: gcr.io/arxiv-development/${{ env.IMAGE_NAME }}:${{ inputs.commit_sha || github.sha }}
+  IMAGE_URI: gcr.io/arxiv-development/${{ inputs.image_name }}:${{ inputs.commit_sha || github.sha }}
 
 permissions:
   contents: read
@@ -35,7 +43,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || "development" }}
+    environment: ${{ inputs.environment || 'development' }}
     # only deploy if merged to main
     # if: github.ref == "refs/heads/main"
 
@@ -67,5 +75,5 @@ jobs:
         working-directory: "terraform/${{ inputs.service_name }}"
 
       - name: Apply
-        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="image_path=${{ env.IMAGE_PATH }}" -auto-approve
+        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="image_path=${{ env.IMAGE_URI }}" -auto-approve
         working-directory: "terraform/${{ inputs.service_name }}"

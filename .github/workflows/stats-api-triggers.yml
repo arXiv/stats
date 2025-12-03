@@ -59,4 +59,5 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       service_name: stats_api
+      image_name: stats-api
       commit_sha: ${{ inputs.commit_sha || github.sha }}
