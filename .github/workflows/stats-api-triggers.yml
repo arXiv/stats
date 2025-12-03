@@ -34,6 +34,11 @@ on:
           - "build, push, deploy"
           - "deploy only"
 
+concurrency:
+  # cancel any existing unfinished jobs if this workflow is retriggered
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   call-lint-test:
     name: Lint stats api
@@ -52,7 +57,7 @@ jobs:
       commit_sha: ${{ inputs.commit_sha || github.sha }}
 
   call-deploy:
-    needs: call-lint-test
+    needs: [ call-lint-test, call-build-push ]
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.jobs_to_run == 'build, push, deploy' || inputs.jobs_to_run == 'deploy only' }}
     name: Deploy stats api
     uses: ./.github/workflows/deploy.yml
