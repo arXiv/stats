@@ -1,22 +1,30 @@
-name: Deploy cloud functions
+name: Deploy
 
 on:
   workflow_call:
     inputs:
-      function_name:
+      service_name:
         type: string
-        description: Name of the function directory (e.g. aggregate_hourly_downloads)
+        description: Name of the service directory (e.g. stats_api)
         required: true
+      image_name:
+        description: Image name
+        required: false
+        type: string
       commit_sha:
         description: Commit SHA to deploy (leave blank for latest)
         required: false
         type: string
   workflow_dispatch:
     inputs:
-      function_name:
+      service_name:
         type: string
-        description: Name of the function directory (e.g. aggregate_hourly_downloads)
+        description: Name of the service directory (e.g. stats_api)
         required: true
+      image_name:
+        description: Image name
+        required: false
+        type: string
       commit_sha:
         description: Commit SHA to deploy (leave blank for latest)
         required: false
@@ -26,7 +34,7 @@ on:
         description: Select the environment
 
 env:
-  COMMIT_SHA_TO_DEPLOY: ${{ inputs.commit_sha || github.sha }}
+  IMAGE_URI: gcr.io/arxiv-development/${{ inputs.image_name }}:${{ inputs.commit_sha || github.sha }}
 
 permissions:
   contents: read
@@ -36,19 +44,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'development' }}
+    # only deploy if merged to main
     if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Zip function source
-        # zips all files inside the 'src/' directory into src.zip
-        run: |
-          cd "stats-functions/${{ inputs.function_name }}/src"
-          zip -r src.zip .
-
-          mv src.zip "../../../terraform/${{ inputs.function_name }}/src.zip"
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
@@ -67,12 +68,12 @@ jobs:
 
       - name: Initialize remote backend
         run: terraform init -backend-config="bucket=${{ vars.ENV_VAR }}-arxiv-terraform-state"
-        working-directory: "terraform/${{ inputs.function_name }}"
+        working-directory: "terraform/${{ inputs.service_name }}"
 
       - name: Format check
         run: terraform fmt -check
-        working-directory: "terraform/${{ inputs.function_name }}"
+        working-directory: "terraform/${{ inputs.service_name }}"
 
       - name: Apply
-        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ env.COMMIT_SHA_TO_DEPLOY }}" -auto-approve
-        working-directory: "terraform/${{ inputs.function_name }}"
+        run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="image_path=${{ env.IMAGE_URI }}" -auto-approve
+        working-directory: "terraform/${{ inputs.service_name }}"

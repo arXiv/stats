@@ -1,11 +1,7 @@
-name: Lint and test stats-api
+name: Lint and test stats api
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "stats-api/**"
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -19,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: "Set up Python"
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version-file: "stats-api/pyproject.toml"

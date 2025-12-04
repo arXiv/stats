@@ -1,0 +1,67 @@
+name: Stats api triggers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "stats-api/stats_api/**"
+      - "terraform/stats_api/**"
+      - ".github/workflows/lint-test-api.yml"
+      - ".github/workflows/build-push-api.yml"
+      - ".github/workflows/deploy.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "stats-api/stats_api/**"
+      - "terraform/stats_api/**"
+      - ".github/workflows/lint-test-api.yml"
+      - ".github/workflows/build-push-api.yml"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Commit SHA to deploy (leave blank for latest)
+        required: false
+        type: string
+      jobs_to_run:
+        description: Job(s) to run
+        required: true
+        type: choice
+        options:
+          - "build and push"
+          - "build, push, deploy"
+          - "deploy only"
+
+concurrency:
+  # cancel any existing unfinished jobs if this workflow is retriggered
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  call-lint-test:
+    name: Lint stats api
+    uses: ./.github/workflows/lint-test-api.yml
+
+  call-build-push:
+    needs: call-lint-test
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.jobs_to_run == 'build and push' || inputs.jobs_to_run == 'build, push, deploy' }}
+    name: Build push stats api
+    uses: ./.github/workflows/build-push-api.yml
+    with:
+      dockerfile: Dockerfile.api
+      image_name: stats-api
+      port: "8080"
+      target: runtime
+      commit_sha: ${{ inputs.commit_sha || github.sha }}
+
+  call-deploy:
+    needs: [ call-lint-test, call-build-push ]
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.jobs_to_run == 'build, push, deploy' || inputs.jobs_to_run == 'deploy only' }}
+    name: Deploy stats api
+    uses: ./.github/workflows/deploy.yml
+    with:
+      service_name: stats_api
+      image_name: stats-api
+      commit_sha: ${{ inputs.commit_sha || github.sha }}
