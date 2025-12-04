@@ -12,26 +12,9 @@ on:
         required: false
         type: string
       commit_sha:
-        description: Commit SHA to deploy (leave blank for latest)
+        description: Commit SHA to deploy
         required: false
         type: string
-  workflow_dispatch:
-    inputs:
-      service_name:
-        type: string
-        description: Name of the service directory (e.g. stats_api)
-        required: true
-      image_name:
-        description: Image name
-        required: false
-        type: string
-      commit_sha:
-        description: Commit SHA to deploy (leave blank for latest)
-        required: false
-        type: string
-      environment:
-        type: environment
-        description: Select the environment
 
 env:
   IMAGE_URI: gcr.io/arxiv-development/${{ inputs.image_name }}:${{ inputs.commit_sha || github.sha }}

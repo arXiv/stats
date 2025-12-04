@@ -66,6 +66,4 @@ jobs:
           ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', env.GCP_PROJECT_ID, inputs.image_name) || '' }} .
 
       - name: Push image
-        # only push if merged to main
-        if: github.ref == 'refs/heads/main'
         run: docker push --all-tags gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}
