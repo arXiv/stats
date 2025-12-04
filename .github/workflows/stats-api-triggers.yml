@@ -22,8 +22,8 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: Commit SHA to deploy (leave blank for latest)
-        required: false
+        description: Commit SHA to deploy
+        required: true
         type: string
       jobs_to_run:
         description: Job(s) to run
