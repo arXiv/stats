@@ -37,3 +37,8 @@ variable "write_db_name" {
   description = "Database name for the database data is written to"
   type        = string
 }
+
+variable "slack_channel_id" {
+  description = "Channel ID for slack notification channel resource"
+  type        = string
+}
