@@ -154,8 +154,9 @@ resource "google_cloud_scheduler_job" "invoke_cloud_function" {
 ### alerting ###
 
 resource "google_monitoring_alert_policy" "cloud_run_error_alert" {
-  display_name = "stats-${google_cloudfunctions2_function.function.name} error log"
+  display_name = "${google_cloudfunctions2_function.function.name} logging errors"
   combiner     = "OR"
+  severity     = "ERROR"
 
   conditions {
     display_name = "Cloud Run error log"
@@ -171,24 +172,11 @@ resource "google_monitoring_alert_policy" "cloud_run_error_alert" {
   }
 
   notification_channels = [
-    google_monitoring_notification_channel.slack_channel.id
+    "projects/${var.gcp_project_id}/notificationChannels/${var.slack_channel_id}"
   ]
 
   documentation {
     content   = "Cloud Run service ${google_cloudfunctions2_function.function.name} has reported an error - see logs."
     mime_type = "text/markdown"
-  }
-}
-
-import {
-  to = google_monitoring_notification_channel.slack_channel
-  id = "projects/${var.gcp_project_id}/notificationChannels/${var.slack_channel_id}"
-}
-
-resource "google_monitoring_notification_channel" "slack_channel" {
-  display_name = "slack#ops-info"
-  type         = "slack"
-  sensitive_labels {
-    auth_token = "one"
   }
 }
