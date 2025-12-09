@@ -29,6 +29,7 @@ jobs:
       function_name: monthly_submissions
 
   call-deploy:
+    needs: call-lint-test
     name: Deploy monthly submissions
     uses: ./.github/workflows/deploy-function.yml
     with:
