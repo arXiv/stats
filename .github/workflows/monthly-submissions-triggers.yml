@@ -16,6 +16,11 @@ on:
       - "terraform/monthly_submissions/**"
       - ".github/workflows/lint-test-function.yml"
 
+concurrency:
+  # cancel any existing unfinished jobs if this workflow is retriggered
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   call-lint-test:
     name: Lint test monthly submissions
