@@ -19,7 +19,7 @@ Application for public usage statistics pages on arXiv.org. `stats/` contains th
 6. Install and run `stats`
    ```
    uv sync
-   uv run python stats/factory.py
+   uv run python stats/app.py
    ```
 7. Install and run `stats-ui`
    ```
