@@ -6,7 +6,7 @@ class OrmBase(BaseModel):
     model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
-class TodayPageData(BaseModel):
+class TodayPageData(BaseModel): # TODO update template
     # current_dt: date
     # requested_dt: date
     # business_tz: str

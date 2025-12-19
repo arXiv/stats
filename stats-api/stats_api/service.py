@@ -2,6 +2,7 @@ from flask import current_app
 from datetime import date
 from zoneinfo import ZoneInfo
 from dateutil.relativedelta import relativedelta
+
 from stats_api.respository import SiteUsageRepository
 from stats_api.utils import get_utc_start_and_end_times, format_as_csv
 from stats_api.models import (

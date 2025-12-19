@@ -7,6 +7,7 @@ from flask import (
     request,
 )
 from flask.typing import ResponseReturnValue
+
 from stats_api.service import StatsService
 from stats_api.utils import get_arxiv_current_date
 

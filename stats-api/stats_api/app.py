@@ -1,12 +1,10 @@
 import os
-from stats_api.config import TestConfig, DevConfig, ProdConfig
-from stats_api.database import db
-
-# from flask_sqlalchemy import SQLAlchemy
-# from stats_entities.site_usage import SiteUsageBase
-from stats_api.logging import configure_logging
 from flask import Flask
 from flask_cors import CORS
+
+from stats_api.logging import configure_logging
+from stats_api.config import TestConfig, DevConfig, ProdConfig
+from stats_api.database import db
 from stats_api.routes import stats_ui, stats_api
 
 config_map = {
