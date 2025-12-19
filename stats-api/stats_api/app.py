@@ -1,11 +1,13 @@
 import os
 from stats_api.config import TestConfig, DevConfig, ProdConfig
-from stats_api.utils.database import db
-from stats_api.utils.logging import configure_logging
+from stats_api.database import db
+
+# from flask_sqlalchemy import SQLAlchemy
+# from stats_entities.site_usage import SiteUsageBase
+from stats_api.logging import configure_logging
 from flask import Flask
 from flask_cors import CORS
-from stats_api.routes.api import api
-from stats_api.routes.graph_routes import graph_routes
+from stats_api.routes import stats_ui, stats_api
 
 config_map = {
     "TEST": TestConfig,
@@ -14,26 +16,24 @@ config_map = {
 }
 
 
-def create_app():
+def create_app(environment: str) -> Flask:
     configure_logging()
 
     app = Flask(__name__)
-    app.config.from_object(config_map[os.getenv("ENV", "TEST")])
+    app.config.from_object(config_map[environment])
 
     db.init_app(app)
 
-    # Apply CORS
     CORS(app)
 
-    # Register blueprints
-    app.register_blueprint(graph_routes)
-    app.register_blueprint(api, url_prefix="/api")
+    app.register_blueprint(stats_ui)
+    app.register_blueprint(stats_api)
 
     return app
 
 
 if __name__ == "__main__":
-    app = create_app()
+    app = create_app(os.getenv("ENV", "DEV"))
     app.run(
         host=app.config["HOST"],
         port=app.config["PORT"],
