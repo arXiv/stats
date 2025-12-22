@@ -4,6 +4,7 @@ from werkzeug.exceptions import BadRequest
 from flask import (
     Blueprint,
     render_template,
+    make_response,
     request,
 )
 from flask.typing import ResponseReturnValue
@@ -22,11 +23,12 @@ stats_api = Blueprint("stats_api", __name__, url_prefix="/")
 
 @stats_ui.route("stats/main", methods=["GET"])
 def main() -> ResponseReturnValue:
-    return (
-        render_template("main.html"),
-        HTTPStatus.OK,
-        {"Surrogate-Control": "", "Surrogate-Key": ""},  # TODO keys
-    )
+    response = make_response(render_template("main.html"), HTTPStatus.OK)
+    
+    response.headers["Surrogate-Control"] = ""
+    response.headers["Surrogate-Key"] = ""
+
+    return response
 
 
 @stats_ui.route("stats/today", methods=["GET"])
@@ -36,33 +38,36 @@ def today() -> ResponseReturnValue:
 
     data = StatsService.get_today_page_data(date_)
 
-    return (
-        render_template("today.html", **data.model_dump()),
-        HTTPStatus.OK,
-        {"Surrogate-Control": "", "Surrogate-Key": ""},
-    )
+    response = make_response(render_template("today.html", **data.model_dump()), HTTPStatus.OK)
+    
+    response.headers["Surrogate-Control"] = ""
+    response.headers["Surrogate-Key"] = ""
+
+    return response
 
 
 @stats_ui.route("stats/monthly_submissions", methods=["GET"])
 def monthly_submissions() -> ResponseReturnValue:
     data = StatsService.get_submissions_page_data(get_arxiv_current_date())
 
-    return (
-        render_template("monthly_submissions.html", **data.model_dump()),
-        HTTPStatus.OK,
-        {"Surrogate-Control": "", "Surrogate-Key": ""},
-    )
+    response = make_response(render_template("monthly_submissions.html", **data.model_dump()), HTTPStatus.OK)
+    
+    response.headers["Surrogate-Control"] = ""
+    response.headers["Surrogate-Key"] = ""
+
+    return response
 
 
 @stats_ui.route("stats/monthly_downloads", methods=["GET"])
 def monthly_downloads() -> ResponseReturnValue:
     data = StatsService.get_downloads_page_data()
+    
+    response = make_response(render_template("monthly_downloads.html", **data.model_dump()), HTTPStatus.OK)
+    
+    response.headers["Surrogate-Control"] = ""
+    response.headers["Surrogate-Key"] = ""
 
-    return (
-        render_template("monthly_downloads.html", **data.model_dump()),
-        HTTPStatus.OK,
-        {"Surrogate-Control": "", "Surrogate-Key": ""},
-    )
+    return response
 
 
 @stats_api.route("stats/get_hourly_requests", methods=["GET"])
@@ -74,31 +79,38 @@ def get_hourly_requests() -> ResponseReturnValue:
         raise BadRequest
 
     data = StatsService.get_hourly_requests(date_)
+    
+    response = make_response(data, HTTPStatus.OK)
+    
+    response.headers["Content-Type"] = "text/csv"
+    response.headers["Surrogate-Control"] = ""
+    response.headers["Surrogate-Key"] = ""
 
-    return (
-        data,
-        HTTPStatus.OK,
-        {"Content-Type": "text/csv", "Surrogate-Control": "", "Surrogate-Key": ""},
-    )
+    return response
+
 
 
 @stats_api.route("stats/get_monthly_submissions", methods=["GET"])
 def get_monthly_submissions() -> ResponseReturnValue:
     data = StatsService.get_monthly_submissions()
 
-    return (
-        data,
-        HTTPStatus.OK,
-        {"Content-Type": "text/csv", "Surrogate-Control": "", "Surrogate-Key": ""},
-    )
+    response = make_response(data, HTTPStatus.OK)
+    
+    response.headers["Content-Type"] = "text/csv"
+    response.headers["Surrogate-Control"] = ""
+    response.headers["Surrogate-Key"] = ""
+
+    return response
 
 
 @stats_api.route("stats/get_monthly_downloads", methods=["GET"])
 def get_monthly_downloads() -> ResponseReturnValue:
     data = StatsService.get_monthly_downloads()
 
-    return (
-        data,
-        HTTPStatus.OK,
-        {"Content-Type": "text/csv", "Surrogate-Control": "", "Surrogate-Key": ""},
-    )
+    response = make_response(data, HTTPStatus.OK)
+    
+    response.headers["Content-Type"] = "text/csv"
+    response.headers["Surrogate-Control"] = ""
+    response.headers["Surrogate-Key"] = ""
+
+    return response
