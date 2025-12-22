@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from stats_api.respository import SiteUsageRepository
+from stats_api.repository import SiteUsageRepository
 
 
 def test_get_total_requests(app):

@@ -16,9 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 class SiteUsageRepository:
+    """all returned date/datetime objects are timezone naive, but utc"""
     @staticmethod
     def get_total_requests(start: datetime, end: datetime) -> int:
-        """datetimes should be utc"""
+        """start and end should be utc"""
         return db.session.execute(
             db.select(func.sum(HourlyRequests.request_count)).where(
                 HourlyRequests.source_id == 0,
@@ -29,7 +30,7 @@ class SiteUsageRepository:
 
     @staticmethod
     def get_hourly_requests(start: datetime, end: datetime) -> List[HourlyRequests_]:
-        """datetimes should be utc"""
+        """start and end should be utc"""
         results = (
             db.session.execute(
                 db.select(HourlyRequests).where(
@@ -66,6 +67,7 @@ class SiteUsageRepository:
 
     @staticmethod
     def get_total_downloads(hour: datetime) -> int:
+        """hour should be utc"""
         return db.session.execute(
             db.select(func.sum(HourlyDownloads.primary_count)).where(
                 HourlyDownloads.start_dttm <= hour

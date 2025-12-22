@@ -11,7 +11,7 @@ class Config:
     HOST = os.environ.get("HOST") or "0.0.0.0"
     PORT = os.environ.get("PORT") or 8080
     DEBUG = False
-    ARXIV_START_DATE = date(year=1991, month=8, day=1)
+    ARXIV_START_DATE = date(1991, 8, 1)
     ARXIV_TIMEZONE = "America/New_York"
     TOTAL_MIGRATED_PAPERS = 2431
     TOTAL_DELETED_PAPERS = 156  # TODO add to tfvars for easier updates

@@ -1,9 +1,9 @@
 from flask import current_app
-from datetime import date
+from datetime import date, timezone
 from zoneinfo import ZoneInfo
 from dateutil.relativedelta import relativedelta
 
-from stats_api.respository import SiteUsageRepository
+from stats_api.repository import SiteUsageRepository
 from stats_api.utils import get_utc_start_and_end_times, format_as_csv
 from stats_api.models import (
     TodayPageData,
@@ -32,7 +32,7 @@ class StatsService:
     @staticmethod
     def get_submissions_page_data(date: date) -> SubmissionsPageData:
         """assumes date is arxiv local"""
-        time_delta = relativedelta(date - current_app.config["ARXIV_START_DATE"])
+        time_delta = relativedelta(date, current_app.config["ARXIV_START_DATE"])
         submissions = SiteUsageRepository.get_total_submissions(date)
 
         total_submissions = submissions - current_app.config["TOTAL_DELETED_PAPERS"]
@@ -57,7 +57,7 @@ class StatsService:
         latest_hour = SiteUsageRepository.get_latest_hour_for_downloads()
         total_downloads = SiteUsageRepository.get_total_downloads(latest_hour)
 
-        arxiv_latest_hour = latest_hour.astimezone(
+        arxiv_latest_hour = latest_hour.replace(tzinfo=timezone.utc).astimezone(
             ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
         )
 
