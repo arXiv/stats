@@ -11,7 +11,7 @@ from tests.data.site_usage import (
 def app():
     app = create_app("TEST")
     with app.app_context():
-        from stats_api.database import db
+        from stats_api.config.database import db
 
         db.create_all()
         db.session.add_all(

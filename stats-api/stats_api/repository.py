@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import List
 from sqlalchemy import func, desc
 
-from stats_api.database import db
+from stats_api.config.database import db
 from stats_api.models import MonthlyDownloads, HourlyRequests_, MonthlySubmissions_
 from stats_entities.site_usage import (
     HourlyDownloads,
