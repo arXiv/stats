@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional
+from typing import Optional, Mapping, Sequence
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,6 +12,10 @@ class BaseConfig(BaseSettings):
     )
 
 
+class Query(BaseConfig):
+    unix_socket: str
+
+
 class Database(BaseConfig):
     drivername: str
     username: Optional[str] = None
@@ -19,6 +23,7 @@ class Database(BaseConfig):
     host: Optional[str] = None
     port: Optional[int] = None
     database: Optional[str] = None
+    query: Optional[Query] = None
 
 
 class Config(BaseConfig):
@@ -30,7 +35,7 @@ class Config(BaseConfig):
     TOTAL_MIGRATED_PAPERS: int = 2431
     TOTAL_DELETED_PAPERS: int = 156  # TODO add to tfvars for easier updates
     FASTLY_MAX_AGE: int = 31557600
-    DB: Database
+    DB: Optional[Database] = None
 
 
 class TestConfig(Config):
@@ -39,7 +44,7 @@ class TestConfig(Config):
 
 
 class DevConfig(Config):
-    DEBUG: bool = True
+    DEBUG: bool = True  # TODO reduce
 
 
 class ProdConfig(Config):

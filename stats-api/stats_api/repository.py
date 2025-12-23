@@ -10,13 +10,10 @@ from stats_entities.site_usage import (
     HourlyRequests,
 )
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 class SiteUsageRepository:
     """all returned date/datetime objects are timezone naive, but utc"""
+
     @staticmethod
     def get_total_requests(start: datetime, end: datetime) -> int:
         """start and end should be utc"""

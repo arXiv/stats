@@ -3,11 +3,11 @@ from flask import Flask
 from flask_cors import CORS
 from sqlalchemy import URL
 
-from stats_api.config.logging import configure_logging
 from stats_api.config.app import Database, TestConfig, DevConfig, ProdConfig
 from stats_api.config.database import db
 from stats_api.routes import stats_ui, stats_api
 from stats_api.exception import handle_non_http_exception, handle_http_exception
+
 
 config_map = {
     "TEST": TestConfig(DB=Database(drivername="sqlite", database=":memory:")),
@@ -17,8 +17,6 @@ config_map = {
 
 
 def create_app(environment: str) -> Flask:
-    configure_logging()
-
     app = Flask(__name__)
     app.config.from_object(config_map[environment])
 
@@ -41,8 +39,10 @@ def create_app(environment: str) -> Flask:
 
 if __name__ == "__main__":
     app = create_app(os.getenv("ENV", "DEV"))
+
     app.run(
         host=app.config["HOST"],
         port=app.config["PORT"],
         debug=app.config["DEBUG"],
+        use_reloader=False,
     )

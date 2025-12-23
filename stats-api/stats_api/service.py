@@ -11,10 +11,6 @@ from stats_api.models import (
     SubmissionsPageData,
 )
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 class StatsService:
     @staticmethod

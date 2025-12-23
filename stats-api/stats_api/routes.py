@@ -12,10 +12,6 @@ from flask.typing import ResponseReturnValue
 from stats_api.service import StatsService
 from stats_api.utils import set_fastly_headers, get_arxiv_current_date
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 stats_ui = Blueprint("stats_ui", __name__, url_prefix="/")
 stats_api = Blueprint("stats_api", __name__, url_prefix="/")
