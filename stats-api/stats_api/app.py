@@ -4,13 +4,13 @@ from flask_cors import CORS
 from sqlalchemy import URL
 
 from stats_api.config.logging import configure_logging
-from stats_api.config.app import TestConfig, DevConfig, ProdConfig
+from stats_api.config.app import Database, TestConfig, DevConfig, ProdConfig
 from stats_api.config.database import db
 from stats_api.routes import stats_ui, stats_api
 from stats_api.exception import handle_non_http_exception, handle_http_exception
 
 config_map = {
-    "TEST": TestConfig(),
+    "TEST": TestConfig(DB=Database(drivername="sqlite", database=":memory:")),
     "DEV": DevConfig(),
     "PROD": ProdConfig(),
 }
@@ -22,7 +22,9 @@ def create_app(environment: str) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_map[environment])
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = URL.create(**app.config["DB"].model_dump()).render_as_string()
+    app.config["SQLALCHEMY_DATABASE_URI"] = URL.create(
+        **app.config["DB"].model_dump()
+    ).render_as_string()
 
     db.init_app(app)
 

@@ -1,7 +1,25 @@
+from unittest.mock import Mock
 from datetime import date, datetime, timezone
+from flask import Response
 
-from stats_api.utils import get_utc_start_and_end_times, format_as_csv
+from stats_api.utils import (
+    set_fastly_headers,
+    get_utc_start_and_end_times,
+    format_as_csv,
+)
 from stats_api.models import HourlyRequests_
+
+
+def test_set_fastly_headers_with_keys(app):
+    with app.app_context():
+
+        @set_fastly_headers(keys=["first-mock-key", "second-mock-key"])
+        def mock_function():
+            return Response()
+
+        result = mock_function()
+
+        assert result.headers["Surrogate-Key"] == "first-mock-key second-mock-key"
 
 
 def test_get_utc_start_and_end_times_est(app):

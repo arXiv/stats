@@ -5,11 +5,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class BaseConfig(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", 
+        env_file=".env",
         env_nested_delimiter="__",
         env_file_encoding="utf-8",
-        extra="ignore"
+        extra="ignore",
     )
+
 
 class Database(BaseConfig):
     drivername: str
@@ -19,6 +20,7 @@ class Database(BaseConfig):
     port: Optional[int] = None
     database: Optional[str] = None
 
+
 class Config(BaseConfig):
     HOST: str = "0.0.0.0"
     PORT: int = 8080
@@ -27,13 +29,13 @@ class Config(BaseConfig):
     ARXIV_TIMEZONE: str = "America/New_York"
     TOTAL_MIGRATED_PAPERS: int = 2431
     TOTAL_DELETED_PAPERS: int = 156  # TODO add to tfvars for easier updates
+    FASTLY_MAX_AGE: int = 31557600
     DB: Database
 
 
 class TestConfig(Config):
     DEBUG: bool = True
     TESTING: bool = True
-    DB: Database = Database(drivername="sqlite", database=":memory:")
 
 
 class DevConfig(Config):

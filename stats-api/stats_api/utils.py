@@ -5,6 +5,23 @@ from pydantic import BaseModel
 from typing import List, Tuple
 from datetime import date, datetime, timezone
 from zoneinfo import ZoneInfo
+from flask import Response
+from functools import wraps
+
+
+def set_fastly_headers(keys: List[str] = ["stats"]) -> Response:
+    def decorator(function):
+        @wraps(function)
+        def decorated_function(*args, **kwargs):
+            response = function(*args, **kwargs)
+            max_age = current_app.config["FASTLY_MAX_AGE"]
+
+            response.headers["Surrogate-Control"] = f"max-age={max_age}"
+            response.headers["Surrogate-Key"] = " ".join(keys)
+
+            return response
+        return decorated_function
+    return decorator
 
 
 def get_arxiv_current_date() -> date:

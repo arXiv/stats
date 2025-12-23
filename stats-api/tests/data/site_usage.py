@@ -8,7 +8,7 @@ from stats_entities.site_usage import (
 """
 cases covered: 
 - multiple request sources for the same day
-- hours spanning multiple days utc but same day US/New_York
+- hours spanning multiple days utc but same day America/New_York
 """
 mock_hourly_requests = [
     HourlyRequests(
