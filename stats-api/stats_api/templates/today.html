@@ -1,4 +1,4 @@
-{%- extends "base.html" -%}
+{%- extends "arxiv_base.html" -%}
 {% set pagename = 'Hourly Usage Stats' %}
 {% block title %}hourly usage{% endblock %}
 
@@ -7,7 +7,7 @@
   <div class="chart_text">
     <p>arXiv Web Server Usage from
       {{ requested_date.strftime('%A, %B %-d, %Y') }}
-      (<a href="{{ url_for('.home') }}">arXiv.org</a> site only)</p>
+      (<a href="{{ config.URLS.home }}">arXiv.org</a> site only)</p>
   </div>
   <div id="chart_content">
     <div class="chart_text">
