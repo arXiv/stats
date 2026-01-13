@@ -1,6 +1,10 @@
 from datetime import date
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+from pydantic_core.core_schema import FieldValidationInfo
+
+from stats_api.config.urls import _URLS
 
 
 class BaseConfig(BaseSettings):
@@ -12,30 +16,10 @@ class BaseConfig(BaseSettings):
     )
 
 
-class Urls(BaseConfig):
-    scheme: str = "https"
-    base: str = scheme + "://"
-
-    base_server: str = "arxiv.org"
-    help_server: str = "info.arxiv.org"
-    auth_server: str = base_server
-
-    home: str = base + base_server + "/"
-    search_box: str = base + base_server + "/search"
-    search_advanced: str = base + base_server + "/search/advanced"
-    create: str = base + base_server + "/user/create"
-
-    account: str = base + auth_server + "/user"
-    login: str = base + auth_server + "/login"
-    logout: str = base + auth_server + "/logout"
-
-    help: str = base + help_server + "/help"
-    about: str = base + help_server + "/about"
-    contact: str = base + help_server + "/help/contact.html"
-    subscribe: str = base + help_server + "/help/subscribe"
-    copyright: str = base + help_server + "/help/license/index.html"
-    privacy_policy: str = base + help_server + "/help/policies/privacy_policy.html"
-    a11y: str = base + help_server + "/help/web_accessibility.html"
+class Url(BaseConfig):
+    name: Optional[str]
+    rel_path: Optional[str]
+    domain: Optional[str]
 
 
 class Query(BaseConfig):
@@ -62,10 +46,30 @@ class Config(BaseConfig):
     TOTAL_DELETED_PAPERS: int = 156  # TODO add to tfvars for easier updates
     FASTLY_MAX_AGE: int = 31557600
     DB: Optional[Database] = None
-    URLS: Urls = Urls()
 
-    # SERVER_NAME: str = Urls.base_server  # Flask configuration
-    # PREFERRED_URL_SCHEME: str = Urls.scheme  # Flask configuration
+    PREFERRED_URL_SCHEME: str = "https"  # Flask configuration
+    SERVER_NAME: str = "arxiv.org"  # Flask configuration
+    BASE_SERVER: str = SERVER_NAME
+    HELP_SERVER: str = "info.arxiv.org"
+    AUTH_SERVER: str = BASE_SERVER
+    URLS: Optional[dict[str, str]] = None
+
+    @field_validator("URLS")
+    def construct_urls(cls, v, info: FieldValidationInfo):
+        domain_map = {
+            "base": info.data.get("BASE_SERVER"),
+            "help": info.data.get("HELP_SERVER"),
+            "auth": info.data.get("AUTH_SERVER"),
+        }
+        urls = [Url(**i) for i in _URLS]
+
+        return {
+            url.name: info.data.get("PREFERRED_URL_SCHEME")
+            + "://"
+            + domain_map[url.domain]
+            + url.rel_path
+            for url in urls
+        }
 
 
 class TestConfig(Config):
@@ -75,7 +79,8 @@ class TestConfig(Config):
 
 class DevConfig(Config):
     DEBUG: bool = False
-    URLS: Urls = Urls(BASE_SERVER="dev.arxiv.org", HELP_SERVER="info.dev.arxiv.org")
+    SERVER_NAME: str = "dev.arxiv.org"
+    HELP_SERVER: str = "info.dev.arxiv.org"
 
 
 class ProdConfig(Config):
