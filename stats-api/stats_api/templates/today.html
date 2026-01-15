@@ -6,13 +6,13 @@
   {{ super() }}
   <div class="chart_text">
     <p>arXiv Web Server Usage from
-      {{ requested_date.strftime('%A, %B %-d, %Y') }}
+      {{ arxiv_requested_date.strftime('%A, %B %-d, %Y') }}
       (<a href="{{ config.URLS.home }}">arXiv.org</a> site only)</p>
   </div>
   <div id="chart_content">
     <div class="chart_text">
-      <a class="button is-primary is-pulled-right" title="download hourly access stats CSV data" href="{{ url_for('stats_api.stats', command='get_hourly_requests') }}?date={{ requested_date.strftime('%Y%m%d')}}">Download CSV</a>
-      {% if normal_count > 0 %}
+      <a class="button is-primary is-pulled-right" title="download hourly access stats CSV data" href="{{ url_for('stats_api.get_hourly_requests') }}?date={{ arxiv_requested_date.strftime('%Y%m%d')}}">Download CSV</a>
+      {% if total_requests > 0 %}
         <p>Total number of requests today = {{ "{:,}".format(total_requests) }}</p>
       {% else %}
         <p>No data currently available.</p>
@@ -21,7 +21,7 @@
     {% include "today_js.html" %}
   </div>
   <div class="chart_text chart_notes">
-    <p>Current local time is {{ current_date.strftime('%A, %B, %-d, %Y %H:%M:%S') }} {{arxiv_timezone}}</p>
+    <p>Current local time is {{ arxiv_current_time.strftime('%A, %B, %-d, %Y %H:%M:%S') }} {{arxiv_timezone}}</p>
   </div>
 {% endblock content_stats %}
 

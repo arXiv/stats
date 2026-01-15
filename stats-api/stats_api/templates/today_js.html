@@ -28,74 +28,43 @@
   scrn.addListener(responsiveHeight); // Attach listener function on state changes
   var calcWidth = responsiveWidth(startWidth);
   var calcHeight = responsiveHeight(startHeight);
-  //set margin, width, and height vars
-  var n = { num_nodes }, // number of layers (nodes)
-    w = calcWidth,
+  // set constants
+var w = calcWidth,
     h = calcHeight,
     p = [20, 50, 30, 20],
-    x = d3.scale.ordinal().rangeRoundBands([0, w - p[1] - p[3]]),
+    barColor = "#ffcc00", // Your single chosen color
+    x = d3.scale.ordinal().rangeRoundBands([0, w - p[1] - p[3]], 0.1), // Added 0.1 for bar spacing
     y = d3.scale.linear().range([0, h - p[0] - p[2]]),
-    z = d3.scale.linear().domain([0, n - 1]).range(["#b55c06", "#ffcc00"]),
-    //z = d3.scale.linear().domain([0, n - 1]).range(["#1c8bd6", "#005e9d"]),
     parse = d3.time.format("%Y-%m-%dT%H:%M:%SZ").parse,
     format = d3.time.format("%H");
-
-  var node_header = [];
-  for (i = 1; i <= n; i++) {
-    node_header.push("node"+i);
-  }
 
   var svg = d3.select("div#chart_content").append("svg:svg")
     .attr("width", w)
     .attr("height", h)
     .append("svg:g")
     .attr("transform", "translate(" + p[3] + "," + (h - p[2]) + ")");
-  d3.csv("{{ url_for('stats_api.stats', command='get_hourly_requests') }}?date={{ date.strftime('%Y%m%d')}}", function(error, data) {
+d3.csv("{{ url_for('stats_api.get_hourly_requests') }}?date={{ arxiv_requested_date.strftime('%Y%m%d')}}", function(error, data) {
+    
+    // 1. Process data: Parse time and ensure values are numbers
+    data.forEach(function(d) {
+        d.date = parse(d.hour);
+        d.value = +d.requests; // REPLACE 'requests' with your actual CSV column name
+    });
 
-    // Transpose the data into layers by node.
-    var nodes = d3.layout.stack()(node_header.map(function(node) {
-      return hourly_stats.map(function(d) {
-        return {
-          x: parse(d.hour),
-          y: +d[node]
-        };
-      });
-    }));
+    // 2. Set domains
+    x.domain(data.map(function(d) { return d.date; }));
+    y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
-    // Compute the x-domain (by date) and y-domain (by top).
-    x.domain(nodes[0].map(function(d) {
-      return d.x;
-    }));
-    y.domain([0, d3.max(nodes[nodes.length - 1], function(d) {
-      return d.y0 + d.y;
-    })]);
-
-    // Add a group for each node.
-    var node = svg.selectAll("g.node")
-      .data(nodes)
-      .enter().append("svg:g")
-      .attr("class", "node")
-      .style("fill", function(d, i) {
-        return z(i);
-      })
-      .style("stroke", function(d, i) {
-        return d3.rgb(z(i)).darker();
-      });
-
-    // Add a rect for each hour.
-    var rect = node.selectAll("rect")
-      .data(Object)
-      .enter().append("svg:rect")
-      .attr("x", function(d) {
-        return x(d.x);
-      })
-      .attr("y", function(d) {
-        return -y(d.y0) - y(d.y);
-      })
-      .attr("height", function(d) {
-        return y(d.y);
-      })
-      .attr("width", x.rangeBand());
+    // 3. Add the bars (Rectangles)
+    svg.selectAll("rect")
+        .data(data)
+        .enter().append("svg:rect")
+        .attr("x", function(d) { return x(d.date); })
+        .attr("y", function(d) { return -y(d.value); }) // SVG draws top-down, so we use negative y
+        .attr("height", function(d) { return y(d.value); })
+        .attr("width", x.rangeBand())
+        .style("fill", barColor)
+        .style("stroke", d3.rgb(barColor).darker());
 
     // Add a label per hour.
     var label = svg.selectAll("text")

@@ -1,19 +1,16 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import date, datetime
 
 
 class OrmBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True, extra="ignore")
+    model_config = ConfigDict(
+        from_attributes=True, extra="ignore", populate_by_name=True
+    )
 
 
-class TodayPageData(BaseModel): # TODO update template
-    # current_dt: date
-    # requested_dt: date
-    # business_tz: str
-    # normal_count: int
-    # admin_count: int
-    # num_nodes: int
-    arxiv_current_date: date
+class TodayPageData(BaseModel):
+    arxiv_current_time: datetime
+    arxiv_requested_date: date
     arxiv_timezone: str
     total_requests: int
 
@@ -34,13 +31,13 @@ class SubmissionsPageData(BaseModel):
 
 
 class HourlyRequests_(OrmBase):
-    start_dttm: datetime
-    request_count: int
+    hour: datetime = Field(alias="start_dttm")
+    requests: int = Field(alias="request_count")
 
 
 class MonthlySubmissions_(OrmBase):
     month: date
-    count: int
+    submissions: int = Field(alias="count")
 
 
 class MonthlyDownloads(BaseModel):

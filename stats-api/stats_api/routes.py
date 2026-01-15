@@ -10,8 +10,7 @@ from flask import (
 from flask.typing import ResponseReturnValue
 
 from stats_api.service import StatsService
-from stats_api.utils import set_fastly_headers, get_arxiv_current_date
-
+from stats_api.utils import set_fastly_headers, get_arxiv_current_time, url_param_to_date
 
 stats_ui = Blueprint("stats_ui", __name__, url_prefix="/")
 stats_api = Blueprint("stats_api", __name__, url_prefix="/")
@@ -27,9 +26,10 @@ def main() -> ResponseReturnValue:
 @set_fastly_headers(keys=["stats", "today"])
 def today() -> ResponseReturnValue:
     """assumes supplied date is arxiv local"""
-    date_ = request.args.get("date", get_arxiv_current_date(), type=date)
+    current_time = get_arxiv_current_time()
+    date_ = request.args.get("date", current_time.date(), type=url_param_to_date)
 
-    data = StatsService.get_today_page_data(date_)
+    data = StatsService.get_today_page_data(current_time, date_)
 
     return make_response(
         render_template("today.html", **data.model_dump()), HTTPStatus.OK
@@ -39,7 +39,7 @@ def today() -> ResponseReturnValue:
 @stats_ui.route("stats/monthly_submissions", methods=["GET"])
 @set_fastly_headers(keys=["stats", "submissions", "monthly"])
 def monthly_submissions() -> ResponseReturnValue:
-    data = StatsService.get_submissions_page_data(get_arxiv_current_date())
+    data = StatsService.get_submissions_page_data(get_arxiv_current_time().date())
 
     return make_response(
         render_template("monthly_submissions.html", **data.model_dump()), HTTPStatus.OK
@@ -60,7 +60,7 @@ def monthly_downloads() -> ResponseReturnValue:
 @set_fastly_headers(keys=["stats", "requests", "hourly"])
 def get_hourly_requests() -> ResponseReturnValue:
     """requires date arg, and assumes supplied date is arxiv local"""
-    date_ = request.args.get("date", None, type=date)
+    date_ = request.args.get("date", get_arxiv_current_time().date(), type=url_param_to_date)
 
     if not date_:
         raise BadRequest

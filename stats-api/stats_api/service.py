@@ -1,33 +1,39 @@
 from flask import current_app
-from datetime import date, timezone
+from datetime import date, datetime, timezone
 from zoneinfo import ZoneInfo
 from dateutil.relativedelta import relativedelta
 
 from stats_api.repository import SiteUsageRepository
-from stats_api.utils import get_utc_start_and_end_times, format_as_csv
+from stats_api.utils import (
+    get_utc_start_and_end_times,
+    format_as_csv,
+    utc_to_arxiv_local,
+)
 from stats_api.models import (
     TodayPageData,
     DownloadsPageData,
     SubmissionsPageData,
+    HourlyRequests_,
 )
 
 
 class StatsService:
+    """accepts and returns timezone aware, arxiv local date/datetime objects"""
+
     @staticmethod
-    def get_today_page_data(date: date) -> TodayPageData:
-        """assumes date is arxiv local"""
-        start, end = get_utc_start_and_end_times(date)
+    def get_today_page_data(current_time: datetime, requested_date: date) -> TodayPageData:
+        start, end = get_utc_start_and_end_times(requested_date)
         total_requests = SiteUsageRepository.get_total_requests(start, end)
 
         return TodayPageData(
-            arxiv_current_date=date,
+            arxiv_current_time=current_time,
+            arxiv_requested_date=requested_date,
             arxiv_timezone=current_app.config["ARXIV_TIMEZONE"],
             total_requests=total_requests,
         )
 
     @staticmethod
     def get_submissions_page_data(date: date) -> SubmissionsPageData:
-        """assumes date is arxiv local"""
         time_delta = relativedelta(date, current_app.config["ARXIV_START_DATE"])
         submissions = SiteUsageRepository.get_total_submissions(date)
 
@@ -64,9 +70,13 @@ class StatsService:
 
     @staticmethod
     def get_hourly_requests(date: date) -> str:
-        """assumes date is arxiv local"""
         start, end = get_utc_start_and_end_times(date)
-        hourly_requests = SiteUsageRepository.get_hourly_requests(start, end)
+        data = SiteUsageRepository.get_hourly_requests(start, end)
+
+        hourly_requests = [
+            HourlyRequests_(hour=utc_to_arxiv_local(hr.hour), requests=hr.requests)
+            for hr in data
+        ]
 
         return format_as_csv(hourly_requests)  # type: ignore
 

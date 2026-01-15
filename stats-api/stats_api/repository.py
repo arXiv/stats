@@ -12,7 +12,7 @@ from stats_entities.site_usage import (
 
 
 class SiteUsageRepository:
-    """all returned date/datetime objects are timezone naive, but utc"""
+    """accepts and returns timezone naive, but utc date/datetime objects"""
 
     @staticmethod
     def get_total_requests(start: datetime, end: datetime) -> int:
