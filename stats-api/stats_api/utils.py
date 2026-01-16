@@ -66,7 +66,7 @@ def format_as_csv(models: List[BaseModel]) -> str:
     return output.getvalue()
 
 
-def utc_to_arxiv_local(dt: datetime) -> datetime:
+def utc_to_arxiv_local(dt: datetime) -> str:
     return dt.replace(tzinfo=timezone.utc).astimezone(
         ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
     )

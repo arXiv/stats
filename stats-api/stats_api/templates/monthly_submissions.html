@@ -10,8 +10,8 @@
   </div>
   <div id="chart_content">
     <div class="chart_text">
-      <a class="button is-pulled-right" title="download monthly submission CSV data" href="{{ url_for('stats_api.stats', command='get_monthly_submissions') }}">Download CSV</a>
-      <p>Total number of submissions as of {{ current_date.strftime('%B %-d, %Y') }} = <strong>{{ "{:,}".format(total_submissions) }}</strong>.</p>
+      <a class="button is-pulled-right" title="download monthly submission CSV data" href="{{ url_for('stats_api.get_monthly_submissions') }}">Download CSV</a>
+      <p>Total number of submissions as of {{ arxiv_current_date.strftime('%B %-d, %Y') }} = <strong>{{ "{:,}".format(total_submissions) }}</strong>.</p>
     </div>
     {% include "monthly_submissions_js.html" %}
   </div>

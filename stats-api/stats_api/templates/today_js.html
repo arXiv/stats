@@ -1,3 +1,5 @@
+<script src="{{ url_for('static', filename='js/d3/3.5.17/d3.min.js') }}" type="text/javascript"></script>
+
 <style type="text/css">
   svg {
     width: 1000;
@@ -32,10 +34,9 @@
 var w = calcWidth,
     h = calcHeight,
     p = [20, 50, 30, 20],
-    barColor = "#ffcc00", // Your single chosen color
-    x = d3.scale.ordinal().rangeRoundBands([0, w - p[1] - p[3]], 0.1), // Added 0.1 for bar spacing
+    barColor = "#b55c06",
+    x = d3.scale.ordinal().rangeRoundBands([0, w - p[1] - p[3]], 0),
     y = d3.scale.linear().range([0, h - p[0] - p[2]]),
-    parse = d3.time.format("%Y-%m-%dT%H:%M:%SZ").parse,
     format = d3.time.format("%H");
 
   var svg = d3.select("div#chart_content").append("svg:svg")
@@ -47,8 +48,8 @@ d3.csv("{{ url_for('stats_api.get_hourly_requests') }}?date={{ arxiv_requested_d
     
     // 1. Process data: Parse time and ensure values are numbers
     data.forEach(function(d) {
-        d.date = parse(d.hour);
-        d.value = +d.requests; // REPLACE 'requests' with your actual CSV column name
+        d.date = d3.time.format.iso.parse(d.hour);
+        d.value = +d.requests;
     });
 
     // 2. Set domains
