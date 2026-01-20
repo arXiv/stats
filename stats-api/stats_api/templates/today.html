@@ -1,11 +1,12 @@
 {%- extends "stats_base.html" -%}
 {% set pagename = 'Hourly Usage Stats' %}
 {% block title %}hourly usage{% endblock %}
+{% block header_h1 %}<h1 class="header-breadcrumbs"><a href="https://arxiv.org"><img src="{{ url_for('static', filename='images/arxiv-logo-one-color-white.svg') }}" alt="arxiv logo" style="height:40px;"/></a> <span>&gt;</span> stats  <span>&gt;</span> hourly usage</h1>{% endblock %}
 
 {% block content_stats %}
   {{ super() }}
   <div class="chart_text">
-    <p>arXiv Web Server Usage from
+    <p>arXiv Web Edge Requests from
       {{ arxiv_requested_date.strftime('%A, %B %-d, %Y') }}
       (<a href="{{ config.URLS.home }}">arXiv.org</a> site only)</p>
   </div>
