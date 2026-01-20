@@ -75,17 +75,16 @@ class SiteUsageRepository:
     def get_monthly_downloads() -> List[MonthlyDownloads]:
         results = db.session.execute(
             db.select(
-                func.extract("year", HourlyDownloads.start_dttm).label("year"),
-                func.extract("month", HourlyDownloads.start_dttm).label("month"),
+                HourlyDownloads.month,
                 func.sum(HourlyDownloads.primary_count).label("downloads"),
             )
-            .group_by("year", "month")
-            .order_by(desc("year"), desc("month"))
-        ).all()  # TODO denormalize table or otherwise optimize
+            .group_by(HourlyDownloads.month)
+            .order_by(HourlyDownloads.month)
+        ).all()
 
         return [
             MonthlyDownloads(
-                month=date(row.year, row.month, 1), downloads=row.downloads
+                month=row.month, downloads=row.downloads
             )
             for row in results
         ]
