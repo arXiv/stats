@@ -5,6 +5,7 @@ from google.cloud import logging as gc_logging
 
 from datetime import datetime, timedelta, timezone, date
 from dateutil import parser
+from dateutil.relativedelta import relativedelta
 
 import functions_framework
 from cloudevents.http import CloudEvent
@@ -149,7 +150,7 @@ class MonthlySubmissionsJob:
             raise NoRetryError
 
         # set to previous month
-        return event_time.replace(month=int(event_time.month) - 1, day=1).date()
+        return (event_time - relativedelta(months=1)).replace(day=1).date()
 
     def _validate_month(self, month: str) -> date:
         try:

@@ -83,6 +83,26 @@ def test_validate_cloud_event():
     assert result == date(2025, 8, 1)
 
 
+def test_validate_cloud_event_january():
+    mock_job_instance = MagicMock(autospec=MonthlySubmissionsJob)
+    mock_job_instance.hour_delay = 1
+    mock_job_instance._event_time_exceeds_retry_window.return_value = False
+
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2026-01-02T16:30:00Z",
+    }
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    result = MonthlySubmissionsJob._validate_cloud_event(
+        mock_job_instance, cloud_event=mock_cloud_event
+    )
+
+    assert result == date(2025, 12, 1)
+
+
 @patch("main.datetime")
 def test_event_time_exceeds_retry_window_true(mock_datetime_method):
     mock_datetime_method.now.return_value = datetime(
