@@ -20,6 +20,7 @@ class HourlyDownloads(SiteUsageBase):
     primary_count = Column(Integer)
     cross_count = Column(Integer)
     start_dttm = Column(DateTime, primary_key=True)
+    month = Column(Date)
 
 
 class HistoricalHourlyRequests(SiteUsageBase):
