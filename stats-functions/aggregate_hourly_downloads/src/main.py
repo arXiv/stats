@@ -355,6 +355,7 @@ class AggregateHourlyDownloadsJob:
                 primary_count=counts.primary,
                 cross_count=counts.cross,
                 start_dttm=key.time,
+                month=key.time.date().replace(day=1),
             )
             for key, counts in aggregated_data.items()
         ]
