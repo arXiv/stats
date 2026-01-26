@@ -26,7 +26,7 @@ class MonthlyDownloads(SiteUsageBase):
     __tablename__ = "monthly_downloads"
 
     month = Column(Date, primary_key=True)
-    count = Column(Integer)
+    downloads = Column(Integer)
 
 
 class HistoricalHourlyRequests(SiteUsageBase):
