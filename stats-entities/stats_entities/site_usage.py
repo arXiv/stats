@@ -9,6 +9,8 @@ SiteUsageBase = declarative_base()
 class HourlyDownloads(SiteUsageBase):
     __tablename__ = "hourly_downloads"
 
+    start_dttm = Column(DateTime, primary_key=True)
+    category = Column(String(32), primary_key=True)
     country = Column(String(255), primary_key=True)
     download_type = Column(
         String(16),
@@ -16,11 +18,15 @@ class HourlyDownloads(SiteUsageBase):
         primary_key=True,
     )
     archive = Column(String(16))
-    category = Column(String(32), primary_key=True)
     primary_count = Column(Integer)
     cross_count = Column(Integer)
-    start_dttm = Column(DateTime, primary_key=True)
-    month = Column(Date)
+
+
+class MonthlyDownloads(SiteUsageBase):
+    __tablename__ = "monthly_downloads"
+
+    month = Column(Date, primary_key=True)
+    downloads = Column(Integer)
 
 
 class HistoricalHourlyRequests(SiteUsageBase):
