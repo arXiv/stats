@@ -22,6 +22,13 @@ class HourlyDownloads(SiteUsageBase):
     cross_count = Column(Integer)
 
 
+class MonthlyDownloads(SiteUsageBase):
+    __tablename__ = "monthly_downloads"
+
+    month = Column(Date, primary_key=True)
+    count = Column(Integer)
+
+
 class HistoricalHourlyRequests(SiteUsageBase):
     __tablename__ = "historical_hourly_requests"
 
