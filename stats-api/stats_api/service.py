@@ -84,7 +84,9 @@ class StatsService:
 
         return format_as_csv(
             [
-                HourlyRequests_(hour=utc_to_arxiv_local(hr.hour), requests=hr.requests)
+                HourlyRequests_(
+                    start_dttm=utc_to_arxiv_local(hr.hour), request_count=hr.requests
+                )
                 for hr in data
             ]
         )  # type: ignore
@@ -94,11 +96,11 @@ class StatsService:
         total_latest_month = SiteUsageRepository.get_total_downloads_for_hour_range(
             datetime(hour.year, hour.month, 1), hour
         )
-        data = SiteUsageRepository.get_monthly_downloads(hour.month)
+        data = SiteUsageRepository.get_monthly_downloads(date(hour.year, hour.month, 1))
 
-        return format_as_csv(
-            StatsService._combine_monthly_downloads(hour, total_latest_month, data)
-        )  # type: ignore
+        monthly_downloads = StatsService._combine_monthly_downloads(hour, total_latest_month, data)
+
+        return format_as_csv(monthly_downloads)  # type: ignore
 
     @staticmethod
     def _combine_monthly_downloads(

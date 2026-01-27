@@ -132,7 +132,7 @@
     .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")")
     .attr("class", "small-chart");
 
-  d3.csv("{{ url_for('stats_api.get_monthly_downloads') }}", function(error, data) {
+  d3.csv("{{ url_for('stats_api.get_monthly_downloads') }}?latest_hour={{ arxiv_latest_hour.strftime('%Y%m%d%H')}}", function(error, data) {
 
     data.forEach(function(d) {
       d.month = parseDate(d.month);

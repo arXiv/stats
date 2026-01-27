@@ -67,17 +67,14 @@ class Config(BaseConfig):
         urls = [Url(**i) for i in _URLS]
 
         return {
-            url.name: info.data.get("PREFERRED_URL_SCHEME")
-            + "://"
-            + domain_map[url.domain]
-            + url.rel_path
+            url.name: f"{info.data.get('PREFERRED_URL_SCHEME')}://{domain_map[url.domain]}{url.rel_path}"
             for url in urls
         }
 
 
 class TestConfig(Config):
     DEBUG: bool = True
-    TESTING: bool = True # Flask configuration
+    TESTING: bool = True  # Flask configuration
 
 
 class DevConfig(Config):

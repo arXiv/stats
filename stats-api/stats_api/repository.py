@@ -81,7 +81,7 @@ class SiteUsageRepository:
         ).scalar()
 
     @staticmethod
-    def get_monthly_downloads(month: date) -> List[MonthlyDownloads]:
+    def get_monthly_downloads(month: date) -> List[MonthlyDownloads_]:
         """month object should represent the first day of that month"""
         results = db.session.execute(
             db.select(MonthlyDownloads.month, MonthlyDownloads.downloads)

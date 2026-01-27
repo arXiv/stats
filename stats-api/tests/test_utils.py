@@ -4,6 +4,7 @@ from flask import Response
 
 from stats_api.utils import (
     url_param_to_date,
+    url_param_to_arxiv_datetime,
     set_fastly_headers,
     get_utc_start_and_end_times,
     format_as_csv,
@@ -16,6 +17,15 @@ def test_url_param_to_date(app):
     result = url_param_to_date("20251001")
 
     assert result == date(2025, 10, 1)
+
+
+def test_url_param_to_arxiv_datetime(app):
+    with app.app_context():
+        app.config["ARXIV_TIMEZONE"] = "America/New_York"
+
+        result = url_param_to_arxiv_datetime("2024121215")
+
+        assert result == datetime(2024, 12, 12, 15, tzinfo=ZoneInfo("America/New_York"))
 
 
 def test_set_fastly_headers_with_keys(app):
@@ -48,8 +58,8 @@ def test_get_utc_start_and_end_times_edt(app):
 
 def test_format_as_csv():
     mock_models = [
-        HourlyRequests_(hour=datetime(2025, 10, 10, 0), requests=3000000),
-        HourlyRequests_(hour=datetime(2025, 10, 10, 1), requests=4000000),
+        HourlyRequests_(start_dttm=datetime(2025, 10, 10, 0), request_count=3000000),
+        HourlyRequests_(start_dttm=datetime(2025, 10, 10, 1), request_count=4000000),
     ]
 
     result = format_as_csv(mock_models)

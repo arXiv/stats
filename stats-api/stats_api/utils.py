@@ -2,19 +2,24 @@ from flask import current_app
 import io
 import csv
 from pydantic import BaseModel
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 from datetime import date, datetime, timezone
 from zoneinfo import ZoneInfo
-from flask import Response
 from functools import wraps
 
 
-def url_param_to_date(param: str):
+def url_param_to_date(param: str) -> date:
+    """transforms a url date param parsed as a string into a date object"""
     return datetime.strptime(param, "%Y%m%d").date()
 
 
-def set_fastly_headers(keys: List[str] = ["stats"]) -> Response:
-    def decorator(function):
+def url_param_to_arxiv_datetime(param: str) -> datetime:
+    """transforms a url datetime param parsed as a string into a datetime object"""
+    return datetime.strptime(param, "%Y%m%d%H").replace(tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"]))
+
+
+def set_fastly_headers(keys: List[str] = ["stats"]):
+    def decorator(function: Callable) -> Callable:
         @wraps(function)
         def decorated_function(*args, **kwargs):
             response = function(*args, **kwargs)
@@ -66,7 +71,7 @@ def format_as_csv(models: List[BaseModel]) -> str:
     return output.getvalue()
 
 
-def utc_to_arxiv_local(dt: datetime) -> str:
+def utc_to_arxiv_local(dt: datetime) -> datetime:
     return dt.replace(tzinfo=timezone.utc).astimezone(
         ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
     )

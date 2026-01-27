@@ -1,4 +1,3 @@
-from datetime import date
 from http import HTTPStatus
 from werkzeug.exceptions import BadRequest
 from flask import (
@@ -10,7 +9,12 @@ from flask import (
 from flask.typing import ResponseReturnValue
 
 from stats_api.service import StatsService
-from stats_api.utils import set_fastly_headers, get_arxiv_current_time, url_param_to_date
+from stats_api.utils import (
+    set_fastly_headers,
+    get_arxiv_current_time,
+    url_param_to_date,
+    url_param_to_arxiv_datetime,
+)
 
 stats_ui = Blueprint("stats_ui", __name__, url_prefix="/")
 stats_api = Blueprint("stats_api", __name__, url_prefix="/")
@@ -59,13 +63,12 @@ def monthly_downloads() -> ResponseReturnValue:
 @stats_api.route("stats/get_hourly_requests", methods=["GET"])
 @set_fastly_headers(keys=["stats", "requests", "hourly"])
 def get_hourly_requests() -> ResponseReturnValue:
-    """requires date arg, and assumes supplied date is arxiv local"""
-    date_ = request.args.get("date", get_arxiv_current_time().date(), type=url_param_to_date)
+    """assumes supplied date is arxiv local"""
+    date = request.args.get(
+        "date", get_arxiv_current_time().date(), type=url_param_to_date
+    )
 
-    if not date_:
-        raise BadRequest
-
-    data = StatsService.get_hourly_requests(date_)
+    data = StatsService.get_hourly_requests(date)
 
     response = make_response(data, HTTPStatus.OK)
     response.headers["Content-Type"] = "text/csv"
@@ -87,7 +90,15 @@ def get_monthly_submissions() -> ResponseReturnValue:
 @stats_api.route("stats/get_monthly_downloads", methods=["GET"])
 @set_fastly_headers(keys=["stats", "downloads", "monthly"])
 def get_monthly_downloads() -> ResponseReturnValue:
-    data = StatsService.get_monthly_downloads()
+    """requires latest_hour arg, assumes it is arxiv local"""
+    latest_hour = request.args.get(
+        "latest_hour", None, type=url_param_to_arxiv_datetime
+    )
+
+    if not latest_hour:
+        raise BadRequest
+
+    data = StatsService.get_monthly_downloads(latest_hour)
 
     response = make_response(data, HTTPStatus.OK)
     response.headers["Content-Type"] = "text/csv"
