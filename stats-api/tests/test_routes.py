@@ -1,4 +1,3 @@
-from stats_api.routes import stats_ui, stats_api
 
 
 def test_ui_route_error_on_template_render(app):
