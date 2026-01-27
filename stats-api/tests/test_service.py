@@ -46,8 +46,8 @@ def test_combine_monthly_downloads(MockSiteUsageRepository, app):
     mock_total_downloads = 20000
 
     mock_monthly_downloads = [
-        MonthlyDownloads_(month=date(2025, 11, 1), downloads=15000),
         MonthlyDownloads_(month=date(2025, 10, 1), downloads=10000),
+        MonthlyDownloads_(month=date(2025, 11, 1), downloads=15000),
     ]
 
     with app.app_context():
@@ -63,7 +63,7 @@ def test_combine_monthly_downloads(MockSiteUsageRepository, app):
         )
 
         assert result == [
-            MonthlyDownloads_(month=date(2025, 12, 1), downloads=20000),
-            MonthlyDownloads_(month=date(2025, 11, 1), downloads=15000),
             MonthlyDownloads_(month=date(2025, 10, 1), downloads=10000),
+            MonthlyDownloads_(month=date(2025, 11, 1), downloads=15000),
+            MonthlyDownloads_(month=date(2025, 12, 1), downloads=20000),
         ]
