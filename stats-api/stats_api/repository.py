@@ -3,9 +3,10 @@ from typing import List
 from sqlalchemy import func, desc
 
 from stats_api.config.database import db
-from stats_api.models import MonthlyDownloads, HourlyRequests_, MonthlySubmissions_
+from stats_api.models import MonthlyDownloads_, HourlyRequests_, MonthlySubmissions_
 from stats_entities.site_usage import (
     HourlyDownloads,
+    MonthlyDownloads,
     MonthlySubmissions,
     HourlyRequests,
 )
@@ -16,7 +17,6 @@ class SiteUsageRepository:
 
     @staticmethod
     def get_total_requests(start: datetime, end: datetime) -> int:
-        """start and end should be utc"""
         return db.session.execute(
             db.select(func.sum(HourlyRequests.request_count)).where(
                 HourlyRequests.source_id == 0,
@@ -27,7 +27,6 @@ class SiteUsageRepository:
 
     @staticmethod
     def get_hourly_requests(start: datetime, end: datetime) -> List[HourlyRequests_]:
-        """start and end should be utc"""
         results = (
             db.session.execute(
                 db.select(HourlyRequests).where(
@@ -63,28 +62,31 @@ class SiteUsageRepository:
         ).scalar()
 
     @staticmethod
-    def get_total_downloads(hour: datetime) -> int:
-        """hour should be utc"""
+    def get_total_downloads_for_hour_range(
+        start_hour: datetime, end_hour: datetime
+    ) -> int:
         return db.session.execute(
-            db.select(func.sum(HourlyDownloads.primary_count)).where(
-                HourlyDownloads.start_dttm <= hour
+            db.select(func.sum(HourlyDownloads.primary_count))
+            .where(HourlyDownloads.start_dttm >= start_hour)
+            .where(HourlyDownloads.start_dttm <= end_hour)
+        ).scalar()
+
+    @staticmethod
+    def get_total_downloads(month: date) -> int:
+        """month object should represent the first day of that month"""
+        return db.session.execute(
+            db.select(func.sum(MonthlyDownloads.downloads)).where(
+                MonthlyDownloads.month < month
             )
         ).scalar()
 
     @staticmethod
-    def get_monthly_downloads() -> List[MonthlyDownloads]:
+    def get_monthly_downloads(month: date) -> List[MonthlyDownloads]:
+        """month object should represent the first day of that month"""
         results = db.session.execute(
-            db.select(
-                HourlyDownloads.month,
-                func.sum(HourlyDownloads.primary_count).label("downloads"),
-            )
-            .group_by(HourlyDownloads.month)
-            .order_by(HourlyDownloads.month)
+            db.select(MonthlyDownloads.month, MonthlyDownloads.downloads)
+            .where(MonthlyDownloads.month < month)
+            .order_by(MonthlyDownloads.month)
         ).all()
 
-        return [
-            MonthlyDownloads(
-                month=row.month, downloads=row.downloads
-            )
-            for row in results
-        ]
+        return [MonthlyDownloads_.model_validate(row) for row in results]

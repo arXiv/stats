@@ -16,6 +16,7 @@ class TodayPageData(BaseModel):
 
 
 class DownloadsPageData(BaseModel):
+    arxiv_latest_hour: datetime
     arxiv_latest_month: date
     total_downloads: int
 
@@ -40,6 +41,6 @@ class MonthlySubmissions_(OrmBase):
     submissions: int = Field(alias="count")
 
 
-class MonthlyDownloads(BaseModel):
+class MonthlyDownloads_(OrmBase):
     month: date
     downloads: int

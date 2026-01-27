@@ -14,6 +14,7 @@ from stats_api.models import (
     DownloadsPageData,
     SubmissionsPageData,
     HourlyRequests_,
+    MonthlyDownloads_,
 )
 
 
@@ -21,7 +22,9 @@ class StatsService:
     """accepts and returns timezone aware, arxiv local date/datetime objects"""
 
     @staticmethod
-    def get_today_page_data(current_time: datetime, requested_date: date) -> TodayPageData:
+    def get_today_page_data(
+        current_time: datetime, requested_date: date
+    ) -> TodayPageData:
         start, end = get_utc_start_and_end_times(requested_date)
         total_requests = SiteUsageRepository.get_total_requests(start, end)
 
@@ -57,15 +60,21 @@ class StatsService:
     @staticmethod
     def get_downloads_page_data() -> DownloadsPageData:
         latest_hour = SiteUsageRepository.get_latest_hour_for_downloads()
-        total_downloads = SiteUsageRepository.get_total_downloads(latest_hour)
-
         arxiv_latest_hour = latest_hour.replace(tzinfo=timezone.utc).astimezone(
             ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
         )
 
+        total_latest_month = SiteUsageRepository.get_total_downloads_for_hour_range(
+            datetime(latest_hour.year, latest_hour.month, 1), latest_hour
+        )
+        total_historical = SiteUsageRepository.get_total_downloads(
+            date(latest_hour.year, latest_hour.month, 1)
+        )
+
         return DownloadsPageData(
+            arxiv_latest_hour=arxiv_latest_hour,
             arxiv_latest_month=date(arxiv_latest_hour.year, arxiv_latest_hour.month, 1),
-            total_downloads=total_downloads,
+            total_downloads=total_latest_month + total_historical,
         )
 
     @staticmethod
@@ -73,18 +82,34 @@ class StatsService:
         start, end = get_utc_start_and_end_times(date)
         data = SiteUsageRepository.get_hourly_requests(start, end)
 
-        hourly_requests = [
-            HourlyRequests_(hour=utc_to_arxiv_local(hr.hour), requests=hr.requests)
-            for hr in data
-        ]
-
-        return format_as_csv(hourly_requests)  # type: ignore
+        return format_as_csv(
+            [
+                HourlyRequests_(hour=utc_to_arxiv_local(hr.hour), requests=hr.requests)
+                for hr in data
+            ]
+        )  # type: ignore
 
     @staticmethod
-    def get_monthly_downloads() -> str:
-        monthly_downloads = SiteUsageRepository.get_monthly_downloads()
+    def get_monthly_downloads(hour: datetime) -> str:
+        total_latest_month = SiteUsageRepository.get_total_downloads_for_hour_range(
+            datetime(hour.year, hour.month, 1), hour
+        )
+        data = SiteUsageRepository.get_monthly_downloads(hour.month)
 
-        return format_as_csv(monthly_downloads)  # type: ignore
+        return format_as_csv(
+            StatsService._combine_monthly_downloads(hour, total_latest_month, data)
+        )  # type: ignore
+
+    @staticmethod
+    def _combine_monthly_downloads(
+        hour: datetime, total_latest_month: int, data: list[MonthlyDownloads_]
+    ) -> list[MonthlyDownloads_]:
+
+        return [
+            MonthlyDownloads_(
+                month=date(hour.year, hour.month, 1), downloads=total_latest_month
+            )
+        ] + data
 
     @staticmethod
     def get_monthly_submissions() -> str:

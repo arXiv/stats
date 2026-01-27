@@ -44,17 +44,24 @@ def test_get_latest_hour_for_downloads(app):
         assert result == datetime(2025, 12, 2, 6)
 
 
-def test_get_total_downloads(app):
+def test_get_total_downloads_for_hour_range(app):
     with app.app_context():
-        result = SiteUsageRepository.get_total_downloads(
-            datetime(2025, 11, 5, 7, tzinfo=timezone.utc)
+        result = SiteUsageRepository.get_total_downloads_for_hour_range(
+            datetime(2025, 12, 1), datetime(2025, 12, 1, 14)
         )
 
-        assert result == 12
+        assert result == 5
+
+
+def test_get_total_downloads(app):
+    with app.app_context():
+        result = SiteUsageRepository.get_total_downloads(date(2025, 11, 1))
+
+        assert result == 2500000
 
 
 def test_get_monthly_downloads(app):
     with app.app_context():
-        result = SiteUsageRepository.get_monthly_downloads()
+        result = SiteUsageRepository.get_monthly_downloads(date(2025, 12, 1))
 
         assert len(result) == 2

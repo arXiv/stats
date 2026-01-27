@@ -3,6 +3,7 @@ from stats_entities.site_usage import (
     HourlyRequests,
     MonthlySubmissions,
     HourlyDownloads,
+    MonthlyDownloads,
 )
 
 """
@@ -90,4 +91,10 @@ mock_hourly_downloads = [
         cross_count=1,
         start_dttm=datetime(2025, 12, 2, 6),
     ),
+]
+
+mock_monthly_downloads = [
+    MonthlyDownloads(month=date(2025, 12, 1), downloads=3500000),
+    MonthlyDownloads(month=date(2025, 11, 1), downloads=3000000),
+    MonthlyDownloads(month=date(2025, 10, 1), downloads=2500000),
 ]

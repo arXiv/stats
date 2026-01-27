@@ -4,6 +4,7 @@ from tests.data.site_usage import (
     mock_hourly_requests,
     mock_monthly_submissions,
     mock_hourly_downloads,
+    mock_monthly_downloads,
 )
 
 
@@ -15,7 +16,10 @@ def app():
 
         db.create_all()
         db.session.add_all(
-            mock_hourly_requests + mock_monthly_submissions + mock_hourly_downloads
+            mock_hourly_requests
+            + mock_monthly_submissions
+            + mock_hourly_downloads
+            + mock_monthly_downloads
         )
         db.session.commit()
 
