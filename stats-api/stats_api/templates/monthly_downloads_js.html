@@ -79,8 +79,6 @@
     height = calcHeight - margin.top - margin.bottom,
     height2 = 500 - margin2.top - margin2.bottom;
 
-  var parseDate = d3.time.format("%Y-%m").parse;
-
   var x = d3.time.scale().range([0, width]),
     x2 = d3.time.scale().range([0, width]),
     y = d3.scale.linear().range([height, 0]),
@@ -135,7 +133,7 @@
   d3.csv("{{ url_for('stats_api.get_monthly_downloads') }}?latest_hour={{ arxiv_latest_hour.strftime('%Y%m%d%H')}}", function(error, data) {
 
     data.forEach(function(d) {
-      d.month = parseDate(d.month);
+      d.month = d3.time.format("%Y-%m-%d").parse(d.month);
       d.downloads = +d.downloads;
     });
 

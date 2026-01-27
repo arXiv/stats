@@ -98,7 +98,9 @@ class StatsService:
         )
         data = SiteUsageRepository.get_monthly_downloads(date(hour.year, hour.month, 1))
 
-        monthly_downloads = StatsService._combine_monthly_downloads(hour, total_latest_month, data)
+        monthly_downloads = StatsService._combine_monthly_downloads(
+            hour, total_latest_month, data
+        )
 
         return format_as_csv(monthly_downloads)  # type: ignore
 
@@ -107,11 +109,11 @@ class StatsService:
         hour: datetime, total_latest_month: int, data: list[MonthlyDownloads_]
     ) -> list[MonthlyDownloads_]:
 
-        return [
+        return data + [
             MonthlyDownloads_(
                 month=date(hour.year, hour.month, 1), downloads=total_latest_month
             )
-        ] + data
+        ]
 
     @staticmethod
     def get_monthly_submissions() -> str:
