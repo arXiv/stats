@@ -1,0 +1,31 @@
+{%- extends "stats_base.html" -%}
+{% set pagename = 'Hourly Usage Stats' %}
+{% block title %}hourly usage{% endblock %}
+{% block header_h1 %}<h1 class="header-breadcrumbs"><a href="https://arxiv.org"><img src="{{ url_for('static', filename='images/arxiv-logo-one-color-white.svg') }}" alt="arxiv logo" style="height:40px;"/></a> <span>&gt;</span> stats  <span>&gt;</span> hourly usage</h1>{% endblock %}
+
+{% block content_stats %}
+  {{ super() }}
+  <div class="chart_text">
+    <p>arXiv Web Edge Requests from
+      {{ arxiv_requested_date.strftime('%A, %B %-d, %Y') }}
+      (<a href="{{ config.URLS.home }}">arXiv.org</a> site only)</p>
+  </div>
+  <div id="chart_content">
+    <div class="chart_text">
+      <a class="button is-primary is-pulled-right" title="download hourly access stats CSV data" href="{{ url_for('stats_api.get_hourly_requests') }}?date={{ arxiv_requested_date.strftime('%Y%m%d')}}">Download CSV</a>
+      {% if total_requests > 0 %}
+        <p>Total number of requests today = {{ "{:,}".format(total_requests) }}</p>
+      {% else %}
+        <p>No data currently available.</p>
+      {% endif %}
+    </div>
+    {% include "today_js.html" %}
+  </div>
+  <div class="chart_text chart_notes">
+    <p>Current local time is {{ arxiv_current_time.strftime('%A, %B, %-d, %Y %H:%M:%S') }} {{arxiv_timezone}}</p>
+  </div>
+{% endblock content_stats %}
+
+{% block content %}
+{{ super() }}
+{% endblock content %}

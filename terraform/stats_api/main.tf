@@ -23,8 +23,8 @@ resource "google_service_account" "account" {
   display_name = "Service account to deploy stats api cloud run instance"
 }
 
-resource "google_secret_manager_secret_iam_member" "read_db_secret_accessor" {
-  secret_id = var.read_db_secret_name
+resource "google_secret_manager_secret_iam_member" "db_secret_accessor" {
+  secret_id = var.db_password_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.account.email}"
 }
@@ -68,10 +68,30 @@ resource "google_cloud_run_v2_service" "stats_api" {
         value = var.env
       }
       env {
-        name = "DEV_DATABASE_URI"
+        name = "DB__DRIVERNAME"
+        value = var.db_drivername
+      }
+      env {
+        name = "DB__USERNAME"
+        value = var.db_username
+      }
+      env {
+        name = "DB__HOST"
+        value = var.db_host
+      }
+      env {
+        name = "DB__PORT"
+        value = var.db_port
+      }
+      env {
+        name = "DB__DATABASE"
+        value = var.db_name
+      }
+      env {
+        name = "DB__PASSWORD"
         value_source {
           secret_key_ref {
-            secret  = var.read_db_secret_name
+            secret  = var.db_password_secret_name
             version = "latest"
           }
         }
@@ -84,7 +104,7 @@ resource "google_cloud_run_v2_service" "stats_api" {
     volumes {
       name = "cloudsql"
       cloud_sql_instance {
-        instances = [var.read_db_instance]
+        instances = [var.db_instance]
       }
     }
   }

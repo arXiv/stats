@@ -1,0 +1,20 @@
+_URLS = [
+    {"name": "a11y", "rel_path": "/help/web_accessibility.html", "domain": "help"},
+    {"name": "about", "rel_path": "/about", "domain": "help"},
+    {"name": "account", "rel_path": "/user", "domain": "auth"},
+    {"name": "contact", "rel_path": "/help/contact.html", "domain": "help"},
+    {"name": "copyright", "rel_path": "/help/license/index.html", "domain": "help"},
+    {"name": "create", "rel_path": "/user/create", "domain": "base"},
+    {"name": "help", "rel_path": "/help", "domain": "help"},
+    {"name": "home", "rel_path": "/", "domain": "base"},
+    {"name": "login", "rel_path": "/login", "domain": "auth"},
+    {"name": "logout", "rel_path": "/logout", "domain": "auth"},
+    {
+        "name": "privacy_policy",
+        "rel_path": "/help/policies/privacy_policy.html",
+        "domain": "help",
+    },
+    {"name": "search_advanced", "rel_path": "/search/advanced", "domain": "base"},
+    {"name": "search_box", "rel_path": "/search", "domain": "base"},
+    {"name": "subscribe", "rel_path": "/help/subscribe", "domain": "help"},
+]

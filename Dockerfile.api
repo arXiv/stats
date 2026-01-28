@@ -26,7 +26,7 @@ USER nonroot
 
 EXPOSE ${PORT}
 
-ENTRYPOINT ["python", "stats_api/factory.py"]
+ENTRYPOINT ["python", "stats_api/app.py"]
 
 ################ test ################
 FROM builder AS test

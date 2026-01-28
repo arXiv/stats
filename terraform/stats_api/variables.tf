@@ -18,12 +18,37 @@ variable "image_path" {
   type        = string
 }
 
-variable "read_db_instance" {
-  description = "Connection name for read database"
+variable "db_instance" {
+  description = "Database instance name in GCP"
   type        = string
 }
 
-variable "read_db_secret_name" {
-  description = "Reference to uri in Secret Manager for the read database"
+variable "db_drivername" {
+  description = "Database driver"
+  type        = string
+}
+
+variable "db_username" {
+  description = "Database username"
+  type        = string
+}
+
+variable "db_password_secret_name" {
+  description = "Reference to password in Secret Manager"
+  type        = string
+}
+
+variable "db_host" {
+  description = "Database host"
+  type        = string
+}
+
+variable "db_port" {
+  description = "Database port"
+  type        = string
+}
+
+variable "db_name" {
+  description = "Database name"
   type        = string
 }
