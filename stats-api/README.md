@@ -7,7 +7,11 @@ Application for public usage statistics pages on arXiv.org.
 1. Install [Docker](https://docs.docker.com/engine/install/)
 1. [Set environment variables](#environment-variables)
 1. [Set database connection](#database-connection)
-1. From project root, run `make up-api`
+1. Build and run
+   ```
+   cd stats-api
+   make up-api
+   ```
 
 ## Native setup
 
