@@ -78,7 +78,7 @@ class TestConfig(Config):
 
 
 class DevConfig(Config):
-    DEBUG: bool = False
+    DEBUG: bool = True
     SERVER_NAME: str = "dev.arxiv.org"
     HELP_SERVER: str = "info.dev.arxiv.org"
 
