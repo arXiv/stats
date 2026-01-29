@@ -1,0 +1,19 @@
+[project]
+name = "stats-functions"
+version = "0.1.0"
+description = "Shared code for stats cloud functions"
+readme = "README.md"
+requires-python = "~=3.11.13"
+dependencies = [
+    "cloud-sql-python-connector[pymysql]>=1.20.0",
+    "google-cloud-logging>=3.13.0",
+    "pydantic>=2.12.5",
+    "sqlalchemy>=2.0.46",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["/stats_functions"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
