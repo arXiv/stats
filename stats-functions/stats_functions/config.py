@@ -28,7 +28,7 @@ class FunctionConfig(BaseConfig):
     log_locally: bool = False
     max_event_age_in_minutes: Optional[int] = None
 
-    @field_validator("project")
+    @field_validator("project", mode="before")
     def set_project(cls, v, info: ValidationInfo):
         project_map = {
             "DEV": "arxiv-development",
