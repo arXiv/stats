@@ -17,10 +17,11 @@ class BaseConfig(BaseSettings):
 
 class ConnectorConfig(BaseConfig):
     ip_type: str = "PUBLIC"
+    ip: Optional[IPTypes] = None
     refresh_strategy: str = "LAZY"
 
-    @field_validator("ip_type")
-    def set_ip_type(cls, v, info: ValidationInfo):
+    @field_validator("ip")
+    def set_ip(cls, v, info: ValidationInfo):
         ip_type_map = {"PUBLIC": IPTypes.PUBLIC, "PRIVATE": IPTypes.PRIVATE}
 
         return ip_type_map[info.data.get("ip_type")]
