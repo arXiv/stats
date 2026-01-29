@@ -11,7 +11,9 @@ class BaseConfig(BaseSettings):
         env_file=".env",
         env_nested_delimiter="__",
         env_file_encoding="utf-8",
+        extra="allow",
     )
+
 
 class ConnectorConfig(BaseConfig):
     ip_type: str = "PUBLIC"
@@ -19,12 +21,10 @@ class ConnectorConfig(BaseConfig):
 
     @field_validator("ip_type")
     def set_ip_type(cls, v, info: ValidationInfo):
-        ip_type_map = {
-            "PUBLIC": IPTypes.PUBLIC,
-            "PRIVATE": IPTypes.PRIVATE
-        }
+        ip_type_map = {"PUBLIC": IPTypes.PUBLIC, "PRIVATE": IPTypes.PRIVATE}
 
         return ip_type_map[info.data.get("ip_type")]
+
 
 class DatabaseConfig(BaseConfig):
     instance_name: str
@@ -36,7 +36,7 @@ class DatabaseConfig(BaseConfig):
 
 class FunctionConfig(BaseConfig):
     env: str = "DEV"
-    project: str = None
+    project: Optional[str] = None
     log_level: str = "INFO"
     log_locally: bool = False
     max_event_age_in_minutes: Optional[int] = None
@@ -49,4 +49,3 @@ class FunctionConfig(BaseConfig):
         }
 
         return project_map[info.data.get("env")]
-    
