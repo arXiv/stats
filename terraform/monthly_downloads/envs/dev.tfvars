@@ -1,0 +1,8 @@
+gcp_project_id    = "arxiv-development"
+gcp_region        = "us-central1"
+env               = "DEV"
+db_user           = "insertupdate"
+db_pw_secret_name = "stats-db-insertupdate-pw"
+db_instance       = "arxiv-development:us-central1:stats-db"
+db_name           = "site_usage"
+slack_channel_id  = "14064810228694129403"
