@@ -32,17 +32,16 @@ logger = logging.getLogger(__name__)
 
 set_up_cloud_logging(config)
 
-if not config.local:
+if config.env != "TEST":
     connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-
-SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
+    SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
 
 
 def get_first_and_last_hour(month: date) -> tuple[datetime, datetime]:
     first_hour = datetime(month.year, month.month, month.day)
-    last_hour = ((month + relativedelta(months=1)) - relativedelta(microseconds=1)).replace(
-        minute=0, second=0, microsecond=0
-    )
+    last_hour = (
+        (month + relativedelta(months=1)) - relativedelta(microseconds=1)
+    ).replace(minute=0, second=0, microsecond=0)
 
     return first_hour, last_hour
 
