@@ -40,11 +40,11 @@ jobs:
 
       - name: Lint
         run: |
-          uv run --directory stats-functions ruff check --output-format=github .
+          uv run --directory stats-functions/stats_functions ruff check --output-format=github .
 
       - name: Type check
         run: |
-          uv run --directory stats-functions ty check --output-format=github .
+          uv run --directory stats-functions/stats_functions ty check --output-format=github .
 
       - name: Run tests
         run: uv run --directory stats-functions pytest tests
