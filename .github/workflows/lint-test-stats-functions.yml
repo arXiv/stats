@@ -1,0 +1,50 @@
+name: Lint and test stats-functions package
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "stats-functions/stats_functions/**"
+      - "stats-functions/tests/*"
+      - "stats-functions/pyproject.toml"
+      - "stats-functions/uv.lock"
+  workflow_dispatch:
+
+concurrency:
+  # cancel any existing unfinished jobs if this workflow is retriggered
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "stats-api/pyproject.toml"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install the project
+        run: uv sync --directory stats-functions --locked --all-extras --dev
+
+      - name: Lint
+        run: |
+          uv run --directory stats-functions/stats_functions ruff check --output-format=github .
+
+      - name: Type check
+        run: |
+          uv run --directory stats-functions/stats_functions ty check --output-format=github .
+
+      - name: Run tests
+        run: uv run --directory stats-functions pytest tests

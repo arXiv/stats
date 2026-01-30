@@ -1,8 +1,8 @@
 # Stats Functions
 
-This library contains python scripts which collect arXiv site usage data and persist it to the `stats-db.site_usage` database.
+The stats-function package contains shared configuration and utilities that can be used with any cloud functions.
 
-All are cron jobs implemented as GCP Cloud Functions with pubsub triggers. Trigger messages are published by GCP Scheduler Jobs. All infrastructure as code can be found in `terraform/`.
+This directory also contains python source code for cloud functions which collect arXiv site usage data and persist it to the `stats-db.site_usage` database. See below for a description of each. All are cron jobs implemented as GCP Cloud Functions with pubsub triggers. Trigger messages are published by GCP Scheduler Jobs. All infrastructure as code can be found in `terraform/`.
 
 ### Aggregate Hourly Downloads
 
@@ -12,37 +12,14 @@ The aggregate hourly downloads job parses arXiv access logs saved to BigQuery, q
 
 The hourly edge requests job calls the Fastly Stats API, sums arXiv edge requests over all points of presence (POPs), and writes the sum to a database. It runs hourly.
 
+### Monthly Submissions
+
+The monthly submissions job queries for the count of submissions in the past month and writes that sum to a database.
+
+### Monthly Submissions
+
+The monthly downloads job queries for the count of downloads in the past month and writes that sum to a database.
+
 ## To deploy
 
-Use the existing workflow(s) at `.github/workflows`.
-
-1. Manually zip the source files for the job and copy that zip to `terraform/aggregate_hourly_downloads`:
-    ```
-    cd stats-functions/{function}/src
-    zip -r src.zip .
-    ```
-1. Initialize the remote backend. The environment will be either `dev` or `prod`. Add the `-reconfigure` flag if needed.
-    ```
-    cd ../../../terraform/{function}
-    terraform init --backend-config=”bucket={env}-arxiv-terraform-state”
-    ```
-1. Plan
-    ```
-    terraform plan --var-file={dev.tfvars or prod.tfvars} -var="commit_sha={commit hash}"
-    ```
-1. Apply
-    ```
-    terraform apply --var-file={dev.tfvars or prod.tfvars} -var="commit_sha={commit hash}"
-    ```
-    > Note: The commit hash input is used to version the source zip so that a change to source is detected and the resources are replaced.
-
-## To run manually
-
-This is only recommended for testing or in the case that a data patch is needed.
-
-1. Create a python virtual environment and `pip install -r` both `requirements.txt` and `requirements-dev.txt`
-1. Set your environment variables (see `terraform/*/envs/*.tfvars`)
-1. Run the job with command line arguments
-    ```
-    python main.py {args}
-    ```
+To deploy any of the above cloud functions to a remote environment, use the existing workflow at `.github/workflows/deploy-function.yml`. Triggers for automated deployment can also be found in `.github/workflows/`.
