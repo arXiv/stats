@@ -23,7 +23,7 @@ def set_up_cloud_logging(config: FunctionConfig):
 
         set_up_cloud_logging(config)
     """
-    if not config.local:
+    if config.env != "TEST" and not config.log_locally:
         cloud_logging_client = Client(project=config.project)
         cloud_logging_client.setup_logging()
 
@@ -34,9 +34,9 @@ def get_engine(connector: Connector, db: DatabaseConfig) -> Engine:
 
     Example use:
 
-        connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-
-        SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
+        if config.env != "TEST":
+            connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
+            SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
     """
 
     def get_conn() -> Connection:

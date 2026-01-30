@@ -16,9 +16,9 @@ from stats_functions.utils import (
 @pytest.fixture
 def mock_config():
     return FunctionConfig(
-        env="TEST",
+        env="DEV",
         project="mock-project",
-        local=False,
+        log_locally=False,
         max_event_age_in_minutes=50,
         db=DatabaseConfig(
             instance_name="mock:instance",
@@ -38,7 +38,7 @@ def test_set_up_cloud_logging_remote(mock_config):
 
 
 def test_set_up_cloud_logging_local(mock_config):
-    mock_config.local = True
+    mock_config.log_locally = True
     
     with patch("stats_functions.utils.Client") as MockCloudLoggingClient:
         set_up_cloud_logging(mock_config)
