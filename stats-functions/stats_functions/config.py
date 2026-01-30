@@ -21,7 +21,7 @@ class DatabaseConfig(BaseConfig):
 
 class FunctionConfig(BaseConfig):
     env: str
-    project: Optional[str] = None
+    project: str = ""
     log_level: str = "INFO"
     log_locally: bool = False
     max_event_age_in_minutes: Optional[int] = None
