@@ -18,7 +18,7 @@ def mock_config():
     return FunctionConfig(
         env="TEST",
         project="mock-project",
-        log_locally=False,
+        local=False,
         max_event_age_in_minutes=50,
         db=DatabaseConfig(
             instance_name="mock:instance",
@@ -38,7 +38,7 @@ def test_set_up_cloud_logging_remote(mock_config):
 
 
 def test_set_up_cloud_logging_local(mock_config):
-    mock_config.log_locally = True
+    mock_config.local = True
     
     with patch("stats_functions.utils.Client") as MockCloudLoggingClient:
         set_up_cloud_logging(mock_config)

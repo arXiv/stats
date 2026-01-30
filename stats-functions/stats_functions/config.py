@@ -23,5 +23,5 @@ class FunctionConfig(BaseConfig):
     env: str
     project: str = ""
     log_level: str = "INFO"
-    log_locally: bool = False
+    local: bool = False
     max_event_age_in_minutes: int = 50

@@ -23,7 +23,7 @@ def set_up_cloud_logging(config: FunctionConfig):
 
         set_up_cloud_logging(config)
     """
-    if not config.log_locally:
+    if not config.local:
         cloud_logging_client = Client(project=config.project)
         cloud_logging_client.setup_logging()
 
