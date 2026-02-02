@@ -28,7 +28,7 @@ default-groups = ["dev"]
 packages = ["stats_functions"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/stats_functions", , "/tests", "pyproject.toml", "README.md"]
+include = ["/stats_functions", "/tests", "pyproject.toml", "README.md"]
 exclude = ["/aggregate_hourly_downloads", "/hourly_edge_requests", "/monthly_submissions", "/monthly_downloads"]
 
 [build-system]
