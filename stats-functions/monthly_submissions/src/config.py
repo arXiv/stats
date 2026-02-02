@@ -24,5 +24,4 @@ config_map = {
 }
 
 def get_config(environment: str) -> Config:
-    config_class = config_map[environment]
-    return config_class()
+    return config_map[environment]

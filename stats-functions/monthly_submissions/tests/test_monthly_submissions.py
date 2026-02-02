@@ -2,26 +2,38 @@ import os
 import sys
 import pytest
 
+os.environ["ENV"] = "TEST"
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from datetime import datetime, timezone, date
+
 from cloudevents.http import CloudEvent
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from main import MonthlySubmissionsJob, NoRetryError
+
+from main import (
+    get_submission_count,
+    write_to_db,
+    validate_cloud_event,
+    validate_month,
+    validate_inputs,
+)
 from entities import ReadBase, Document
+from stats_entities.site_usage import SiteUsageBase, MonthlySubmissions
+from stats_functions.exception import NoRetryError
 
 
 @pytest.fixture
-def db_session():
+def read_session_factory():
     engine = create_engine("sqlite:///:memory:")
     ReadBase.metadata.create_all(engine)
 
-    Session = sessionmaker(bind=engine)
+    ReadSessionFactory = sessionmaker(bind=engine)
 
-    with Session() as session:
+    with ReadSessionFactory() as session:
         session.add_all(
             [
                 Document(
@@ -50,111 +62,125 @@ def db_session():
 
         session.commit()
 
-    return engine
+    return ReadSessionFactory
 
 
-def test_get_submission_count_success(db_session):
-    mock_job_instance = MagicMock(autospec=MonthlySubmissionsJob)
-    mock_job_instance.instantiate_connection_pool.return_value = (None, db_session)
-    mock_month = date(2025, 11, 1)
+@pytest.fixture
+def write_session_factory():
+    engine = create_engine("sqlite:///:memory:")
+    SiteUsageBase.metadata.create_all(engine)
 
-    count = MonthlySubmissionsJob.get_submission_count(mock_job_instance, mock_month)
+    return sessionmaker(bind=engine)
+
+
+def test_get_submission_count_success(read_session_factory):
+    with patch("main.ReadSessionFactory", read_session_factory):
+        count = get_submission_count(date(2025, 11, 1))
 
     assert count == 1
 
 
-def test_validate_cloud_event():
-    mock_job_instance = MagicMock(autospec=MonthlySubmissionsJob)
-    mock_job_instance.hour_delay = 1
-    mock_job_instance._event_time_exceeds_retry_window.return_value = False
-
-    mock_attributes = {
-        "type": "mock_type",
-        "source": "mock_source",
-        "time": "2025-09-12T16:30:00Z",
-    }
-
-    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
-
-    result = MonthlySubmissionsJob._validate_cloud_event(
-        mock_job_instance, cloud_event=mock_cloud_event
-    )
-
-    assert result == date(2025, 8, 1)
-
-
-def test_validate_cloud_event_january():
-    mock_job_instance = MagicMock(autospec=MonthlySubmissionsJob)
-    mock_job_instance.hour_delay = 1
-    mock_job_instance._event_time_exceeds_retry_window.return_value = False
-
-    mock_attributes = {
-        "type": "mock_type",
-        "source": "mock_source",
-        "time": "2026-01-02T16:30:00Z",
-    }
-
-    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
-
-    result = MonthlySubmissionsJob._validate_cloud_event(
-        mock_job_instance, cloud_event=mock_cloud_event
-    )
-
-    assert result == date(2025, 12, 1)
-
-
-@patch("main.datetime")
-def test_event_time_exceeds_retry_window_true(mock_datetime_method):
-    mock_datetime_method.now.return_value = datetime(
-        2025, 10, 15, 10, 30, 0, tzinfo=timezone.utc
-    )
-    mock_event_time = datetime(2025, 10, 15, 9, 39, 0, tzinfo=timezone.utc)
-
-    mock_job_instance = MagicMock(autospec=MonthlySubmissionsJob)
-    mock_job_instance.MAX_EVENT_AGE_IN_MINUTES = 50
-
-    result = MonthlySubmissionsJob._event_time_exceeds_retry_window(
-        mock_job_instance, mock_event_time
-    )
-
-    assert result
-
-
-@patch("main.datetime")
-def test_event_time_exceeds_retry_window_false(mock_datetime_method):
-    mock_datetime_method.now.return_value = datetime(
-        2025, 10, 15, 10, 30, 0, tzinfo=timezone.utc
-    )
-    mock_event_time = datetime(2025, 10, 15, 9, 41, 0, tzinfo=timezone.utc)
-
-    mock_job_instance = MagicMock(autospec=MonthlySubmissionsJob)
-    mock_job_instance.MAX_EVENT_AGE_IN_MINUTES = 50
-
-    result = MonthlySubmissionsJob._event_time_exceeds_retry_window(
-        mock_job_instance, mock_event_time
-    )
-
-    assert not result
-
-
 def test_validate_month_valid():
-    mock_job_instance = MagicMock(autospec=MonthlySubmissionsJob)
-
-    mock_input_month_valid = "2025-11"
-
-    result = MonthlySubmissionsJob._validate_month(
-        mock_job_instance, mock_input_month_valid
-    )
+    result = validate_month("2025-11-01")
 
     assert result == date(2025, 11, 1)
 
 
 def test_validate_month_invalid():
-    mock_job_instance = MagicMock(autospec=MonthlySubmissionsJob)
+    with pytest.raises(ValueError):
+        validate_month("2025-13-01")
 
-    mock_input_month_invalid = "2025-15"
+
+@patch("main.parse_cloud_event_time")
+@patch("main.event_time_exceeds_retry_window")
+def test_validate_cloud_event(mock_retry_check, mock_parse_time):
+    mock_parse_time.return_value = datetime(2025, 9, 12, 16, 30, tzinfo=timezone.utc)
+    mock_retry_check.return_value = False
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-11-01T12:00:00Z",
+    }
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    result = validate_cloud_event(mock_cloud_event)
+
+    assert result == date(2025, 8, 1)
+
+
+@patch("main.parse_cloud_event_time")
+@patch("main.event_time_exceeds_retry_window")
+def test_validate_cloud_event_january(mock_retry_check, mock_parse_time):
+    mock_parse_time.return_value = datetime(2026, 1, 2, 16, 30, tzinfo=timezone.utc)
+    mock_retry_check.return_value = False
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-11-01T12:00:00Z",
+    }
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    result = validate_cloud_event(mock_cloud_event)
+
+    assert result == date(2025, 12, 1)
+
+
+@patch("main.parse_cloud_event_time")
+@patch("main.event_time_exceeds_retry_window")
+def test_validate_cloud_event_retry_exceeded(mock_retry_check, mock_parse_time):
+    mock_retry_check.return_value = True
+    mock_parse_time.return_value = datetime.now(timezone.utc)
+
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-11-01T12:00:00Z",
+    }
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
 
     with pytest.raises(NoRetryError):
-        MonthlySubmissionsJob._validate_month(
-            mock_job_instance, mock_input_month_invalid
-        )
+        validate_cloud_event(mock_cloud_event)
+
+
+def test_validate_inputs_from_attributes():
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-11-01T12:00:00Z",
+        "month": "2025-10-1",
+    }
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    result = validate_inputs(mock_cloud_event)
+
+    assert result == date(2025, 10, 1)
+
+
+@patch("main.validate_cloud_event")
+def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-11-01T12:00:00Z",
+    }
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+    mock_val_cloud.return_value = date(2025, 8, 1)
+
+    result = validate_inputs(mock_cloud_event)
+
+    assert result == date(2025, 8, 1)
+    mock_val_cloud.assert_called_once()
+
+
+def test_write_to_db_success(write_session_factory):
+    mock_month = date(2025, 11, 1)
+    mock_count = 2
+
+    with patch("main.WriteSessionFactory", write_session_factory):
+        write_to_db(mock_month, mock_count)
+
+    with write_session_factory() as session:
+        results = session.query(MonthlySubmissions).filter_by(month=mock_month).all()
+
+        assert len(results) == 1
+        assert results[0].count == mock_count
