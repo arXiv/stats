@@ -104,7 +104,7 @@ def validate_inputs(cloud_event: CloudEvent) -> date:
 
 
 @functions_framework.cloud_event
-def get_monthly_submissions(cloud_event: CloudEvent):
+def get_monthly_downloads(cloud_event: CloudEvent):
     try:
         month = validate_inputs(cloud_event=cloud_event)
         start, end = get_first_and_last_hour(month)
