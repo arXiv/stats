@@ -6,7 +6,7 @@ os.environ["ENV"] = "TEST"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from datetime import datetime, timezone, date
 
 from cloudevents.http import CloudEvent
@@ -26,13 +26,13 @@ from stats_functions.exception import NoRetryError
 
 
 @pytest.fixture
-def engine():
+def session_factory():
     engine = create_engine("sqlite:///:memory:")
     SiteUsageBase.metadata.create_all(engine)
 
-    Session = sessionmaker(bind=engine)
+    SessionFactory = sessionmaker(bind=engine)
 
-    with Session() as session:
+    with SessionFactory() as session:
         session.add_all(
             [
                 HourlyDownloads(
@@ -67,12 +67,7 @@ def engine():
         session.add_all([MonthlyDownloads(month=date(2025, 11, 1), downloads=10000)])
         session.commit()
 
-    return engine
-
-
-@pytest.fixture
-def session_factory(engine):
-    return sessionmaker(bind=engine)
+    return SessionFactory
 
 
 def test_get_download_count_success(session_factory):

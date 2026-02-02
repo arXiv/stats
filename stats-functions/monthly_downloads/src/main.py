@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 set_up_cloud_logging(config)
 
+SessionFactory = None
+
 if config.env != "TEST":
     connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
     SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
