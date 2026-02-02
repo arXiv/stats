@@ -29,7 +29,6 @@ config = get_config(os.getenv("ENV"))
 
 logging.basicConfig(level=config.log_level)
 logger = logging.getLogger(__name__)
-print(config.log_locally)
 
 set_up_cloud_logging(config)
 
