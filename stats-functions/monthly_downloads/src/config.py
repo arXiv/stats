@@ -8,7 +8,7 @@ class Config(FunctionConfig):
 
 class TestConfig(Config):
     log_level: str = "DEBUG"
-    local: bool = True
+    log_locally: bool = True
 
 class DevConfig(Config):
     log_level: str = "DEBUG"
