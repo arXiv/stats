@@ -2,7 +2,7 @@ functions-framework==3.*
 google-cloud-logging
 sqlalchemy>=2.0.26
 cloud-sql-python-connector[pymysql] >=1.18.4
-stats-entities @ git+https://github.com/arXiv/stats.git@main#egg=stats_entities&subdirectory=stats-entities
+stats-entities @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-entities
 fastly==12.*
 pydantic==2.*
-stats-functions @ git+https://github.com/arXiv/stats.git@ARXIVCE-4168-refactor-functions#egg=stats_functions&subdirectory=stats-functions
+stats-functions @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-functions
