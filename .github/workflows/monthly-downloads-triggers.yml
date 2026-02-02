@@ -1,0 +1,36 @@
+name: Monthly downloads triggers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "stats-functions/monthly_downloads/**"
+      - "terraform/monthly_downloads/**"
+      - ".github/workflows/deploy-function.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "stats-functions/monthly_downloads/**"
+      - "terraform/monthly_downloads/**"
+      - ".github/workflows/lint-test-function.yml"
+
+concurrency:
+  # cancel any existing unfinished jobs if this workflow is retriggered
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  call-lint-test:
+    name: Lint test monthly downloads
+    uses: ./.github/workflows/lint-test-function.yml
+    with:
+      function_name: monthly_downloads
+
+  call-deploy:
+    needs: call-lint-test
+    name: Deploy monthly downloads
+    uses: ./.github/workflows/deploy-function.yml
+    with:
+      function_name: monthly_downloads
