@@ -33,6 +33,8 @@ def get_engine(connector: Connector, db: DatabaseConfig) -> Engine:
     Instantiate a sqlalchemy database engine configured to use cloud sql python connector
 
     Example use:
+    
+        SessionFactory = None
 
         if config.env != "TEST":
             connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
