@@ -123,12 +123,12 @@ def test_validate_cloud_event(mock_config, mock_retry_check):
     assert result == datetime(2025, 9, 12, 15, 0, tzinfo=timezone.utc)
 
 
-def test_validate_date_valid():
+def test_validate_hour_valid():
     result = validate_hour("2025-11-0412")
 
     assert result == datetime(2025, 11, 4, 12, 0, 0, tzinfo=timezone.utc)
 
 
-def test_validate_date_invalid():
+def test_validate_hour_invalid():
     with pytest.raises(ValueError):
         validate_hour("2025-11-0425")
