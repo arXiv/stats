@@ -17,6 +17,8 @@ class TestConfig(Config):
     log_level: str = "DEBUG"
     log_locally: bool = True
 
+    fastly_api_token: str = "mock_token"
+
 
 class DevConfig(Config):
     log_level: str = "DEBUG"
