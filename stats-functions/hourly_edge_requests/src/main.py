@@ -1,6 +1,6 @@
 import os
 import logging
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 import functions_framework
 from cloudevents.http import CloudEvent
@@ -9,7 +9,6 @@ from google.cloud.sql.connector import IPTypes
 
 import fastly
 from fastly.api import stats_api
-from fastly.model.stats import Stats
 
 from sqlalchemy.orm import sessionmaker
 
