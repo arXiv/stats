@@ -95,8 +95,10 @@ def validate_cloud_event(cloud_event: CloudEvent) -> datetime:
 
 
 def validate_hour(cloud_event: CloudEvent) -> datetime:
+    hour = cloud_event.data["message"]["attributes"]["hour"]
+
     return (
-        datetime.strptime(cloud_event["hour"], "%Y-%m-%d%H")
+        datetime.strptime(cloud_event, "%Y-%m-%d%H")
         .replace(tzinfo=timezone.utc)
         .replace(minute=0)
     )
