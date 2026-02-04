@@ -136,13 +136,16 @@ def test_validate_inputs_from_attributes():
         "type": "mock_type",
         "source": "mock_source",
         "time": "2025-11-01T12:00:00Z",
-        "month": "2025-10-1",
     }
-    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    mock_data = {"message": {"data": "", "attributes": {"month": "2025-10-1"}}}
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data=mock_data)
 
     result = validate_inputs(mock_cloud_event)
 
     assert result == date(2025, 10, 1)
+
 
 
 @patch("main.validate_cloud_event")
@@ -176,13 +179,9 @@ def test_write_to_db_success(write_session_factory):
 
 
 def test_validate_month_valid():
-    mock_attributes = {
-        "type": "mock_type",
-        "source": "mock_source",
-        "time": "2025-11-10T12:00:00Z",
-        "month": "2025-11-02",
-    }
-    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+    mock_data = {"message": {"data": "", "attributes": {"month": "2025-11-01"}}}
+
+    mock_cloud_event = CloudEvent(attributes={}, data=mock_data)
 
     result = validate_month(mock_cloud_event)
 
@@ -190,13 +189,9 @@ def test_validate_month_valid():
 
 
 def test_validate_month_invalid():
-    mock_attributes = {
-        "type": "mock_type",
-        "source": "mock_source",
-        "time": "2025-11-01T12:00:00Z",
-        "month": "2025-13-10",
-    }
-    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+    mock_data = {"message": {"data": "", "attributes": {"month": "2025-13-01"}}}
+
+    mock_cloud_event = CloudEvent(attributes={}, data=mock_data)
 
     with pytest.raises(ValueError):
         validate_month(mock_cloud_event)

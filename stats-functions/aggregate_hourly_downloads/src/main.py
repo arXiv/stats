@@ -332,15 +332,17 @@ def get_start_and_end_times(hour: datetime) -> tuple[datetime, datetime]:
 def validate_cloud_event(cloud_event: CloudEvent) -> datetime:
     event_time = parse_cloud_event_time(cloud_event)
 
-    if event_time_exceeds_retry_window(event_time):
+    if event_time_exceeds_retry_window(config, event_time):
         raise NoRetryError
 
     return (event_time - timedelta(hours=config.hour_delay)).replace(minute=0)
 
 
 def validate_hour(cloud_event: CloudEvent) -> datetime:
+    hour = cloud_event.data["message"]["attributes"]["hour"]
+
     return (
-        datetime.strptime(cloud_event["hour"], "%Y-%m-%d%H")
+        datetime.strptime(hour, "%Y-%m-%d%H")
         .replace(tzinfo=timezone.utc)
         .replace(minute=0)
     )
@@ -365,6 +367,9 @@ def validate_inputs(cloud_event: CloudEvent) -> datetime:
 @functions_framework.cloud_event
 def aggregate_hourly_downloads(cloud_event: CloudEvent):
     try:
+        logger.info(cloud_event)
+        logger.info(cloud_event)
+
         hour = validate_inputs(cloud_event)
         start_time, end_time = get_start_and_end_times(hour)
 
