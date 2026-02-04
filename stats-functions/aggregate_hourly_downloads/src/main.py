@@ -367,9 +367,6 @@ def validate_inputs(cloud_event: CloudEvent) -> datetime:
 @functions_framework.cloud_event
 def aggregate_hourly_downloads(cloud_event: CloudEvent):
     try:
-        logger.info(cloud_event)
-        logger.info(cloud_event)
-
         hour = validate_inputs(cloud_event)
         start_time, end_time = get_start_and_end_times(hour)
 
