@@ -244,9 +244,14 @@ def test_validate_cloud_event(mock_config, mock_retry_check):
 
 
 def test_validate_hour_valid():
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-09-12T16:30:00Z",
+    }
     mock_data = {"message": {"data": "", "attributes": {"hour": "2025-11-0412"}}}
 
-    mock_cloud_event = CloudEvent(attributes={}, data=mock_data)
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data=mock_data)
 
     result = validate_hour(mock_cloud_event)
 
@@ -254,9 +259,14 @@ def test_validate_hour_valid():
 
 
 def test_validate_hour_invalid():
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-09-12T16:30:00Z",
+    }
     mock_data = {"message": {"data": "", "attributes": {"hour": "2025-11-0425"}}}
 
-    mock_cloud_event = CloudEvent(attributes={}, data=mock_data)
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data=mock_data)
 
     with pytest.raises(ValueError):
         validate_hour(mock_cloud_event)
