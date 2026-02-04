@@ -3,6 +3,7 @@ arxiv-base @ git+https://github.com/arXiv/arxiv-base.git@a1fed38fcae2d8630acc9aa
 google-cloud-logging
 google-cloud-bigquery
 sqlalchemy>=2.0.26
+pydantic==2.*
 cloud-sql-python-connector[pymysql] >=1.18.4
 stats-entities @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-entities
 stats-functions @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-functions
