@@ -124,11 +124,29 @@ def test_validate_cloud_event(mock_config, mock_retry_check):
 
 
 def test_validate_hour_valid():
-    result = validate_hour("2025-11-0412")
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-12-12T16:30:00Z",
+        "hour": "2025-11-0412"
+    }
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    result = validate_hour(mock_cloud_event)
 
     assert result == datetime(2025, 11, 4, 12, 0, 0, tzinfo=timezone.utc)
 
 
 def test_validate_hour_invalid():
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-12-12T16:30:00Z",
+        "hour": "2025-11-0425"
+    }
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+    
     with pytest.raises(ValueError):
-        validate_hour("2025-11-0425")
+        validate_hour(mock_cloud_event)

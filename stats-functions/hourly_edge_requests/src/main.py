@@ -94,9 +94,9 @@ def validate_cloud_event(cloud_event: CloudEvent) -> datetime:
     return (event_time - timedelta(hours=config.hour_delay)).replace(minute=0)
 
 
-def validate_hour(hour: str) -> datetime:
+def validate_hour(cloud_event: CloudEvent) -> datetime:
     return (
-        datetime.strptime(hour, "%Y-%m-%d%H")
+        datetime.strptime(cloud_event["hour"], "%Y-%m-%d%H")
         .replace(tzinfo=timezone.utc)
         .replace(minute=0)
     )
@@ -104,7 +104,7 @@ def validate_hour(hour: str) -> datetime:
 
 def validate_inputs(cloud_event: CloudEvent) -> datetime:
     try:
-        hour = validate_hour(cloud_event["hour"])
+        hour = validate_hour(cloud_event)
         logger.info("Received valid hour as attribute")
 
     except (KeyError, ValueError):
