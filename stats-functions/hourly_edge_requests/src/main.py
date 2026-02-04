@@ -9,6 +9,7 @@ from google.cloud.sql.connector import IPTypes
 
 import fastly
 from fastly.api import stats_api
+from fastly.exceptions import ApiException
 
 from sqlalchemy.orm import sessionmaker
 
@@ -64,6 +65,10 @@ def get_fastly_stats(start_time: int, end_time: int) -> FastlyStatsApiResponse:
                 "Could not validate response payload! Check response format"
             )
             raise NoRetryError
+        except ApiException as e:
+            if e.status == 400:
+                logger.exception("Bad request to Fastly API! Check message")
+                raise NoRetryError
 
 
 def sum_requests(response: FastlyStatsApiResponse) -> int:
