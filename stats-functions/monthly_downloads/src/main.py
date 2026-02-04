@@ -84,9 +84,9 @@ def validate_cloud_event(cloud_event: CloudEvent) -> date:
 
 
 def validate_month(cloud_event: CloudEvent) -> date:
-    month = cloud_event.data["message"]["attributes"]["month"], "%Y-%m-%d"
+    month = cloud_event.data["message"]["attributes"]["month"]
 
-    return datetime.strptime(month).replace(day=1).date()
+    return datetime.strptime(month, "%Y-%m-%d").replace(day=1).date()
 
 
 def validate_inputs(cloud_event: CloudEvent) -> date:
