@@ -26,6 +26,7 @@ gcloud pubsub topics publish stats-aggregate-hourly-downloads --message="" --att
 The hourly edge requests job calls the Fastly Stats API, sums arXiv edge requests over all points of presence (POPs), and writes the sum to a database. It runs hourly.
 
 ### To run manually
+> NOTE: The Fastly API cannot provide edge request data older than 35 days, so set the hour accordingly.
 ```
 gcloud pubsub topics publish stats-hourly-edge-requests --message="" --attribute="hour=2025-12-1214"
 ```
