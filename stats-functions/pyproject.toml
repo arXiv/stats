@@ -3,7 +3,7 @@ name = "stats-functions"
 version = "0.1.0"
 description = "Shared code for stats cloud functions"
 readme = "README.md"
-requires-python = "~=3.11.13"
+requires-python = "~=3.13.0"
 dependencies = [
     "cloud-sql-python-connector[pymysql]>=1.20.0",
     "cloudevents>=1.12.0",
