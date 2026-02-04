@@ -51,7 +51,7 @@ def get_fastly_stats(start_time: int, end_time: int) -> FastlyStatsApiResponse:
     with fastly.ApiClient(fastly.Configuration()) as client:
         api_instance = stats_api.StatsApi(client)
         options = {
-            "service_id": config.fastly_service_id,
+            "service_id": config.fastly_service_id["arxiv.org"],
             "start_time": start_time,
             "end_time": end_time,
         }
