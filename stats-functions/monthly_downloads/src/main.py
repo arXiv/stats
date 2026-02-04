@@ -83,13 +83,13 @@ def validate_cloud_event(cloud_event: CloudEvent) -> date:
     return (event_time - relativedelta(months=1)).replace(day=1).date()
 
 
-def validate_month(month: str) -> date:
-    return datetime.strptime(month, "%Y-%m-%d").replace(day=1).date()
+def validate_month(cloud_event: CloudEvent) -> date:
+    return datetime.strptime(cloud_event["month"], "%Y-%m-%d").replace(day=1).date()
 
 
 def validate_inputs(cloud_event: CloudEvent) -> date:
     try:
-        month = validate_month(cloud_event["month"])
+        month = validate_month(cloud_event)
         logger.info("Received valid month as attribute")
 
     except (KeyError, ValueError):
@@ -106,7 +106,7 @@ def validate_inputs(cloud_event: CloudEvent) -> date:
 @functions_framework.cloud_event
 def get_monthly_downloads(cloud_event: CloudEvent):
     try:
-        month = validate_inputs(cloud_event=cloud_event)
+        month = validate_inputs(cloud_event)
         start, end = get_first_and_last_hour(month)
         count = get_download_count(start, end)
         write_to_db(month, count)

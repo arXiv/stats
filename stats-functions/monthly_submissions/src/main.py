@@ -81,13 +81,13 @@ def validate_cloud_event(cloud_event: CloudEvent) -> date:
     return (event_time - relativedelta(months=1)).replace(day=1).date()
 
 
-def validate_month(month: str) -> date:
-    return datetime.strptime(month, "%Y-%m-%d").replace(day=1).date()
+def validate_month(cloud_event: CloudEvent) -> date:
+    return datetime.strptime(cloud_event["month"], "%Y-%m-%d").replace(day=1).date()
 
 
 def validate_inputs(cloud_event: CloudEvent) -> date:
     try:
-        month = validate_month(cloud_event["month"])
+        month = validate_month(cloud_event)
         logger.info("Received valid month as attribute")
 
     except (KeyError, ValueError):
