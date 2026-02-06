@@ -6,11 +6,18 @@ class Config(FunctionConfig):
     db: Optional[DatabaseConfig] = None
 
     max_event_age_in_minutes: int = 50
+    fastly_service_id: dict = {"arxiv.org": "umpGzwE2hXfa2aRXsOQXZ4"}
+    fastly_node_number: int = 0  # existing convention, corresponds to 'fastly'
+    hour_delay: int = 1
+
+    fastly_api_token: str
 
 
 class TestConfig(Config):
     log_level: str = "DEBUG"
     log_locally: bool = True
+
+    fastly_api_token: str = "mock_token"
 
 
 class DevConfig(Config):

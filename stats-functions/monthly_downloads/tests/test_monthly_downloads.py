@@ -77,17 +77,6 @@ def test_get_download_count_success(session_factory):
     assert count == 3000
 
 
-def test_validate_month_valid():
-    result = validate_month("2025-11-01")
-
-    assert result == date(2025, 11, 1)
-
-
-def test_validate_month_invalid():
-    with pytest.raises(ValueError):
-        validate_month("2025-13-01")
-
-
 @patch("main.parse_cloud_event_time")
 @patch("main.event_time_exceeds_retry_window")
 def test_validate_cloud_event(mock_retry_check, mock_parse_time):
@@ -144,9 +133,11 @@ def test_validate_inputs_from_attributes():
         "type": "mock_type",
         "source": "mock_source",
         "time": "2025-11-01T12:00:00Z",
-        "month": "2025-10-1"
     }
-    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    mock_data = {"message": {"data": "", "attributes": {"month": "2025-10-1"}}}
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data=mock_data)
 
     result = validate_inputs(mock_cloud_event)
 
@@ -159,7 +150,7 @@ def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
         "type": "mock_type",
         "source": "mock_source",
         "time": "2025-11-01T12:00:00Z",
-    }    
+    }
     mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
     mock_val_cloud.return_value = date(2025, 8, 1)
 
@@ -181,3 +172,32 @@ def test_write_to_db_success(session_factory):
 
         assert len(results) == 1
         assert results[0].downloads == mock_count
+
+
+def test_validate_month_valid():
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-09-12T16:30:00Z",
+    }
+    mock_data = {"message": {"data": "", "attributes": {"month": "2025-11-01"}}}
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data=mock_data)
+
+    result = validate_month(mock_cloud_event)
+
+    assert result == date(2025, 11, 1)
+
+
+def test_validate_month_invalid():
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-09-12T16:30:00Z",
+    }
+    mock_data = {"message": {"data": "", "attributes": {"month": "2025-13-01"}}}
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data=mock_data)
+
+    with pytest.raises(ValueError):
+        validate_month(mock_cloud_event)
