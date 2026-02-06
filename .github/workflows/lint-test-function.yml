@@ -13,9 +13,11 @@ on:
         type: string
         description: Name of the function directory (e.g. aggregate_hourly_downloads)
         required: true
-        
+
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
   lint-test:
@@ -46,3 +48,22 @@ jobs:
         working-directory: stats-functions/${{ inputs.function_name }}
         run: |
           pytest tests/ --cov=src/ --cov-report=html --cov-fail-under=80
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload coverage report
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: stats-functions/${{ inputs.function_name }}/htmlcov
+
+  deploy:
+    needs: lint-test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
