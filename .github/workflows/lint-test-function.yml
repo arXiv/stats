@@ -45,4 +45,4 @@ jobs:
       - name: Test with pytest
         working-directory: stats-functions/${{ inputs.function_name }}
         run: |
-          pytest --cov=${{ inputs.function_name }} --cov-fail-under=80 --cov-report html
+          pytest tests/ --cov=src/ --cov-report=html --cov-fail-under=80
