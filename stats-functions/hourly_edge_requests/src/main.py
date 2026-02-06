@@ -68,7 +68,7 @@ def get_fastly_stats(start_time: int, end_time: int) -> FastlyStatsApiResponse:
         except ApiException as e:
             if e.status == 400:
                 logger.exception("Bad request to Fastly API! Check message")
-                raise NoRetryError
+                raise NoRetryError from e
 
 
 def sum_requests(response: FastlyStatsApiResponse) -> int:
