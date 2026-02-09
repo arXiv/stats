@@ -50,6 +50,7 @@ jobs:
           pytest tests/ --cov=src/ --cov-report=html --cov-fail-under=80
 
       - name: Upload coverage report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-${{ inputs.function_name }}
