@@ -10,6 +10,9 @@ from unittest.mock import patch
 from datetime import datetime, timezone
 from cloudevents.http import CloudEvent
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 from fastly.model.stats import Stats
 from fastly.model.results import Results
 
@@ -18,11 +21,14 @@ from main import (
     get_timestamps,
     get_fastly_stats,
     sum_requests,
+    write_to_db,
     validate_cloud_event,
     validate_hour,
+    validate_inputs,
 )
 
 from stats_functions.exception import NoRetryError
+from stats_entities.site_usage import SiteUsageBase, HourlyRequests
 
 
 mock_fastly_response_valid = Stats(
@@ -61,6 +67,14 @@ mock_fastly_response_missing_edge_requests = Stats(
         ),
     }
 )
+
+
+@pytest.fixture
+def session_factory():
+    engine = create_engine("sqlite:///:memory:")
+    SiteUsageBase.metadata.create_all(engine)
+
+    return sessionmaker(bind=engine)
 
 
 def test_get_timestamps():
@@ -102,6 +116,22 @@ def test_sum_requests():
     )
 
     assert result == 62
+
+
+def test_write_to_db_success(session_factory):
+    mock_start_dttm = datetime(2025, 11, 4, 14)
+    mock_request_count = 10000
+
+    with patch("main.SessionFactory", session_factory):
+        write_to_db(mock_start_dttm, mock_request_count)
+
+    with session_factory() as session:
+        results = (
+            session.query(HourlyRequests).filter_by(start_dttm=mock_start_dttm).all()
+        )
+
+        assert len(results) == 1
+        assert results[0].request_count == mock_request_count
 
 
 @patch("main.event_time_exceeds_retry_window")
@@ -150,3 +180,35 @@ def test_validate_hour_invalid():
 
     with pytest.raises(ValueError):
         validate_hour(mock_cloud_event)
+
+
+def test_validate_inputs_from_attributes():
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-11-01T12:00:00Z",
+    }
+
+    mock_data = {"message": {"data": "", "attributes": {"hour": "2025-10-0312"}}}
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data=mock_data)
+
+    result = validate_inputs(mock_cloud_event)
+
+    assert result == datetime(2025, 10, 3, 12, tzinfo=timezone.utc)
+
+
+@patch("main.validate_cloud_event")
+def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-08-01T12:00:00Z",
+    }
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+    mock_val_cloud.return_value = datetime(2025, 8, 1, 11)
+
+    result = validate_inputs(mock_cloud_event)
+
+    assert result == datetime(2025, 8, 1, 11)
+    mock_val_cloud.assert_called_once()
