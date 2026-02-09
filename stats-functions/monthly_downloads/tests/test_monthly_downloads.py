@@ -70,6 +70,7 @@ def session_factory():
 
     return SessionFactory
 
+
 def test_get_first_and_last_hour_success():
     first_hour, last_hour = get_first_and_last_hour(date(2025, 12, 1))
 

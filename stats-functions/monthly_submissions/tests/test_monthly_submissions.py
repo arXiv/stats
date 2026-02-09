@@ -147,7 +147,6 @@ def test_validate_inputs_from_attributes():
     assert result == date(2025, 10, 1)
 
 
-
 @patch("main.validate_cloud_event")
 def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
     mock_attributes = {
