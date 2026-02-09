@@ -74,7 +74,9 @@ def session_factory():
     engine = create_engine("sqlite:///:memory:")
     SiteUsageBase.metadata.create_all(engine)
 
-    return sessionmaker(bind=engine)
+    yield sessionmaker(bind=engine)
+
+    engine.dispose()
 
 
 def test_get_timestamps():

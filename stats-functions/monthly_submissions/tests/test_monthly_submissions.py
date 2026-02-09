@@ -62,7 +62,9 @@ def read_session_factory():
 
         session.commit()
 
-    return ReadSessionFactory
+    yield ReadSessionFactory
+
+    engine.dispose()
 
 
 @pytest.fixture
@@ -70,7 +72,9 @@ def write_session_factory():
     engine = create_engine("sqlite:///:memory:")
     SiteUsageBase.metadata.create_all(engine)
 
-    return sessionmaker(bind=engine)
+    yield sessionmaker(bind=engine)
+
+    engine.dispose()
 
 
 def test_get_submission_count_success(read_session_factory):

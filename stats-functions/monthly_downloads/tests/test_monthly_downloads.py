@@ -68,7 +68,9 @@ def session_factory():
         session.add_all([MonthlyDownloads(month=date(2025, 11, 1), downloads=10000)])
         session.commit()
 
-    return SessionFactory
+    yield SessionFactory
+
+    engine.dispose()
 
 
 def test_get_first_and_last_hour_success():
