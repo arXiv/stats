@@ -1,6 +1,7 @@
 import os
 import sys
 import pytest
+from unittest.mock import MagicMock
 
 os.environ["ENV"] = "TEST"
 
@@ -21,6 +22,7 @@ from main import (
     process_paper_categories,
     aggregate_data,
     insert_into_database,
+    query_logs,
     get_start_and_end_times,
     validate_cloud_event,
     validate_hour,
@@ -29,6 +31,7 @@ from main import (
 
 from arxiv.taxonomy.definitions import CATEGORIES
 from stats_entities.site_usage import SiteUsageBase, HourlyDownloads
+from stats_functions.exception import NoRetryError
 
 
 mock_rows_from_bq = [
@@ -146,7 +149,7 @@ def test_get_paper_categories_success(read_session_factory):
         assert result[1][1] == "cs.LO"
 
 
-def test_write_to_database_success(write_session_factory):
+def test_insert_into_database_success(write_session_factory):
     mock_aggregated_data = {
         DownloadKey(
             time=datetime(2025, 11, 1, 12),
@@ -178,6 +181,41 @@ def test_write_to_database_success(write_session_factory):
         assert len(results) == 2
         assert results[0].primary_count == 150
         assert results[1].cross_count == 5
+
+
+@patch("main.bigquery.Client")
+@patch("main.config")
+def test_query_logs_success(mock_config, mock_client_class):
+    mock_config.project = "test-project"
+    mock_config.logs_query = "SELECT * FROM logs"
+    mock_config.paper_id_regex = "regex1"
+
+    mock_client = mock_client_class.return_value
+    mock_query_job = MagicMock()
+    mock_rows = MagicMock()
+
+    mock_rows.total_rows = 10
+    mock_query_job.result.return_value = mock_rows
+    mock_client.query.return_value = mock_query_job
+
+    result = query_logs("2023-01-01", "2023-01-02")
+
+    assert result == mock_rows
+    mock_client_class.assert_called_once_with(project="test-project")
+
+    args, kwargs = mock_client.query.call_args
+    assert args[0] == "SELECT * FROM logs"
+
+
+@patch("main.bigquery.Client")
+@patch("main.logger")
+def test_query_logs_empty_results_raises_error(mock_logger, mock_client_class):
+    mock_rows = MagicMock()
+    mock_rows.total_rows = 0
+    mock_client_class.return_value.query.return_value.result.return_value = mock_rows
+
+    with pytest.raises(NoRetryError):
+        query_logs("2023-01-01", "2023-01-02")
 
 
 def test_process_cats_basic():
