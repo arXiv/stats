@@ -130,7 +130,7 @@ def get_paper_categories(paper_ids: Set[str]) -> Dict[str, PaperCategories]:
         )
     logger.info("Read database query successfully executed; session closed")
 
-    return process_paper_categories(paper_cats)
+    return paper_cats
 
 
 def process_paper_categories(
@@ -225,7 +225,6 @@ def insert_into_database(
             primary_count=counts.primary,
             cross_count=counts.cross,
             start_dttm=key.time,
-            month=key.time.date().replace(day=1),
         )
         for key, counts in aggregated_data.items()
     ]
@@ -267,7 +266,8 @@ def perform_aggregation(
     unique_id_count = len(paper_ids)
 
     # find categories for all the papers
-    paper_categories = get_paper_categories(paper_ids)
+    query_results = get_paper_categories(paper_ids)
+    paper_categories = process_paper_categories(query_results)
     if len(paper_categories) == 0:
         logger.error(f"{time_period_str}: No category data retrieved from database!")
         raise NoRetryError

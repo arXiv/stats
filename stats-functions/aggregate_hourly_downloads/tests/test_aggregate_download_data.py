@@ -9,15 +9,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 from datetime import datetime, timezone
 from unittest.mock import patch
 from cloudevents.http import CloudEvent
-from arxiv.taxonomy.definitions import CATEGORIES
 
-from models import (
-    PaperCategories,
-    DownloadData,
-    DownloadKey,
-    DownloadCounts,
-)
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from entities import ReadBase, DocumentCategory, Metadata
+from models import PaperCategories, DownloadData, DownloadKey, DownloadCounts
 from main import (
+    get_paper_categories,
     process_paper_categories,
     aggregate_data,
     insert_into_database,
@@ -25,6 +24,95 @@ from main import (
     validate_cloud_event,
     validate_hour,
 )
+
+from arxiv.taxonomy.definitions import CATEGORIES
+from stats_entities.site_usage import SiteUsageBase, HourlyDownloads
+
+
+@pytest.fixture
+def read_session_factory():
+    engine = create_engine("sqlite:///:memory:")
+    ReadBase.metadata.create_all(engine)
+
+    ReadSessionFactory = sessionmaker(bind=engine)
+
+    with ReadSessionFactory() as session:
+        session.add_all(
+            [
+                DocumentCategory(document_id="1", category="cs.CR", is_primary="1"),
+                DocumentCategory(document_id="1", category="cs.LO", is_primary="0"),
+                Metadata(
+                    metadata_id="1",
+                    document_id="1",
+                    paper_id="cs/0004010",
+                    is_current="0",
+                ),
+                Metadata(
+                    metadata_id="2",
+                    document_id="1",
+                    paper_id="cs/0004010",
+                    is_current="1",
+                ),
+            ]
+        )
+        session.commit()
+
+    return ReadSessionFactory
+
+
+@pytest.fixture
+def write_session_factory():
+    engine = create_engine("sqlite:///:memory:")
+    SiteUsageBase.metadata.create_all(engine)
+
+    return sessionmaker(bind=engine)
+
+
+def test_get_paper_categories_success(read_session_factory):
+    with patch("main.ReadSessionFactory", read_session_factory):
+        result = get_paper_categories(
+            [
+                "cs/0004010",
+            ]
+        )
+
+        assert len(result) == 2
+        assert result[0][1] == "cs.CR"
+        assert result[1][1] == "cs.LO"
+
+
+def test_write_to_database_success(write_session_factory):
+    mock_aggregated_data = {
+        DownloadKey(
+            time=datetime(2025, 11, 1, 12),
+            country="US",
+            download_type="pdf",
+            archive="cs",
+            category_id="cs.AI",
+        ): DownloadCounts(primary=150, cross=25),
+        DownloadKey(
+            time=datetime(2025, 11, 1, 12),
+            country="Ireland",
+            download_type="pdf",
+            archive="physics",
+            category_id="physics.gen-ph",
+        ): DownloadCounts(primary=40, cross=5),
+    }
+    mock_time_periods = [datetime(2025, 11, 1, 12)]
+
+    with patch("main.WriteSessionFactory", write_session_factory):
+        insert_into_database(mock_aggregated_data, mock_time_periods)
+
+    with write_session_factory() as session:
+        results = (
+            session.query(HourlyDownloads)
+            .filter_by(start_dttm=datetime(2025, 11, 1, 12))
+            .all()
+        )
+
+        assert len(results) == 2
+        assert results[0].primary_count == 150
+        assert results[1].cross_count == 5
 
 
 def test_process_cats_basic():
