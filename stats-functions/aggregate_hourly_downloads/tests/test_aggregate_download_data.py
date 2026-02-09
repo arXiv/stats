@@ -16,6 +16,7 @@ from sqlalchemy.orm import sessionmaker
 from entities import ReadBase, DocumentCategory, Metadata
 from models import PaperCategories, DownloadData, DownloadKey, DownloadCounts
 from main import (
+    process_table_rows,
     get_paper_categories,
     process_paper_categories,
     aggregate_data,
@@ -23,10 +24,43 @@ from main import (
     get_start_and_end_times,
     validate_cloud_event,
     validate_hour,
+    validate_inputs,
 )
 
 from arxiv.taxonomy.definitions import CATEGORIES
 from stats_entities.site_usage import SiteUsageBase, HourlyDownloads
+
+
+mock_rows_from_bq = [
+    {
+        "paper_id": "2301.00001",
+        "geo_country": "US",
+        "download_type": "e-print",
+        "start_dttm": datetime(2026, 2, 9, 10, 45, 12),
+        "num_downloads": 10,
+    },
+    {
+        "paper_id": "2301.00002",
+        "geo_country": "DE",
+        "download_type": "pdf",
+        "start_dttm": datetime(2026, 2, 9, 10, 45, 12),
+        "num_downloads": 5,
+    },
+    {
+        "paper_id": "not_an_id",  # bad id
+        "geo_country": "FR",
+        "download_type": "pdf",
+        "start_dttm": datetime(2026, 2, 9, 11, 20, 0),
+        "num_downloads": 1,
+    },
+    {
+        "paper_id": "2301.00003",
+        "geo_country": "UK",
+        # "download_type" is missing
+        "start_dttm": datetime(2026, 2, 9, 11, 20, 0),
+        "num_downloads": 2,
+    },
+]
 
 
 @pytest.fixture
@@ -70,6 +104,33 @@ def write_session_factory():
     yield sessionmaker(bind=engine)
 
     engine.dispose()
+
+
+def test_process_table_rows_success_valid_and_invalid_rows():
+    (
+        download_data,
+        paper_ids,
+        time_period_str,
+        bad_id_count,
+        problem_row_count,
+        time_periods,
+    ) = process_table_rows(mock_rows_from_bq)
+
+    assert len(download_data) == 2
+    assert download_data[0].paper_id == "2301.00001"
+    assert download_data[0].download_type == "src"
+    assert download_data[0].time == datetime(2026, 2, 9, 10, 0)
+
+    assert "2301.00001" in paper_ids
+    assert "2301.00002" in paper_ids
+    assert len(paper_ids) == 2
+
+    assert bad_id_count == 1  # bad id row
+    assert problem_row_count == 1  # missing key row
+
+    assert len(time_periods) == 1
+    assert time_periods[0] == datetime(2026, 2, 9, 10, 0)
+    assert "2026-02-09 10:00:00" in time_period_str
 
 
 def test_get_paper_categories_success(read_session_factory):
@@ -371,3 +432,35 @@ def test_get_start_and_end_times():
 
     assert start_time == "2025-09-12 16:00:00"
     assert end_time == "2025-09-12 16:59:59"
+
+
+def test_validate_inputs_from_attributes():
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-11-01T12:00:00Z",
+    }
+
+    mock_data = {"message": {"data": "", "attributes": {"hour": "2025-10-0312"}}}
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data=mock_data)
+
+    result = validate_inputs(mock_cloud_event)
+
+    assert result == datetime(2025, 10, 3, 12, tzinfo=timezone.utc)
+
+
+@patch("main.validate_cloud_event")
+def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-08-01T12:00:00Z",
+    }
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+    mock_val_cloud.return_value = datetime(2025, 8, 1, 11)
+
+    result = validate_inputs(mock_cloud_event)
+
+    assert result == datetime(2025, 8, 1, 11)
+    mock_val_cloud.assert_called_once()
