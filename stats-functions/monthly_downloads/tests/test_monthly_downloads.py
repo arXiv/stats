@@ -15,6 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from main import (
+    get_first_and_last_hour,
     get_download_count,
     write_to_db,
     validate_cloud_event,
@@ -68,6 +69,12 @@ def session_factory():
         session.commit()
 
     return SessionFactory
+
+def test_get_first_and_last_hour_success():
+    first_hour, last_hour = get_first_and_last_hour(date(2025, 12, 1))
+
+    assert first_hour == datetime(2025, 12, 1, 0, 0)
+    assert last_hour == datetime(2025, 12, 31, 23, 0)
 
 
 def test_get_download_count_success(session_factory):

@@ -41,11 +41,9 @@ if config.env != "TEST":
 
 def get_first_and_last_hour(month: date) -> tuple[datetime, datetime]:
     first_hour = datetime(month.year, month.month, month.day)
-    last_hour = (
-        (month + relativedelta(months=1)) - relativedelta(microseconds=1)
-    ).replace(minute=0, second=0, microsecond=0)
+    last_day = (month + relativedelta(months=1)) - relativedelta(days=1)
 
-    return first_hour, last_hour
+    return first_hour, datetime(last_day.year, last_day.month, last_day.day, 23)
 
 
 def get_download_count(start: datetime, end: datetime):
