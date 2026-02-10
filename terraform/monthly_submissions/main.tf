@@ -61,7 +61,7 @@ resource "google_cloudfunctions2_function" "function" {
   description = "Cloud function to sum submissions and persist to a database"
 
   build_config {
-    runtime     = "python311"
+    runtime     = "python313"
     entry_point = "get_monthly_submissions"
     source {
       storage_source {
@@ -78,22 +78,23 @@ resource "google_cloudfunctions2_function" "function" {
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
-      ENV               = var.env
-      READ_DB_USER      = var.read_db_user
-      READ_DB_INSTANCE  = var.read_db_instance
-      READ_DB_NAME      = var.read_db_name
-      WRITE_DB_USER     = var.write_db_user
-      WRITE_DB_INSTANCE = var.write_db_instance
-      WRITE_DB_NAME     = var.write_db_name
+      ENV                     = var.env
+      PROJECT                 = var.gcp_project_id
+      READ_DB__USER           = var.read_db_user
+      READ_DB__INSTANCE_NAME  = var.read_db_instance
+      READ_DB__DATABASE       = var.read_db_name
+      WRITE_DB__USER          = var.write_db_user
+      WRITE_DB__INSTANCE_NAME = var.write_db_instance
+      WRITE_DB__DATABASE      = var.write_db_name
     }
     secret_environment_variables {
-      key        = "READ_DB_PW"
+      key        = "READ_DB__PASSWORD"
       project_id = var.gcp_project_id
       secret     = var.read_db_pw_secret_name # wouldn't have to pass this in as a var if we had consistent secret naming across envs
       version    = "latest"
     }
     secret_environment_variables {
-      key        = "WRITE_DB_PW"
+      key        = "WRITE_DB__PASSWORD"
       project_id = var.gcp_project_id
       secret     = var.write_db_pw_secret_name
       version    = "latest"

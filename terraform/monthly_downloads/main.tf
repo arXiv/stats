@@ -55,7 +55,7 @@ resource "google_cloudfunctions2_function" "function" {
   description = "Cloud function to sum downloads and persist to a database"
 
   build_config {
-    runtime     = "python311"
+    runtime     = "python313"
     entry_point = "get_monthly_downloads"
     source {
       storage_source {

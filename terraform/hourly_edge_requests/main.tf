@@ -61,7 +61,7 @@ resource "google_cloudfunctions2_function" "function" {
   description = "Cloud function to get hourly edge requests from Fastly API and persist to a database"
 
   build_config {
-    runtime     = "python311"
+    runtime     = "python313"
     entry_point = "get_hourly_edge_requests"
     source {
       storage_source {
@@ -79,18 +79,19 @@ resource "google_cloudfunctions2_function" "function" {
     service_account_email = google_service_account.account.email
     environment_variables = {
       ENV               = var.env
-      WRITE_DB_USER     = var.write_db_user
-      WRITE_DB_INSTANCE = var.write_db_instance
-      WRITE_DB_NAME     = var.write_db_name
+      PROJECT           = var.gcp_project_id
+      DB__USER          = var.write_db_user
+      DB__INSTANCE_NAME = var.write_db_instance
+      DB__DATABASE      = var.write_db_name
     }
     secret_environment_variables {
-      key        = "FASTLY_TOKEN"
+      key        = "FASTLY_API_TOKEN"
       project_id = var.gcp_project_id
       secret     = "fastly_readonly_token"
       version    = "latest"
     }
     secret_environment_variables {
-      key        = "WRITE_DB_PW"
+      key        = "DB__PASSWORD"
       project_id = var.gcp_project_id
       secret     = var.write_db_pw_secret_name
       version    = "latest"
