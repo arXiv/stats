@@ -56,7 +56,12 @@ def get_fastly_stats(start_time: int, end_time: int) -> FastlyStatsApiResponse:
             "start_time": start_time,
             "end_time": end_time,
         }
-        response = api_instance.get_service_stats(**options)
+        try:
+            response = api_instance.get_service_stats(**options)
+        except ApiException as e:
+            if e.status == 400:
+                logger.exception("Bad request to Fastly API! Check message")
+                raise NoRetryError from e
 
         try:
             return FastlyStatsApiResponse(**response.to_dict())
@@ -65,10 +70,6 @@ def get_fastly_stats(start_time: int, end_time: int) -> FastlyStatsApiResponse:
                 "Could not validate response payload! Check response format"
             )
             raise NoRetryError
-        except ApiException as e:
-            if e.status == 400:
-                logger.exception("Bad request to Fastly API! Check message")
-                raise NoRetryError from e
 
 
 def sum_requests(response: FastlyStatsApiResponse) -> int:
