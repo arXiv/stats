@@ -15,6 +15,7 @@ from sqlalchemy.orm import sessionmaker
 
 from fastly.model.stats import Stats
 from fastly.model.results import Results
+from fastly.exceptions import ApiException
 
 from models import FastlyStatsApiResponse
 from main import (
@@ -103,7 +104,25 @@ def test_get_fastly_stats_valid_response(mock_fastly, mock_fastly_stats_api):
 
 @patch("main.stats_api")
 @patch("main.fastly")
-def test_get_fastly_stats_missing_edge_requests(mock_fastly, mock_fastly_stats_api):
+@patch("main.logger")
+def test_get_fastly_stats_missing_edge_requests(
+    mock_logger, mock_fastly, mock_fastly_stats_api
+):
+    mock_fastly_stats_api.StatsApi.return_value.get_service_stats.side_effect = (
+        ApiException(status=400, reason="Bad Request")
+    )
+
+    with pytest.raises(NoRetryError):
+        get_fastly_stats(1762257600, 1762261199)
+
+    mock_logger.exception.assert_called_once_with(
+        "Bad request to Fastly API! Check message"
+    )
+
+
+@patch("main.stats_api")
+@patch("main.fastly")
+def test_get_fastly_stats_bad_request(mock_fastly, mock_fastly_stats_api):
     mock_fastly_stats_api.StatsApi.return_value.get_service_stats.return_value = (
         mock_fastly_response_missing_edge_requests
     )
