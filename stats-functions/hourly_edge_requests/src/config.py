@@ -1,9 +1,9 @@
 from typing import Optional
-from stats_functions.config import FunctionConfig, DatabaseConfig
+from stats_functions.config import Database, FunctionConfig
 
 
 class Config(FunctionConfig):
-    db: Optional[DatabaseConfig] = None
+    db: Optional[Database] = None
 
     max_event_age_in_minutes: int = 50
     fastly_service_id: dict = {"arxiv.org": "umpGzwE2hXfa2aRXsOQXZ4"}

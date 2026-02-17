@@ -4,8 +4,8 @@ from datetime import datetime, timedelta, timezone
 
 import functions_framework
 from cloudevents.http import CloudEvent
-from google.cloud.sql.connector import Connector
-from google.cloud.sql.connector import IPTypes
+# from google.cloud.sql.connector import Connector
+# from google.cloud.sql.connector import IPTypes
 
 import fastly
 from fastly.api import stats_api
@@ -21,7 +21,7 @@ from stats_entities.site_usage import HourlyRequests
 from stats_functions.exception import NoRetryError
 from stats_functions.utils import (
     set_up_cloud_logging,
-    get_engine,
+    get_engine_unix_socket,
     event_time_exceeds_retry_window,
     parse_cloud_event_time,
 )
@@ -31,13 +31,12 @@ config = get_config(os.getenv("ENV"))
 logging.basicConfig(level=config.log_level)
 logger = logging.getLogger(__name__)
 
-set_up_cloud_logging(config)
+# set_up_cloud_logging(config)
 
 SessionFactory = None
 
 if config.env != "TEST":
-    connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-    SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
+    SessionFactory = sessionmaker(bind=get_engine_unix_socket(config.db))
 
 
 def get_timestamps(hour: datetime) -> tuple[int, int]:

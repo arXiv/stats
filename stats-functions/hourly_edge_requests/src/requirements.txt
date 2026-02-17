@@ -5,4 +5,4 @@ cloud-sql-python-connector[pymysql] >=1.18.4
 stats-entities @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-entities
 fastly==12.*
 pydantic==2.*
-stats-functions @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-functions
+stats-functions @ git+https://github.com/arXiv/stats.git@fix-function-deployment#subdirectory=stats-functions

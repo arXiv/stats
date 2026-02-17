@@ -3,13 +3,12 @@ from google.cloud.sql.connector import Connector
 from cloudevents.http import CloudEvent
 
 from pymysql.connections import Connection
-from sqlalchemy import create_engine
-from sqlalchemy.engine.base import Engine
+from sqlalchemy import create_engine, Engine, URL
 
 from datetime import datetime, timedelta, timezone
 from dateutil import parser
 
-from stats_functions.config import FunctionConfig, DatabaseConfig
+from stats_functions.config import FunctionConfig, DatabaseConfig, Database
 
 
 def set_up_cloud_logging(config: FunctionConfig):
@@ -33,7 +32,7 @@ def get_engine(connector: Connector, db: DatabaseConfig) -> Engine:
     Instantiate a sqlalchemy database engine configured to use cloud sql python connector
 
     Example use:
-    
+
         SessionFactory = None
 
         if config.env != "TEST":
@@ -51,6 +50,29 @@ def get_engine(connector: Connector, db: DatabaseConfig) -> Engine:
         )
 
     return create_engine("mysql+pymysql://", creator=get_conn)
+
+
+def get_engine_unix_socket(db: Database) -> Engine:
+    """
+    Initializes a Unix socket connection pool for a Cloud SQL instance of MySQL
+
+    Example use:
+
+        SessionFactory = None
+
+        if config.env != "TEST":
+            SessionFactory = sessionmaker(bind=get_engine_unix_socket(config.db))
+
+    """
+    return create_engine(
+        URL.create(
+            drivername=db.drivername,
+            username=db.username,
+            password=db.password,
+            database=db.database,
+            query={"unix_socket": db.query.unix_socket},
+        )
+    )
 
 
 def event_time_exceeds_retry_window(

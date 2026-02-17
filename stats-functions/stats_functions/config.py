@@ -11,6 +11,20 @@ class BaseConfig(BaseSettings):
     )
 
 
+class Query(BaseConfig):
+    unix_socket: str  # full path
+
+
+class Database(BaseConfig):
+    drivername: str
+    username: str
+    password: str
+    host: Optional[str] = None
+    port: Optional[int] = None
+    database: str
+    query: Query
+
+
 class DatabaseConfig(BaseConfig):
     instance_name: str
     user: str
