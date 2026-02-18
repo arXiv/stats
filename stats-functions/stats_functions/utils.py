@@ -1,8 +1,8 @@
 from google.cloud.logging import Client
-from google.cloud.sql.connector import Connector
+# from google.cloud.sql.connector import Connector
 from cloudevents.http import CloudEvent
 
-from pymysql.connections import Connection
+# from pymysql.connections import Connection
 from sqlalchemy import create_engine, Engine, URL
 
 from datetime import datetime, timedelta, timezone
@@ -25,31 +25,6 @@ def set_up_cloud_logging(config: FunctionConfig):
     if config.env != "TEST" and not config.log_locally:
         cloud_logging_client = Client(project=config.project)
         cloud_logging_client.setup_logging()
-
-
-def get_engine(connector: Connector, db: DatabaseConfig) -> Engine:
-    """
-    Instantiate a sqlalchemy database engine configured to use cloud sql python connector
-
-    Example use:
-
-        SessionFactory = None
-
-        if config.env != "TEST":
-            connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-            SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
-    """
-
-    def get_conn() -> Connection:
-        return connector.connect(
-            db.instance_name,
-            "pymysql",
-            user=db.user,
-            password=db.password,
-            db=db.database,
-        )
-
-    return create_engine("mysql+pymysql://", creator=get_conn)
 
 
 def get_engine_unix_socket(db: Database) -> Engine:
