@@ -1,8 +1,8 @@
 functions-framework==3.*
 google-cloud-logging
 sqlalchemy>=2.0.26
-cloud-sql-python-connector[pymysql] >=1.18.4
 stats-entities @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-entities
 fastly==12.*
 pydantic==2.*
 stats-functions @ git+https://github.com/arXiv/stats.git@fix-function-deployment#subdirectory=stats-functions
+pymysql>=1.1.0

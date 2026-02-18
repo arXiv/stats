@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 import functions_framework
 from cloudevents.http import CloudEvent
+
 # from google.cloud.sql.connector import Connector
 # from google.cloud.sql.connector import IPTypes
 
@@ -20,23 +21,27 @@ from pydantic import ValidationError
 from stats_entities.site_usage import HourlyRequests
 from stats_functions.exception import NoRetryError
 from stats_functions.utils import (
-    set_up_cloud_logging,
+    # set_up_cloud_logging,
     get_engine_unix_socket,
     event_time_exceeds_retry_window,
     parse_cloud_event_time,
 )
 
+
 config = get_config(os.getenv("ENV"))
+
 
 logging.basicConfig(level=config.log_level)
 logger = logging.getLogger(__name__)
 
 # set_up_cloud_logging(config)
 
+
+engine = None
 SessionFactory = None
 
-if config.env != "TEST":
-    SessionFactory = sessionmaker(bind=get_engine_unix_socket(config.db))
+# if config.env != "TEST":
+#     SessionFactory = sessionmaker(bind=get_engine_unix_socket(config.db))
 
 
 def get_timestamps(hour: datetime) -> tuple[int, int]:
@@ -48,7 +53,10 @@ def get_timestamps(hour: datetime) -> tuple[int, int]:
 
 
 def get_fastly_stats(start_time: int, end_time: int) -> FastlyStatsApiResponse:
-    with fastly.ApiClient(fastly.Configuration()) as client:
+    fastly_config = fastly.Configuration()
+    fastly_config.api_token = config.fastly_api_token
+
+    with fastly.ApiClient(fastly_config) as client:
         api_instance = stats_api.StatsApi(client)
         options = {
             "service_id": config.fastly_service_id["arxiv.org"],
@@ -128,6 +136,14 @@ def validate_inputs(cloud_event: CloudEvent) -> datetime:
 
 @functions_framework.cloud_event
 def get_hourly_edge_requests(cloud_event: CloudEvent):
+    global engine, SessionFactory
+
+    if config.env != "TEST":
+        if SessionFactory is None:
+            logger.info("Initializing engine and sessionmaker")
+            engine = get_engine_unix_socket(config.db)
+            SessionFactory = sessionmaker(bind=engine)
+
     try:
         hour = validate_inputs(cloud_event)
         start_time, end_time = get_timestamps(hour)
