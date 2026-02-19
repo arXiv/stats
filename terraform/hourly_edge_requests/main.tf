@@ -79,7 +79,6 @@ resource "google_cloudfunctions2_function" "function" {
     service_account_email = google_service_account.account.email
     environment_variables = {
       ENV                    = var.env
-      PROJECT                = var.gcp_project_id
       DB__DRIVERNAME         = var.write_db_drivername
       DB__USERNAME           = var.write_db_username
       DB__INSTANCE_NAME      = var.write_db_instance_name

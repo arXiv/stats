@@ -1,9 +1,9 @@
 from typing import Optional
-from stats_functions.config import Database, FunctionConfig
+from stats_functions.config import DatabaseConfig, FunctionConfig
 
 
 class Config(FunctionConfig):
-    db: Optional[Database] = None
+    db: Optional[DatabaseConfig] = None
 
     max_event_age_in_minutes: int = 50
     fastly_service_id: dict = {"arxiv.org": "umpGzwE2hXfa2aRXsOQXZ4"}
@@ -14,15 +14,13 @@ class Config(FunctionConfig):
 
 
 class TestConfig(Config):
-    log_level: str = "DEBUG"
     log_locally: bool = True
 
     fastly_api_token: str = "mock_token"
 
 
 class DevConfig(Config):
-    log_level: str = "DEBUG"
-
+    pass
 
 class ProdConfig(Config):
     pass

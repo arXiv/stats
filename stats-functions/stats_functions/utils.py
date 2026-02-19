@@ -1,14 +1,12 @@
 from google.cloud.logging import Client
-# from google.cloud.sql.connector import Connector
 from cloudevents.http import CloudEvent
 
-# from pymysql.connections import Connection
 from sqlalchemy import create_engine, Engine, URL
 
 from datetime import datetime, timedelta, timezone
 from dateutil import parser
 
-from stats_functions.config import FunctionConfig, DatabaseConfig, Database
+from stats_functions.config import FunctionConfig, DatabaseConfig
 
 
 def set_up_cloud_logging(config: FunctionConfig):
@@ -23,20 +21,27 @@ def set_up_cloud_logging(config: FunctionConfig):
     """
     if config.env != "TEST" and not config.log_locally:
         cloud_logging_client = Client()
-        # cloud_logging_client = Client(project=config.project)
         cloud_logging_client.setup_logging()
 
 
-def get_engine_unix_socket(db: Database) -> Engine:
+def get_engine_unix_socket(db: DatabaseConfig) -> Engine:
     """
-    Initializes a Unix socket connection pool for a Cloud SQL instance of MySQL
+    Initializes a unix socket connection pool for a Cloud SQL instance of MySQL
+    Must be lazily loaded to allow time for the Cloud Run instance 
+        to be configured with a connection to that Cloud SQL instance
 
     Example use:
 
         SessionFactory = None
 
-        if config.env != "TEST":
-            SessionFactory = sessionmaker(bind=get_engine_unix_socket(config.db))
+        def function():
+            global engine, SessionFactory
+
+            if config.env != "TEST":
+                if SessionFactory is None:
+                    logger.info("Initializing engine and sessionmaker")
+                    engine = get_engine_unix_socket(config.db)
+                    SessionFactory = sessionmaker(bind=engine)
 
     """
     return create_engine(

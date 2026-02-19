@@ -15,7 +15,7 @@ class Query(BaseConfig):
     unix_socket: str  # full path
 
 
-class Database(BaseConfig):
+class DatabaseConfig(BaseConfig):
     drivername: str
     username: str
     password: str
@@ -25,17 +25,7 @@ class Database(BaseConfig):
     query: Query
 
 
-class DatabaseConfig(BaseConfig):
-    instance_name: str
-    user: str
-    password: str
-    database: str
-    unix_socket: Optional[str] = None
-
-
 class FunctionConfig(BaseConfig):
     env: str
-    project: str = ""
-    log_level: str = "INFO"
     log_locally: bool = False
     max_event_age_in_minutes: int = 50
