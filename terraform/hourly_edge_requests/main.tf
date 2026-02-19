@@ -78,11 +78,13 @@ resource "google_cloudfunctions2_function" "function" {
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
-      ENV               = var.env
-      PROJECT           = var.gcp_project_id
-      DB__USER          = var.write_db_user
-      DB__INSTANCE_NAME = var.write_db_instance
-      DB__DATABASE      = var.write_db_name
+      ENV                    = var.env
+      PROJECT                = var.gcp_project_id
+      DB__DRIVERNAME         = var.write_db_drivername
+      DB__USERNAME           = var.write_db_username
+      DB__INSTANCE_NAME      = var.write_db_instance_name
+      DB__DATABASE           = var.write_db_database
+      DB__QUERY__UNIX_SOCKET = var.write_db_unix_socket
     }
     secret_environment_variables {
       key        = "FASTLY_API_TOKEN"

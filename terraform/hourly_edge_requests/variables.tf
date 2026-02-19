@@ -18,7 +18,12 @@ variable "commit_sha" {
   type        = string
 }
 
-variable "write_db_user" {
+variable "write_db_drivername" {
+  description = "Dialect+driver for the database connection"
+  type        = string
+}
+
+variable "write_db_username" {
   description = "Username for the database data is written to"
   type        = string
 }
@@ -28,13 +33,18 @@ variable "write_db_pw_secret_name" {
   type        = string
 }
 
-variable "write_db_instance" {
+variable "write_db_instance_name" {
   description = "Instance name for the database data is written to"
   type        = string
 }
 
-variable "write_db_name" {
+variable "write_db_database" {
   description = "Database name for the database data is written to"
+  type        = string
+}
+
+variable "write_db_unix_socket" {
+  description = "Full path to unix socket"
   type        = string
 }
 
@@ -42,3 +52,4 @@ variable "slack_channel_id" {
   description = "Channel ID for slack notification channel resource"
   type        = string
 }
+
