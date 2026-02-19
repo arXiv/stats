@@ -14,12 +14,11 @@ from stats_functions.config import FunctionConfig, DatabaseConfig, Database
 def set_up_cloud_logging(config: FunctionConfig):
     """
     Attach a cloud logging handler to the standard logging module
+    The cloud logging client is project-aware by default
 
     Example use:
 
-        logging.basicConfig(level=config.log_level)
         logger = logging.getLogger(__name__)
-
         set_up_cloud_logging(config)
     """
     if config.env != "TEST" and not config.log_locally:
