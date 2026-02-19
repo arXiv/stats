@@ -32,9 +32,10 @@ resource "google_sql_database_instance" "stats_db" {
   database_version = "MYSQL_8_4"
   name             = "stats-db"
   settings {
-    tier            = "db-custom-4-26624" # 4 cores, 26 GB RAM (max allowed for 4 cores)
-    edition         = "ENTERPRISE"
-    disk_autoresize = true
+    tier                        = "db-custom-4-26624" # 4 cores, 26 GB RAM (max allowed for 4 cores)
+    edition                     = "ENTERPRISE"
+    disk_autoresize             = true
+    deletion_protection_enabled = true # protects the instance at the GCP level
     ip_configuration {
       # only allow connections encrypted with SSL/TLS and with valid client certificates
       # https://cloud.google.com/sql/docs/postgres/admin-api/rest/v1beta4/instances#ipconfiguration
@@ -61,10 +62,10 @@ resource "google_sql_database_instance" "stats_db" {
       query_string_length     = 4500 # max query length to capture
     }
 
-    database_flags {
-      name  = "cloudsql_iam_authentication"
-      value = "on"
-    }
+    # database_flags {
+    #   name  = "cloudsql_iam_authentication"
+    #   value = "on"
+    # }
 
     final_backup_config {
       enabled        = true
@@ -76,9 +77,8 @@ resource "google_sql_database_instance" "stats_db" {
       hour = 4
     }
   }
-  root_password = data.google_secret_manager_secret_version.db_root_pw.secret_data
-  # deletion protection protects the instance at the GCP level
-  deletion_protection = true
+  root_password       = data.google_secret_manager_secret_version.db_root_pw.secret_data
+  deletion_protection = true # protects the instance at the terraform level
 }
 
 ### database ###
