@@ -23,7 +23,8 @@ def set_up_cloud_logging(config: FunctionConfig):
         set_up_cloud_logging(config)
     """
     if config.env != "TEST" and not config.log_locally:
-        cloud_logging_client = Client(project=config.project)
+        cloud_logging_client = Client()
+        # cloud_logging_client = Client(project=config.project)
         cloud_logging_client.setup_logging()
 
 
