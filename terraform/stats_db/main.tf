@@ -62,10 +62,10 @@ resource "google_sql_database_instance" "stats_db" {
       query_string_length     = 4500 # max query length to capture
     }
 
-    database_flags {
-      name  = "cloudsql_iam_authentication"
-      value = "on"
-    }
+    # database_flags {
+    #   name  = "cloudsql_iam_authentication"
+    #   value = "on"
+    # }
 
     final_backup_config {
       enabled        = true
