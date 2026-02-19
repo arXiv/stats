@@ -32,9 +32,11 @@ def get_engine_unix_socket(db: DatabaseConfig) -> Engine:
 
     Example use:
 
+        engine = None
         SessionFactory = None
 
-        def function():
+        @functions_framework.cloud_event
+        def function(cloud_event: CloudEvent):
             global engine, SessionFactory
 
             if config.env != "TEST":
