@@ -6,7 +6,6 @@ from dateutil.relativedelta import relativedelta
 import functions_framework
 from cloudevents.http import CloudEvent
 
-
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func

@@ -5,9 +5,6 @@ from dateutil.relativedelta import relativedelta
 
 import functions_framework
 from cloudevents.http import CloudEvent
-from google.cloud.sql.connector import Connector
-from google.cloud.sql.connector import IPTypes
-
 
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
@@ -21,25 +18,21 @@ from entities import Document
 from stats_functions.exception import NoRetryError
 from stats_functions.utils import (
     set_up_cloud_logging,
-    get_engine,
+    get_engine_unix_socket,
     event_time_exceeds_retry_window,
     parse_cloud_event_time,
 )
 
 config = get_config(os.getenv("ENV"))
 
-logging.basicConfig(level=config.log_level)
 logger = logging.getLogger(__name__)
-
 set_up_cloud_logging(config)
 
+read_engine = None
 ReadSessionFactory = None
-WriteSessionFactory = None
 
-if config.env != "TEST":
-    connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-    ReadSessionFactory = sessionmaker(bind=get_engine(connector, config.read_db))
-    WriteSessionFactory = sessionmaker(bind=get_engine(connector, config.write_db))
+write_engine = None
+WriteSessionFactory = None
 
 
 def get_submission_count(month: date) -> int:
@@ -106,6 +99,18 @@ def validate_inputs(cloud_event: CloudEvent) -> date:
 
 @functions_framework.cloud_event
 def get_monthly_submissions(cloud_event: CloudEvent):
+    global read_engine, ReadSessionFactory, write_engine, WriteSessionFactory
+
+    if config.env != "TEST":
+        if ReadSessionFactory is None:
+            logger.info("Initializing read engine and sessionmaker")
+            read_engine = get_engine_unix_socket(config.read_db)
+            ReadSessionFactory = sessionmaker(bind=read_engine)
+        if WriteSessionFactory is None:
+            logger.info("Initializing write engine and sessionmaker")
+            write_engine = get_engine_unix_socket(config.write_db)
+            WriteSessionFactory = sessionmaker(bind=write_engine)
+
     try:
         month = validate_inputs(cloud_event=cloud_event)
         count = get_submission_count(month)
