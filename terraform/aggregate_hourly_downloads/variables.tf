@@ -33,11 +33,6 @@ variable "read_db_pw_secret_name" {
   type        = string
 }
 
-variable "read_db_instance_name" {
-  description = "Instance name for database paper metadata is read from"
-  type        = string
-}
-
 variable "read_db_database" {
   description = "Database name for database paper metadata is read from"
   type        = string
@@ -60,11 +55,6 @@ variable "write_db_username" {
 
 variable "write_db_pw_secret_name" {
   description = "Reference to password in Secret Manager for database aggregated data is written to"
-  type        = string
-}
-
-variable "write_db_instance_name" {
-  description = "Instance name for database aggregated data is written to"
   type        = string
 }
 

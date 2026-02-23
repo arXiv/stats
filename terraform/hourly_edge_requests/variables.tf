@@ -33,11 +33,6 @@ variable "db_pw_secret_name" {
   type        = string
 }
 
-variable "db_instance_name" {
-  description = "Instance name for the database data is written to"
-  type        = string
-}
-
 variable "db_database" {
   description = "Database name for the database data is written to"
   type        = string

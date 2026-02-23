@@ -93,12 +93,10 @@ resource "google_cloudfunctions2_function" "function" {
       ENV                          = var.env
       READ_DB__DRIVERNAME          = var.read_db_drivername
       READ_DB__USERNAME            = var.read_db_username
-      READ_DB__INSTANCE_NAME       = var.read_db_instance_name
       READ_DB__DATABASE            = var.read_db_database
       READ_DB__QUERY__UNIX_SOCKET  = var.read_db_unix_socket
       WRITE_DB__DRIVERNAME         = var.write_db_drivername
       WRITE_DB__USERNAME           = var.write_db_username
-      WRITE_DB__INSTANCE_NAME      = var.write_db_instance_name
       WRITE_DB__DATABASE           = var.write_db_database
       WRITE_DB__QUERY__UNIX_SOCKET = var.write_db_unix_socket
     }

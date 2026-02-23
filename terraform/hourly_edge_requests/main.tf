@@ -81,7 +81,6 @@ resource "google_cloudfunctions2_function" "function" {
       ENV                    = var.env
       DB__DRIVERNAME         = var.db_drivername
       DB__USERNAME           = var.db_username
-      DB__INSTANCE_NAME      = var.db_instance_name
       DB__DATABASE           = var.db_database
       DB__QUERY__UNIX_SOCKET = var.db_unix_socket
     }
