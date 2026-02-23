@@ -91,7 +91,6 @@ resource "google_cloudfunctions2_function" "function" {
     service_account_email = google_service_account.account.email
     environment_variables = {
       ENV                          = var.env
-      PROJECT                      = var.gcp_project_id
       READ_DB__DRIVERNAME          = var.read_db_drivername
       READ_DB__USERNAME            = var.read_db_username
       READ_DB__INSTANCE_NAME       = var.read_db_instance_name
