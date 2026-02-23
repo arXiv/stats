@@ -9,12 +9,11 @@ class Config(FunctionConfig):
 
 
 class TestConfig(Config):
-    log_level: str = "DEBUG"
     log_locally: bool = True
 
 
 class DevConfig(Config):
-    log_level: str = "DEBUG"
+    pass
 
 
 class ProdConfig(Config):

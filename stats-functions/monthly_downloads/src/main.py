@@ -5,8 +5,6 @@ from dateutil.relativedelta import relativedelta
 
 import functions_framework
 from cloudevents.http import CloudEvent
-from google.cloud.sql.connector import Connector
-from google.cloud.sql.connector import IPTypes
 
 
 from sqlalchemy import select
@@ -20,23 +18,18 @@ from stats_entities.site_usage import HourlyDownloads, MonthlyDownloads
 from stats_functions.exception import NoRetryError
 from stats_functions.utils import (
     set_up_cloud_logging,
-    get_engine,
+    get_engine_unix_socket,
     event_time_exceeds_retry_window,
     parse_cloud_event_time,
 )
 
 config = get_config(os.getenv("ENV"))
 
-logging.basicConfig(level=config.log_level)
 logger = logging.getLogger(__name__)
-
 set_up_cloud_logging(config)
 
+engine = None
 SessionFactory = None
-
-if config.env != "TEST":
-    connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-    SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
 
 
 def get_first_and_last_hour(month: date) -> tuple[datetime, datetime]:
@@ -106,6 +99,14 @@ def validate_inputs(cloud_event: CloudEvent) -> date:
 
 @functions_framework.cloud_event
 def get_monthly_downloads(cloud_event: CloudEvent):
+    global engine, SessionFactory
+
+    if config.env != "TEST":
+        if SessionFactory is None:
+            logger.info("Initializing engine and sessionmaker")
+            engine = get_engine_unix_socket(config.db)
+            SessionFactory = sessionmaker(bind=engine)
+
     try:
         month = validate_inputs(cloud_event)
         start, end = get_first_and_last_hour(month)
