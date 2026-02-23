@@ -42,7 +42,7 @@ resource "google_secret_manager_secret_iam_member" "fastly_token" {
 }
 
 resource "google_secret_manager_secret_iam_member" "write_db" {
-  secret_id = var.write_db_pw_secret_name
+  secret_id = var.db_pw_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.account.email}"
 }
