@@ -38,14 +38,14 @@ The monthly submissions job queries for the count of submissions in the past mon
 
 ### To run manually
 ```
-gcloud pubsub topics publish stats-monthly-downloads --message="" --attribute="month=2025-12-01"
+gcloud pubsub topics publish stats-monthly-submissions --message="" --attribute="month=2025-12-01"
 ```
 
-## Monthly Submissions
+## Monthly Downloads
 
 The monthly downloads job queries for the count of downloads in the past month and writes that sum to a database.
 
 ### To run manually
 ```
-gcloud pubsub topics publish stats-monthly-submissions --message="" --attribute="month=2025-12-01"
+gcloud pubsub topics publish stats-monthly-downloads --message="" --attribute="month=2025-12-01"
 ```
