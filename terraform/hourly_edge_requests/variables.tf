@@ -18,32 +18,32 @@ variable "commit_sha" {
   type        = string
 }
 
-variable "write_db_drivername" {
+variable "db_drivername" {
   description = "Dialect+driver for the database connection"
   type        = string
 }
 
-variable "write_db_username" {
+variable "db_username" {
   description = "Username for the database data is written to"
   type        = string
 }
 
-variable "write_db_pw_secret_name" {
+variable "db_pw_secret_name" {
   description = "Reference to password in Secret Manager for the database data is written to"
   type        = string
 }
 
-variable "write_db_instance_name" {
+variable "db_instance_name" {
   description = "Instance name for the database data is written to"
   type        = string
 }
 
-variable "write_db_database" {
+variable "db_database" {
   description = "Database name for the database data is written to"
   type        = string
 }
 
-variable "write_db_unix_socket" {
+variable "db_unix_socket" {
   description = "Full path to unix socket"
   type        = string
 }

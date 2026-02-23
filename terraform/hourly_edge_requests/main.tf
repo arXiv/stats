@@ -79,11 +79,11 @@ resource "google_cloudfunctions2_function" "function" {
     service_account_email = google_service_account.account.email
     environment_variables = {
       ENV                    = var.env
-      DB__DRIVERNAME         = var.write_db_drivername
-      DB__USERNAME           = var.write_db_username
-      DB__INSTANCE_NAME      = var.write_db_instance_name
-      DB__DATABASE           = var.write_db_database
-      DB__QUERY__UNIX_SOCKET = var.write_db_unix_socket
+      DB__DRIVERNAME         = var.db_drivername
+      DB__USERNAME           = var.db_username
+      DB__INSTANCE_NAME      = var.db_instance_name
+      DB__DATABASE           = var.db_database
+      DB__QUERY__UNIX_SOCKET = var.db_unix_socket
     }
     secret_environment_variables {
       key        = "FASTLY_API_TOKEN"
@@ -94,7 +94,7 @@ resource "google_cloudfunctions2_function" "function" {
     secret_environment_variables {
       key        = "DB__PASSWORD"
       project_id = var.gcp_project_id
-      secret     = var.write_db_pw_secret_name
+      secret     = var.db_pw_secret_name
       version    = "latest"
     }
   }
