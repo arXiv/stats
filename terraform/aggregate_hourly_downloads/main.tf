@@ -90,14 +90,18 @@ resource "google_cloudfunctions2_function" "function" {
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
-      ENV                     = var.env
-      PROJECT                 = var.gcp_project_id
-      READ_DB__USER           = var.read_db_user
-      READ_DB__INSTANCE_NAME  = var.read_db_instance
-      READ_DB__DATABASE       = var.read_db_name
-      WRITE_DB__USER          = var.write_db_user
-      WRITE_DB__INSTANCE_NAME = var.write_db_instance
-      WRITE_DB__DATABASE      = var.write_db_name
+      ENV                          = var.env
+      PROJECT                      = var.gcp_project_id
+      READ_DB__DRIVERNAME          = var.read_db_drivername
+      READ_DB__USERNAME            = var.read_db_username
+      READ_DB__INSTANCE_NAME       = var.read_db_instance_name
+      READ_DB__DATABASE            = var.read_db_database
+      READ_DB__QUERY__UNIX_SOCKET  = var.read_db_unix_socket
+      WRITE_DB__DRIVERNAME         = var.write_db_drivername
+      WRITE_DB__USERNAME           = var.write_db_username
+      WRITE_DB__INSTANCE_NAME      = var.write_db_instance_name
+      WRITE_DB__DATABASE           = var.write_db_database
+      WRITE_DB__QUERY__UNIX_SOCKET = var.write_db_unix_socket
     }
     secret_environment_variables {
       key        = "READ_DB__PASSWORD"

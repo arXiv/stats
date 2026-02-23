@@ -18,7 +18,12 @@ variable "commit_sha" {
   type        = string
 }
 
-variable "read_db_user" {
+variable "read_db_drivername" {
+  description = "Dialect+driver for database"
+  type        = string
+}
+
+variable "read_db_username" {
   description = "Username for database paper metadata is read from"
   type        = string
 }
@@ -28,17 +33,27 @@ variable "read_db_pw_secret_name" {
   type        = string
 }
 
-variable "read_db_instance" {
+variable "read_db_instance_name" {
   description = "Instance name for database paper metadata is read from"
   type        = string
 }
 
-variable "read_db_name" {
+variable "read_db_database" {
   description = "Database name for database paper metadata is read from"
   type        = string
 }
 
-variable "write_db_user" {
+variable "read_db_unix_socket" {
+  description = "Full path to unix socket"
+  type        = string
+}
+
+variable "write_db_drivername" {
+  description = "Dialect+driver for database"
+  type        = string
+}
+
+variable "write_db_username" {
   description = "Username for database aggregated data is written to"
   type        = string
 }
@@ -48,13 +63,18 @@ variable "write_db_pw_secret_name" {
   type        = string
 }
 
-variable "write_db_instance" {
+variable "write_db_instance_name" {
   description = "Instance name for database aggregated data is written to"
   type        = string
 }
 
-variable "write_db_name" {
+variable "write_db_database" {
   description = "Database name for database aggregated data is written to"
+  type        = string
+}
+
+variable "write_db_unix_socket" {
+  description = "Full path to unix socket"
   type        = string
 }
 

@@ -186,7 +186,6 @@ def test_insert_into_database_success(write_session_factory):
 @patch("main.bigquery.Client")
 @patch("main.config")
 def test_query_logs_success(mock_config, mock_client_class):
-    mock_config.project = "test-project"
     mock_config.logs_query = "SELECT * FROM logs"
     mock_config.paper_id_regex = "regex1"
 
@@ -201,7 +200,6 @@ def test_query_logs_success(mock_config, mock_client_class):
     result = query_logs("2023-01-01", "2023-01-02")
 
     assert result == mock_rows
-    mock_client_class.assert_called_once_with(project="test-project")
 
     args, kwargs = mock_client.query.call_args
     assert args[0] == "SELECT * FROM logs"

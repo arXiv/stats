@@ -5,8 +5,6 @@ from datetime import datetime, timedelta, timezone
 
 import functions_framework
 from cloudevents.http import CloudEvent
-from google.cloud.sql.connector import Connector
-from google.cloud.sql.connector import IPTypes
 
 from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator, _EmptyRowIterator
@@ -29,7 +27,7 @@ from stats_entities.site_usage import HourlyDownloads
 from stats_functions.exception import NoRetryError
 from stats_functions.utils import (
     set_up_cloud_logging,
-    get_engine,
+    get_engine_unix_socket,
     event_time_exceeds_retry_window,
     parse_cloud_event_time,
 )
@@ -39,18 +37,14 @@ from arxiv.identifier import Identifier, IdentifierException
 
 config = get_config(os.getenv("ENV"))
 
-logging.basicConfig(level=config.log_level)
 logger = logging.getLogger(__name__)
-
 set_up_cloud_logging(config)
 
+read_engine = None
 ReadSessionFactory = None
-WriteSessionFactory = None
 
-if config.env != "TEST":
-    connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-    ReadSessionFactory = sessionmaker(bind=get_engine(connector, config.read_db))
-    WriteSessionFactory = sessionmaker(bind=get_engine(connector, config.write_db))
+write_engine = None
+WriteSessionFactory = None
 
 
 def process_table_rows(
@@ -308,7 +302,7 @@ def query_logs(start_time: str, end_time: str) -> RowIterator:
     )
 
     logger.info("Initializing bigquery client")
-    bq_client = bigquery.Client(project=config.project)
+    bq_client = bigquery.Client()
     logger.info("Executing log query in bigquery")
     query_job = bq_client.query(config.logs_query, job_config=job_config)
     logger.info("Log query successfully executed")
@@ -367,6 +361,18 @@ def validate_inputs(cloud_event: CloudEvent) -> datetime:
 
 @functions_framework.cloud_event
 def aggregate_hourly_downloads(cloud_event: CloudEvent):
+    global read_engine, ReadSessionFactory, write_engine, WriteSessionFactory
+
+    if config.env != "TEST":
+        if ReadSessionFactory is None:
+            logger.info("Initializing read engine and sessionmaker")
+            read_engine = get_engine_unix_socket(config.read_db)
+            ReadSessionFactory = sessionmaker(bind=read_engine)
+        if WriteSessionFactory is None:
+            logger.info("Initializing write engine and sessionmaker")
+            write_engine = get_engine_unix_socket(config.write_db)
+            WriteSessionFactory = sessionmaker(bind=write_engine)
+
     try:
         hour = validate_inputs(cloud_event)
         start_time, end_time = get_start_and_end_times(hour)
