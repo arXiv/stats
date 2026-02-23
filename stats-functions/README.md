@@ -19,7 +19,7 @@ The aggregate hourly downloads job parses arXiv access logs saved to BigQuery, q
 ### To run manually
 > NOTE: There is only a small sample of log data in BigQuery in dev. For testing, use the hour parameter below.
 ```
-gcloud pubsub topics publish stats-aggregate-hourly-downloads --message="" --attribute="hour=2025-09-01=215"
+gcloud pubsub topics publish stats-aggregate-hourly-downloads --message="" --attribute="hour=2025-09-0215"
 ```
 
 ## Hourly Edge Requests
