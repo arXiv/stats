@@ -15,11 +15,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from entities import ReadBase, DocumentCategory, Metadata
-from models import PaperCategories, DownloadData, DownloadKey, DownloadCounts
+from models import (
+    PaperCategories,
+    DownloadData,
+    DownloadKey,
+    DownloadCounts,
+    AggregationResult,
+)
 from main import (
     process_table_rows,
     get_paper_categories,
     process_paper_categories,
+    perform_aggregation,
     aggregate_data,
     insert_into_database,
     query_logs,
@@ -81,13 +88,14 @@ def read_session_factory():
                 Metadata(
                     metadata_id="1",
                     document_id="1",
-                    paper_id="cs/0004010",
-                    is_current="0",
+                    paper_id="2301.00002",
+                    is_current="1",
                 ),
+                DocumentCategory(document_id="2", category="cs.AI", is_primary="1"),
                 Metadata(
                     metadata_id="2",
-                    document_id="1",
-                    paper_id="cs/0004010",
+                    document_id="2",
+                    paper_id="2301.00001",
                     is_current="1",
                 ),
             ]
@@ -140,7 +148,7 @@ def test_get_paper_categories_success(read_session_factory):
     with patch("main.ReadSessionFactory", read_session_factory):
         result = get_paper_categories(
             [
-                "cs/0004010",
+                "2301.00002",
             ]
         )
 
@@ -500,3 +508,46 @@ def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
 
     assert result == datetime(2025, 8, 1, 11)
     mock_val_cloud.assert_called_once()
+
+
+def test_perform_aggregation_success(read_session_factory, write_session_factory):
+    with patch("main.ReadSessionFactory", read_session_factory), patch(
+        "main.WriteSessionFactory", write_session_factory
+    ):
+        result = perform_aggregation(mock_rows_from_bq)
+
+        assert result.fetched_count == 2
+        assert result.unique_ids_count == 2
+        assert result.bad_id_count == 1
+        assert result.problem_row_count == 1
+
+        with write_session_factory() as session:
+            all_records = session.query(HourlyDownloads).all()
+
+            matching_records = [r for r in all_records if r.category == "cs.AI"]
+            assert len(matching_records) > 0
+
+            cs_ai_record = matching_records[0]
+            assert cs_ai_record.primary_count == 10
+            assert cs_ai_record.country == "US"
+
+
+def test_perform_aggregation_no_categories_raises_no_retry(
+    read_session_factory, write_session_factory
+):
+    rows_with_no_categories = [
+        {
+            "paper_id": "9999.99999",
+            "geo_country": "US",
+            "download_type": "pdf",
+            "start_dttm": datetime(2026, 2, 9, 10, 0, 0),
+            "num_downloads": 1,
+        }
+    ]
+
+    with patch("main.ReadSessionFactory", read_session_factory), patch(
+        "main.WriteSessionFactory", write_session_factory
+    ):
+
+        with pytest.raises(NoRetryError):
+            perform_aggregation(rows_with_no_categories)
