@@ -95,7 +95,7 @@ def validate_cloud_event(cloud_event: CloudEvent) -> datetime:
         logger.exception("Event time exceeds retry window!")
         raise NoRetryError
 
-    return (event_time - timedelta(hours=config.hour_delay)).replace(minute=0)
+    return (event_time - timedelta(hours=config.hour_delay)).replace(minute=0, second=0)
 
 
 def validate_hour(cloud_event: CloudEvent) -> datetime:
