@@ -88,7 +88,7 @@ jobs:
           FUNCTION_NAME_UPPER=$(echo "${{ inputs.function_name }}" | tr '[:lower:]' '[:upper:]')
           VAR_NAME="INSTANCES_$FUNCTION_NAME_UPPER"
 
-          INSTANCES="${{!VAR_NAME}}"
+          INSTANCES="${!VAR_NAME}"
 
           if [ -n "$INSTANCES" ]; then
             echo "Configuring Cloud SQL instances $INSTANCES on service $SERVICE_NAME"
