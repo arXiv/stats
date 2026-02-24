@@ -68,23 +68,23 @@ resource "google_cloud_run_v2_service" "stats_api" {
         value = var.env
       }
       env {
-        name = "DB__DRIVERNAME"
+        name  = "DB__DRIVERNAME"
         value = var.db_drivername
       }
       env {
-        name = "DB__USERNAME"
+        name  = "DB__USERNAME"
         value = var.db_username
       }
       env {
-        name = "DB__HOST"
+        name  = "DB__HOST"
         value = var.db_host
       }
       env {
-        name = "DB__PORT"
+        name  = "DB__PORT"
         value = var.db_port
       }
       env {
-        name = "DB__DATABASE"
+        name  = "DB__DATABASE"
         value = var.db_name
       }
       env {
