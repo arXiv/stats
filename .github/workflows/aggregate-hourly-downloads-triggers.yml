@@ -3,7 +3,7 @@ name: Aggregate hourly downloads triggers
 on:
   push:
     branches:
-      - main
+      - fix-function-deployment
     paths:
       - "stats-functions/aggregate_hourly_downloads/**"
       - "terraform/aggregate_hourly_downloads/**"
