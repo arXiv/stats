@@ -1,7 +1,7 @@
 .PHONY: up-api stop-api clean-api build-api logs-api
 
 up-api:
-	docker compose -f docker-compose.local.yaml up -d
+	docker compose -f docker-compose.local.yaml up -d --build
 
 build-api:
 	docker compose -f docker-compose.local.yaml build --progress plain
