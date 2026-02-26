@@ -1,7 +1,8 @@
+from typing import Type
 from datetime import date
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator
+from pydantic import field_validator, Field
 from pydantic_core.core_schema import ValidationInfo
 
 from stats_api.config.urls import _URLS
@@ -37,7 +38,7 @@ class Database(BaseConfig):
 
 
 class Config(BaseConfig):
-    ENV: str
+    ENV: str = Field(...)
     HOST: str = "0.0.0.0"
     PORT: int = 8080
     DEBUG: bool = False
@@ -49,7 +50,7 @@ class Config(BaseConfig):
 
     FASTLY_MAX_AGE: int = 31557600
 
-    DB: Database
+    DB: Database = Field(...)
 
     PREFERRED_URL_SCHEME: str = "https"  # Flask configuration
     SERVER_NAME: str = "arxiv.org"  # Flask configuration
@@ -95,7 +96,7 @@ class ProdConfig(Config):
     pass
 
 
-config_map = {
+config_map: dict[str, Type[Config]] = {
     "TEST": TestConfig,
     "DEV": DevConfig,
     "PROD": ProdConfig,
