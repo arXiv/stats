@@ -9,7 +9,6 @@ from stats_api.routes import stats_ui, stats_api
 
 # from stats_api.exception import handle_non_http_exception, handle_http_exception
 
-
 config_map = {
     "TEST": TestConfig(DB=Database(drivername="sqlite", database=":memory:")),
     "DEV": DevConfig(),
@@ -37,14 +36,5 @@ def create_app(environment: str) -> Flask:
 
     return app
 
+
 app = create_app(os.getenv("ENV"))
-
-
-# if __name__ == "__main__":
-#     # for local dev only
-#     app.run(
-#         host=app.config["HOST"],
-#         port=app.config["PORT"],
-#         debug=app.config["DEBUG"],
-#         use_reloader=True,
-#     )

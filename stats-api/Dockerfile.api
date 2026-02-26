@@ -24,7 +24,14 @@ USER nonroot
 
 EXPOSE 8080
 
-ENTRYPOINT ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:8080", "stats_api.app:app"]
+ENTRYPOINT ["gunicorn", \
+            "--workers", "4", \
+            "--bind", "0.0.0.0:8080", \
+            "--worker-tmp-dir", "/dev/shm", \
+            "--control-socket", "/dev/shm/gunicorn.ctl", \
+            "--access-logfile", "-", \
+            "--error-logfile", "-", \
+            "stats_api.app:app"]
 
 ################ test ################
 FROM builder AS test
