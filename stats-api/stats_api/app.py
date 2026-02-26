@@ -37,13 +37,14 @@ def create_app(environment: str) -> Flask:
 
     return app
 
+app = create_app(os.getenv("ENV"))
 
-if __name__ == "__main__":
-    app = create_app(os.getenv("ENV", "DEV"))
 
-    app.run(
-        host=app.config["HOST"],
-        port=app.config["PORT"],
-        debug=app.config["DEBUG"],
-        use_reloader=False,
-    )
+# if __name__ == "__main__":
+#     # for local dev only
+#     app.run(
+#         host=app.config["HOST"],
+#         port=app.config["PORT"],
+#         debug=app.config["DEBUG"],
+#         use_reloader=True,
+#     )

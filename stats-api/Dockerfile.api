@@ -1,5 +1,3 @@
-ARG PORT
-
 ################ base ################
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm AS base
 
@@ -24,9 +22,9 @@ RUN useradd nonroot
 RUN chmod -R u+wx /home/nonroot
 USER nonroot
 
-EXPOSE ${PORT}
+EXPOSE 8080
 
-ENTRYPOINT ["python", "stats_api/app.py"]
+ENTRYPOINT ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:8080", "stats_api.app:app"]
 
 ################ test ################
 FROM builder AS test
