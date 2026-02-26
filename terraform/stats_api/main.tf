@@ -24,7 +24,7 @@ resource "google_service_account" "account" {
 }
 
 resource "google_secret_manager_secret_iam_member" "db_secret_accessor" {
-  secret_id = var.db_password_secret_name
+  secret_id = var.db_pw_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.account.email}"
 }
@@ -76,22 +76,14 @@ resource "google_cloud_run_v2_service" "stats_api" {
         value = var.db_username
       }
       env {
-        name  = "DB__HOST"
-        value = var.db_host
-      }
-      env {
-        name  = "DB__PORT"
-        value = var.db_port
-      }
-      env {
         name  = "DB__DATABASE"
-        value = var.db_name
+        value = var.db_database
       }
       env {
         name = "DB__PASSWORD"
         value_source {
           secret_key_ref {
-            secret  = var.db_password_secret_name
+            secret  = var.db_pw_secret_name
             version = "latest"
           }
         }
@@ -104,7 +96,7 @@ resource "google_cloud_run_v2_service" "stats_api" {
     volumes {
       name = "cloudsql"
       cloud_sql_instance {
-        instances = [var.db_instance]
+        instances = [var.db_instance_name]
       }
     }
   }
@@ -112,5 +104,35 @@ resource "google_cloud_run_v2_service" "stats_api" {
   traffic {
     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
+  }
+}
+
+### alerting ###
+
+resource "google_monitoring_alert_policy" "cloud_run_error_alert" {
+  display_name = "${google_cloud_run_v2_service.stats_api.name} logging errors"
+  combiner     = "OR"
+  severity     = "ERROR"
+
+  conditions {
+    display_name = "Cloud Run error log"
+    condition_matched_log {
+      filter = "resource.type=\"cloud_run_revision\" AND severity=(\"ERROR\" OR \"CRITICAL\" OR \"ALERT\" OR \"EMERGENCY\") AND resource.labels.service_name=\"${google_cloud_run_v2_service.stats_api.name}\""
+    }
+  }
+
+  alert_strategy {
+    notification_rate_limit {
+      period = "300s" # limit notifications to every 5 minutes
+    }
+  }
+
+  notification_channels = [
+    "projects/${var.gcp_project_id}/notificationChannels/${var.slack_channel_id}"
+  ]
+
+  documentation {
+    content   = "Cloud Run service ${google_cloud_run_v2_service.stats_api.name} has reported an error - see logs."
+    mime_type = "text/markdown"
   }
 }
