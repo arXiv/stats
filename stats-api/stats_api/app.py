@@ -38,4 +38,4 @@ def create_app(environment: str) -> Flask:
     return app
 
 
-app = create_app(os.getenv("ENV"))
+app = create_app(os.getenv("ENV", "DEV"))

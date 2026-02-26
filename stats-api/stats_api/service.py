@@ -89,7 +89,7 @@ class StatsService:
                 )
                 for hr in data
             ]
-        )  # type: ignore
+        )
 
     @staticmethod
     def get_monthly_downloads(hour: datetime) -> str:
