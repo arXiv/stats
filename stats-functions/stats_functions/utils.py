@@ -1,10 +1,7 @@
 from google.cloud.logging import Client
-from google.cloud.sql.connector import Connector
 from cloudevents.http import CloudEvent
 
-from pymysql.connections import Connection
-from sqlalchemy import create_engine
-from sqlalchemy.engine.base import Engine
+from sqlalchemy import create_engine, Engine, URL
 
 from datetime import datetime, timedelta, timezone
 from dateutil import parser
@@ -15,42 +12,49 @@ from stats_functions.config import FunctionConfig, DatabaseConfig
 def set_up_cloud_logging(config: FunctionConfig):
     """
     Attach a cloud logging handler to the standard logging module
+    The cloud logging client is project-aware by default
 
     Example use:
 
-        logging.basicConfig(level=config.log_level)
         logger = logging.getLogger(__name__)
-
         set_up_cloud_logging(config)
     """
     if config.env != "TEST" and not config.log_locally:
-        cloud_logging_client = Client(project=config.project)
+        cloud_logging_client = Client()
         cloud_logging_client.setup_logging()
 
 
-def get_engine(connector: Connector, db: DatabaseConfig) -> Engine:
+def get_engine_unix_socket(db: DatabaseConfig) -> Engine:
     """
-    Instantiate a sqlalchemy database engine configured to use cloud sql python connector
+    Initializes a unix socket connection pool for a Cloud SQL instance of MySQL
+    Must be lazily loaded to allow time for the Cloud Run instance 
+        to be configured with a connection to that Cloud SQL instance
 
     Example use:
-    
+
+        engine = None
         SessionFactory = None
 
-        if config.env != "TEST":
-            connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-            SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
+        @functions_framework.cloud_event
+        def function(cloud_event: CloudEvent):
+            global engine, SessionFactory
+
+            if config.env != "TEST":
+                if SessionFactory is None:
+                    logger.info("Initializing engine and sessionmaker")
+                    engine = get_engine_unix_socket(config.db)
+                    SessionFactory = sessionmaker(bind=engine)
+
     """
-
-    def get_conn() -> Connection:
-        return connector.connect(
-            db.instance_name,
-            "pymysql",
-            user=db.user,
+    return create_engine(
+        URL.create(
+            drivername=db.drivername,
+            username=db.username,
             password=db.password,
-            db=db.database,
+            database=db.database,
+            query={"unix_socket": db.query.unix_socket},
         )
-
-    return create_engine("mysql+pymysql://", creator=get_conn)
+    )
 
 
 def event_time_exceeds_retry_window(

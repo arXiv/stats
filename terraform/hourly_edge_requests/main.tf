@@ -42,7 +42,7 @@ resource "google_secret_manager_secret_iam_member" "fastly_token" {
 }
 
 resource "google_secret_manager_secret_iam_member" "write_db" {
-  secret_id = var.write_db_pw_secret_name
+  secret_id = var.db_pw_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.account.email}"
 }
@@ -78,11 +78,11 @@ resource "google_cloudfunctions2_function" "function" {
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
-      ENV               = var.env
-      PROJECT           = var.gcp_project_id
-      DB__USER          = var.write_db_user
-      DB__INSTANCE_NAME = var.write_db_instance
-      DB__DATABASE      = var.write_db_name
+      ENV                    = var.env
+      DB__DRIVERNAME         = var.db_drivername
+      DB__USERNAME           = var.db_username
+      DB__DATABASE           = var.db_database
+      DB__QUERY__UNIX_SOCKET = var.db_unix_socket
     }
     secret_environment_variables {
       key        = "FASTLY_API_TOKEN"
@@ -93,7 +93,7 @@ resource "google_cloudfunctions2_function" "function" {
     secret_environment_variables {
       key        = "DB__PASSWORD"
       project_id = var.gcp_project_id
-      secret     = var.write_db_pw_secret_name
+      secret     = var.db_pw_secret_name
       version    = "latest"
     }
   }

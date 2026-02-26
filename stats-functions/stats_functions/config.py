@@ -11,17 +11,21 @@ class BaseConfig(BaseSettings):
     )
 
 
+class Query(BaseConfig):
+    unix_socket: str  # full path
+
+
 class DatabaseConfig(BaseConfig):
-    instance_name: str
-    user: str
+    drivername: str
+    username: str
     password: str
+    host: Optional[str] = None
+    port: Optional[int] = None
     database: str
-    unix_socket: Optional[str] = None
+    query: Query
 
 
 class FunctionConfig(BaseConfig):
     env: str
-    project: str = ""
-    log_level: str = "INFO"
     log_locally: bool = False
     max_event_age_in_minutes: int = 50

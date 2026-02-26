@@ -76,3 +76,28 @@ jobs:
       - name: Apply
         run: terraform apply -var-file=envs/${{ vars.ENV_VAR }}.tfvars -var="commit_sha=${{ env.COMMIT_SHA_TO_DEPLOY }}" -auto-approve
         working-directory: "terraform/${{ inputs.function_name }}"
+
+      - name: Configure Cloud SQL instances on the created Cloud Run instance
+        # run only if the apply succeeded
+        if: success()
+        run: |
+          # get the kebab-case Cloud Run service name
+          SERVICE_NAME=$(echo "stats-${{ inputs.function_name }}" | tr '_' '-')
+
+          # pull the correct variable of instances from the github environment based on function name
+          FUNCTION_NAME_UPPER=$(echo "${{ inputs.function_name }}" | tr '[:lower:]' '[:upper:]')
+          VAR_NAME="INSTANCES_$FUNCTION_NAME_UPPER"
+
+          INSTANCES="${!VAR_NAME}"
+
+          if [ -n "$INSTANCES" ]; then
+            echo "Configuring Cloud SQL instances $INSTANCES on service $SERVICE_NAME"
+            gcloud run services update "$SERVICE_NAME" \
+              --set-cloudsql-instances "$INSTANCES" \
+              --region "us-central1"
+          else
+            echo "No instances found. Skipping Cloud SQL configuration"
+          fi
+        env:
+          # map all github environment variables into the shell environment
+          ${{ vars }}

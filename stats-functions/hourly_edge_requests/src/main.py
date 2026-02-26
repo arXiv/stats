@@ -4,8 +4,6 @@ from datetime import datetime, timedelta, timezone
 
 import functions_framework
 from cloudevents.http import CloudEvent
-from google.cloud.sql.connector import Connector
-from google.cloud.sql.connector import IPTypes
 
 import fastly
 from fastly.api import stats_api
@@ -21,23 +19,19 @@ from stats_entities.site_usage import HourlyRequests
 from stats_functions.exception import NoRetryError
 from stats_functions.utils import (
     set_up_cloud_logging,
-    get_engine,
+    get_engine_unix_socket,
     event_time_exceeds_retry_window,
     parse_cloud_event_time,
 )
 
+
 config = get_config(os.getenv("ENV"))
 
-logging.basicConfig(level=config.log_level)
 logger = logging.getLogger(__name__)
-
 set_up_cloud_logging(config)
 
+engine = None
 SessionFactory = None
-
-if config.env != "TEST":
-    connector = Connector(ip_type=IPTypes.PUBLIC, refresh_strategy="LAZY")
-    SessionFactory = sessionmaker(bind=get_engine(connector, config.db))
 
 
 def get_timestamps(hour: datetime) -> tuple[int, int]:
@@ -49,14 +43,22 @@ def get_timestamps(hour: datetime) -> tuple[int, int]:
 
 
 def get_fastly_stats(start_time: int, end_time: int) -> FastlyStatsApiResponse:
-    with fastly.ApiClient(fastly.Configuration()) as client:
+    fastly_config = fastly.Configuration()
+    fastly_config.api_token = config.fastly_api_token
+
+    with fastly.ApiClient(fastly_config) as client:
         api_instance = stats_api.StatsApi(client)
         options = {
             "service_id": config.fastly_service_id["arxiv.org"],
             "start_time": start_time,
             "end_time": end_time,
         }
-        response = api_instance.get_service_stats(**options)
+        try:
+            response = api_instance.get_service_stats(**options)
+        except ApiException as e:
+            if e.status == 400:
+                logger.exception("Bad request to Fastly API! Check message")
+                raise NoRetryError from e
 
         try:
             return FastlyStatsApiResponse(**response.to_dict())
@@ -65,10 +67,6 @@ def get_fastly_stats(start_time: int, end_time: int) -> FastlyStatsApiResponse:
                 "Could not validate response payload! Check response format"
             )
             raise NoRetryError
-        except ApiException as e:
-            if e.status == 400:
-                logger.exception("Bad request to Fastly API! Check message")
-                raise NoRetryError from e
 
 
 def sum_requests(response: FastlyStatsApiResponse) -> int:
@@ -94,9 +92,10 @@ def validate_cloud_event(cloud_event: CloudEvent) -> datetime:
     event_time = parse_cloud_event_time(cloud_event)
 
     if event_time_exceeds_retry_window(config, event_time):
+        logger.exception("Event time exceeds retry window!")
         raise NoRetryError
 
-    return (event_time - timedelta(hours=config.hour_delay)).replace(minute=0)
+    return (event_time - timedelta(hours=config.hour_delay)).replace(minute=0, second=0)
 
 
 def validate_hour(cloud_event: CloudEvent) -> datetime:
@@ -127,6 +126,14 @@ def validate_inputs(cloud_event: CloudEvent) -> datetime:
 
 @functions_framework.cloud_event
 def get_hourly_edge_requests(cloud_event: CloudEvent):
+    global engine, SessionFactory
+
+    if config.env != "TEST":
+        if SessionFactory is None:
+            logger.info("Initializing engine and sessionmaker")
+            engine = get_engine_unix_socket(config.db)
+            SessionFactory = sessionmaker(bind=engine)
+
     try:
         hour = validate_inputs(cloud_event)
         start_time, end_time = get_timestamps(hour)
