@@ -1,5 +1,5 @@
 ################ base ################
-FROM ghcr.io/astral-sh/uv:python3.11-bookworm AS base
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm AS base
 
 ################ builder ################
 FROM base AS builder
@@ -10,7 +10,7 @@ COPY stats-api/stats_api ./stats-api/stats_api
 COPY stats-api/pyproject.toml stats-api/uv.lock ./stats-api
 
 WORKDIR /home/nonroot/stats-api
-RUN uv sync --locked --no-dev
+RUN uv sync --frozen --no-dev
 
 ################ runtime ################
 FROM builder AS runtime
