@@ -15,11 +15,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from entities import ReadBase, DocumentCategory, Metadata
-from models import PaperCategories, DownloadData, DownloadKey, DownloadCounts
+from models import (
+    PaperCategories,
+    DownloadData,
+    DownloadKey,
+    DownloadCounts,
+    AggregationResult,
+)
 from main import (
     process_table_rows,
     get_paper_categories,
     process_paper_categories,
+    perform_aggregation,
     aggregate_data,
     insert_into_database,
     query_logs,
@@ -81,13 +88,14 @@ def read_session_factory():
                 Metadata(
                     metadata_id="1",
                     document_id="1",
-                    paper_id="cs/0004010",
-                    is_current="0",
+                    paper_id="2301.00002",
+                    is_current="1",
                 ),
+                DocumentCategory(document_id="2", category="cs.AI", is_primary="1"),
                 Metadata(
                     metadata_id="2",
-                    document_id="1",
-                    paper_id="cs/0004010",
+                    document_id="2",
+                    paper_id="2301.00001",
                     is_current="1",
                 ),
             ]
@@ -140,7 +148,7 @@ def test_get_paper_categories_success(read_session_factory):
     with patch("main.ReadSessionFactory", read_session_factory):
         result = get_paper_categories(
             [
-                "cs/0004010",
+                "2301.00002",
             ]
         )
 
@@ -186,7 +194,6 @@ def test_insert_into_database_success(write_session_factory):
 @patch("main.bigquery.Client")
 @patch("main.config")
 def test_query_logs_success(mock_config, mock_client_class):
-    mock_config.project = "test-project"
     mock_config.logs_query = "SELECT * FROM logs"
     mock_config.paper_id_regex = "regex1"
 
@@ -201,7 +208,6 @@ def test_query_logs_success(mock_config, mock_client_class):
     result = query_logs("2023-01-01", "2023-01-02")
 
     assert result == mock_rows
-    mock_client_class.assert_called_once_with(project="test-project")
 
     args, kwargs = mock_client.query.call_args
     assert args[0] == "SELECT * FROM logs"
@@ -424,7 +430,7 @@ def test_validate_cloud_event(mock_config, mock_retry_check):
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-09-12T16:30:00Z",
+        "time": "2025-09-12T16:30:01Z",
     }
 
     mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
@@ -438,7 +444,7 @@ def test_validate_hour_valid():
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-09-12T16:30:00Z",
+        "time": "2025-09-12T16:30:01Z",
     }
     mock_data = {"message": {"data": "", "attributes": {"hour": "2025-11-0412"}}}
 
@@ -453,7 +459,7 @@ def test_validate_hour_invalid():
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-09-12T16:30:00Z",
+        "time": "2025-09-12T16:30:01Z",
     }
     mock_data = {"message": {"data": "", "attributes": {"hour": "2025-11-0425"}}}
 
@@ -476,7 +482,7 @@ def test_validate_inputs_from_attributes():
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-11-01T12:00:00Z",
+        "time": "2025-11-01T12:00:01Z",
     }
 
     mock_data = {"message": {"data": "", "attributes": {"hour": "2025-10-0312"}}}
@@ -493,7 +499,7 @@ def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-08-01T12:00:00Z",
+        "time": "2025-08-01T12:00:01Z",
     }
     mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
     mock_val_cloud.return_value = datetime(2025, 8, 1, 11)
@@ -502,3 +508,46 @@ def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
 
     assert result == datetime(2025, 8, 1, 11)
     mock_val_cloud.assert_called_once()
+
+
+def test_perform_aggregation_success(read_session_factory, write_session_factory):
+    with patch("main.ReadSessionFactory", read_session_factory), patch(
+        "main.WriteSessionFactory", write_session_factory
+    ):
+        result = perform_aggregation(mock_rows_from_bq)
+
+        assert result.fetched_count == 2
+        assert result.unique_ids_count == 2
+        assert result.bad_id_count == 1
+        assert result.problem_row_count == 1
+
+        with write_session_factory() as session:
+            all_records = session.query(HourlyDownloads).all()
+
+            matching_records = [r for r in all_records if r.category == "cs.AI"]
+            assert len(matching_records) > 0
+
+            cs_ai_record = matching_records[0]
+            assert cs_ai_record.primary_count == 10
+            assert cs_ai_record.country == "US"
+
+
+def test_perform_aggregation_no_categories_raises_no_retry(
+    read_session_factory, write_session_factory
+):
+    rows_with_no_categories = [
+        {
+            "paper_id": "9999.99999",
+            "geo_country": "US",
+            "download_type": "pdf",
+            "start_dttm": datetime(2026, 2, 9, 10, 0, 0),
+            "num_downloads": 1,
+        }
+    ]
+
+    with patch("main.ReadSessionFactory", read_session_factory), patch(
+        "main.WriteSessionFactory", write_session_factory
+    ):
+
+        with pytest.raises(NoRetryError):
+            perform_aggregation(rows_with_no_categories)

@@ -15,6 +15,7 @@ from sqlalchemy.orm import sessionmaker
 
 from fastly.model.stats import Stats
 from fastly.model.results import Results
+from fastly.exceptions import ApiException
 
 from models import FastlyStatsApiResponse
 from main import (
@@ -103,7 +104,25 @@ def test_get_fastly_stats_valid_response(mock_fastly, mock_fastly_stats_api):
 
 @patch("main.stats_api")
 @patch("main.fastly")
-def test_get_fastly_stats_missing_edge_requests(mock_fastly, mock_fastly_stats_api):
+@patch("main.logger")
+def test_get_fastly_stats_missing_edge_requests(
+    mock_logger, mock_fastly, mock_fastly_stats_api
+):
+    mock_fastly_stats_api.StatsApi.return_value.get_service_stats.side_effect = (
+        ApiException(status=400, reason="Bad Request")
+    )
+
+    with pytest.raises(NoRetryError):
+        get_fastly_stats(1762257600, 1762261199)
+
+    mock_logger.exception.assert_called_once_with(
+        "Bad request to Fastly API! Check message"
+    )
+
+
+@patch("main.stats_api")
+@patch("main.fastly")
+def test_get_fastly_stats_bad_request(mock_fastly, mock_fastly_stats_api):
     mock_fastly_stats_api.StatsApi.return_value.get_service_stats.return_value = (
         mock_fastly_response_missing_edge_requests
     )
@@ -145,7 +164,7 @@ def test_validate_cloud_event(mock_config, mock_retry_check):
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-09-12T16:30:00Z",
+        "time": "2025-09-12T16:30:01Z",
     }
 
     mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
@@ -159,7 +178,7 @@ def test_validate_hour_valid():
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-09-12T16:30:00Z",
+        "time": "2025-09-12T16:30:01Z",
     }
     mock_data = {"message": {"data": "", "attributes": {"hour": "2025-11-0412"}}}
 
@@ -174,7 +193,7 @@ def test_validate_hour_invalid():
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-09-12T16:30:00Z",
+        "time": "2025-09-12T16:30:01Z",
     }
     mock_data = {"message": {"data": "", "attributes": {"hour": "2025-11-0425"}}}
 
@@ -188,7 +207,7 @@ def test_validate_inputs_from_attributes():
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-11-01T12:00:00Z",
+        "time": "2025-11-01T12:00:01Z",
     }
 
     mock_data = {"message": {"data": "", "attributes": {"hour": "2025-10-0312"}}}
@@ -205,7 +224,7 @@ def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
     mock_attributes = {
         "type": "mock_type",
         "source": "mock_source",
-        "time": "2025-08-01T12:00:00Z",
+        "time": "2025-08-01T12:00:01Z",
     }
     mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
     mock_val_cloud.return_value = datetime(2025, 8, 1, 11)

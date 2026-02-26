@@ -1,5 +1,5 @@
 from typing import Optional
-from stats_functions.config import FunctionConfig, DatabaseConfig
+from stats_functions.config import DatabaseConfig, FunctionConfig
 
 
 class Config(FunctionConfig):
@@ -14,15 +14,13 @@ class Config(FunctionConfig):
 
 
 class TestConfig(Config):
-    log_level: str = "DEBUG"
     log_locally: bool = True
 
     fastly_api_token: str = "mock_token"
 
 
 class DevConfig(Config):
-    log_level: str = "DEBUG"
-
+    pass
 
 class ProdConfig(Config):
     pass

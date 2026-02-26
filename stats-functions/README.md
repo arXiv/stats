@@ -17,8 +17,9 @@ To deploy any of the above cloud functions to a remote environment, use the exis
 The aggregate hourly downloads job parses arXiv access logs saved to BigQuery, queries the main database for paper metadata, generates counts of downloads per category (with careful data validation), and then writes them to a database. It runs hourly.
 
 ### To run manually
+> NOTE: There is only a small sample of log data in BigQuery in dev. For testing, use the hour parameter below.
 ```
-gcloud pubsub topics publish stats-aggregate-hourly-downloads --message="" --attribute="hour=2025-12-1214"
+gcloud pubsub topics publish stats-aggregate-hourly-downloads --message="" --attribute="hour=2025-09-0215"
 ```
 
 ## Hourly Edge Requests
@@ -37,14 +38,14 @@ The monthly submissions job queries for the count of submissions in the past mon
 
 ### To run manually
 ```
-gcloud pubsub topics publish stats-monthly-downloads --message="" --attribute="month=2025-12-01"
+gcloud pubsub topics publish stats-monthly-submissions --message="" --attribute="month=2025-12-01"
 ```
 
-## Monthly Submissions
+## Monthly Downloads
 
 The monthly downloads job queries for the count of downloads in the past month and writes that sum to a database.
 
 ### To run manually
 ```
-gcloud pubsub topics publish stats-monthly-submissions --message="" --attribute="month=2025-12-01"
+gcloud pubsub topics publish stats-monthly-downloads --message="" --attribute="month=2025-12-01"
 ```
