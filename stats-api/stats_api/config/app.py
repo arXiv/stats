@@ -32,11 +32,12 @@ class Database(BaseConfig):
     password: Optional[str] = None
     host: Optional[str] = None
     port: Optional[int] = None
-    database: Optional[str] = None
+    database: str
     query: Optional[Query] = None
 
 
 class Config(BaseConfig):
+    ENV: str
     HOST: str = "0.0.0.0"
     PORT: int = 8080
     DEBUG: bool = False
@@ -48,7 +49,7 @@ class Config(BaseConfig):
 
     FASTLY_MAX_AGE: int = 31557600
 
-    DB: Optional[Database] = None
+    DB: Database
 
     PREFERRED_URL_SCHEME: str = "https"  # Flask configuration
     SERVER_NAME: str = "arxiv.org"  # Flask configuration
@@ -73,8 +74,15 @@ class Config(BaseConfig):
 
 
 class TestConfig(Config):
+    model_config = SettingsConfigDict(
+        env_file=None,
+    )
+
+    ENV: str = "TEST"
     DEBUG: bool = True
     TESTING: bool = True  # Flask configuration
+
+    DB: Database = Database(drivername="sqlite", database=":memory:")
 
 
 class DevConfig(Config):
@@ -85,3 +93,10 @@ class DevConfig(Config):
 
 class ProdConfig(Config):
     pass
+
+
+config_map = {
+    "TEST": TestConfig,
+    "DEV": DevConfig,
+    "PROD": ProdConfig,
+}

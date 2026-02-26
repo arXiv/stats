@@ -31,7 +31,7 @@ ENTRYPOINT ["gunicorn", \
             "--control-socket", "/dev/shm/gunicorn.ctl", \
             "--access-logfile", "-", \
             "--error-logfile", "-", \
-            "stats_api.app:app"]
+            "stats_api.app:create_app()"]
 
 ################ test ################
 FROM builder AS test
