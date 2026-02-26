@@ -7,6 +7,7 @@ from stats_api.config.app import Database, TestConfig, DevConfig, ProdConfig
 from stats_api.config.database import db
 from stats_api.routes import stats_ui, stats_api
 
+
 # from stats_api.exception import handle_non_http_exception, handle_http_exception
 
 config_map = {
