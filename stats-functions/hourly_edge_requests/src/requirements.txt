@@ -4,5 +4,5 @@ sqlalchemy>=2.0.26
 stats-entities @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-entities
 fastly==12.*
 pydantic==2.*
-stats-functions @ git+https://github.com/arXiv/stats.git@fix-function-deployment#subdirectory=stats-functions
+stats-functions @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-functions
 pymysql>=1.1.0
