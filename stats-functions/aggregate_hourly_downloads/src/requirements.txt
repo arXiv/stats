@@ -5,5 +5,5 @@ google-cloud-bigquery
 sqlalchemy>=2.0.26
 pydantic==2.*
 stats-entities @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-entities
-stats-functions @ git+https://github.com/arXiv/stats.git@fix-function-deployment#subdirectory=stats-functions
+stats-functions @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-functions
 pymysql>=1.1.0
