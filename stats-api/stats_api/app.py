@@ -21,6 +21,12 @@ def create_app() -> Flask:
         **app.config["DB"].model_dump()
     ).render_as_string(hide_password=False)
 
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_size": 5,
+        "max_overflow": 2,
+        "pool_timeout": 30,
+    }
+
     db.init_app(app)
 
     CORS(app)
