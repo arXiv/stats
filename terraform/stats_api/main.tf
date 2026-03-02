@@ -23,7 +23,7 @@ resource "google_service_account" "account" {
   display_name = "Service account to deploy stats api cloud run instance"
 }
 
-resource "google_secret_manager_secret_iam_member" "db_secret_accessor" {
+resource "google_secret_manager_secret_iam_member" "read_db_secret_accessor" {
   secret_id = var.db_pw_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.account.email}"
