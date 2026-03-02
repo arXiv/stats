@@ -15,7 +15,9 @@ RUN uv sync --frozen --no-dev
 ################ runtime ################
 FROM builder AS runtime
 
-ENV PATH="/home/nonroot/stats-api/.venv/bin:$PATH"
+ENV PATH="/home/nonroot/stats-api/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONNODEBUGRANGES=0
 
 # run as non-root user for security reasons
 RUN useradd nonroot
