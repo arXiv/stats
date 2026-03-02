@@ -53,6 +53,12 @@ resource "google_project_iam_member" "service_account_user" {
   member  = "serviceAccount:${google_service_account.account.email}"
 }
 
+resource "google_project_iam_member" "cloud_sql_client" {
+  project = var.gcp_project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.account.email}"
+}
+
 ### cloud run instance ###
 
 resource "google_cloud_run_v2_service" "stats_api" {
