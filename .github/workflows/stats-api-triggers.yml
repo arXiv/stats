@@ -50,7 +50,7 @@ jobs:
     name: Build push stats api
     uses: ./.github/workflows/build-push-api.yml
     with:
-      dockerfile: Dockerfile.api
+      dockerfile: stats-api/Dockerfile.api
       image_name: stats-api
       port: "8080"
       target: runtime
