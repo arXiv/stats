@@ -11,7 +11,9 @@ from tests.data.site_usage import (
 @pytest.fixture(scope="module")
 def app():
     app = create_app()
-    assert app.config["SQLALCHEMY_DATABASE_URI"].render_as_string() == "sqlite:///:memory:"
+    # assert app.config["SQLALCHEMY_DATABASE_URI"].render_as_string() == "sqlite:///:memory:"
+    assert app.config["SQLALCHEMY_DATABASE_URI"] == "sqlite:///:memory:"
+
 
     with app.app_context():
         from stats_api.config.database import db
