@@ -18,8 +18,12 @@ def create_app() -> Flask:
     app.config.from_object(config_map[environment]())
 
     app.config["SQLALCHEMY_DATABASE_URI"] = URL.create(
-        **app.config["DB"].model_dump()
-    ).render_as_string(hide_password=False)
+        drivername=app.config["DB"].drivername,
+        username=app.config["DB"].username,
+        password=app.config["DB"].password,
+        database=app.config["DB"].database,
+        query={"unix_socket": app.config["DB"].query.unix_socket},
+    )
 
     db.init_app(app)
 
