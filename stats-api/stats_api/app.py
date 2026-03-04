@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 from flask_cors import CORS
-# from sqlalchemy import URL
+from sqlalchemy import URL
 
 from stats_api.config.app import config_map
 from stats_api.config.database import db

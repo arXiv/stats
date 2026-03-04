@@ -29,12 +29,6 @@ resource "google_secret_manager_secret_iam_member" "db_secret_accessor" {
   member    = "serviceAccount:${google_service_account.account.email}"
 }
 
-resource "google_secret_manager_secret_iam_member" "db_uri_secret_accessor" {
-  secret_id = var.db_uri_secret_name
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.account.email}"
-}
-
 resource "google_project_iam_member" "ar_writer" {
   project = var.gcp_project_id
   role    = "roles/artifactregistry.createOnPushWriter"
@@ -92,24 +86,10 @@ resource "google_cloud_run_v2_service" "stats_api" {
         value = var.db_database
       }
       env {
-        name  = "DB__QUERY__UNIX_SOCKET"
-        value = var.db_unix_socket
-      }
-      env {
         name = "DB__PASSWORD"
         value_source {
           secret_key_ref {
             secret  = var.db_pw_secret_name
-            version = "latest"
-          }
-        }
-      }
-
-      env {
-        name = "DB_URI"
-        value_source {
-          secret_key_ref {
-            secret  = var.db_uri_secret_name
             version = "latest"
           }
         }

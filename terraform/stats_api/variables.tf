@@ -51,9 +51,3 @@ variable "slack_channel_id" {
   description = "Channel ID for slack notification channel resource"
   type        = string
 }
-
-variable "db_uri_secret_name" {
-  description = "URI to connect to Cloud SQL instance"
-  type        = string
-}
-
