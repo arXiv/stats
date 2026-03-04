@@ -86,6 +86,10 @@ resource "google_cloud_run_v2_service" "stats_api" {
         value = var.db_database
       }
       env {
+        name  = "DB__QUERY__UNIX_SOCKET"
+        value = var.db_unix_socket
+      }
+      env {
         name = "DB__PASSWORD"
         value_source {
           secret_key_ref {
