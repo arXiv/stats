@@ -51,7 +51,6 @@ class Config(BaseConfig):
     FASTLY_MAX_AGE: int = 31557600
 
     DB: Database = Field(...)
-    DB_URI: str
 
     PREFERRED_URL_SCHEME: str = "https"  # Flask configuration
     SERVER_NAME: str = "arxiv.org"  # Flask configuration
@@ -85,7 +84,6 @@ class TestConfig(Config):
     TESTING: bool = True  # Flask configuration
 
     DB: Database = Database(drivername="sqlite", database=":memory:")
-    DB_URI: str = "sqlite:///:memory:"
 
 
 class DevConfig(Config):
