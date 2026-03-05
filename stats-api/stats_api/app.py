@@ -2,12 +2,12 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from sqlalchemy import URL
+from werkzeug.exceptions import HTTPException
 
 from stats_api.config.app import Database, TestConfig, DevConfig, ProdConfig
 from stats_api.config.database import db
 from stats_api.routes import stats_ui, stats_api
-
-# from stats_api.exception import handle_non_http_exception, handle_http_exception
+from stats_api.exception import handle_non_http_exception, handle_http_exception
 
 
 config_map = {
@@ -32,8 +32,8 @@ def create_app(environment: str) -> Flask:
     app.register_blueprint(stats_ui)
     app.register_blueprint(stats_api)
 
-    # app.register_error_handler(Exception, handle_non_http_exception)
-    # app.register_error_handler(Exception, handle_http_exception)
+    app.register_error_handler(Exception, handle_non_http_exception)
+    app.register_error_handler(HTTPException, handle_http_exception)
 
     return app
 
