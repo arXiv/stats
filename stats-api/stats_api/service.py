@@ -89,7 +89,7 @@ class StatsService:
                 )
                 for hr in data
             ]
-        )  # type: ignore
+        )
 
     @staticmethod
     def get_monthly_downloads(hour: datetime) -> str:
@@ -108,7 +108,6 @@ class StatsService:
     def _combine_monthly_downloads(
         hour: datetime, total_latest_month: int, data: list[MonthlyDownloads_]
     ) -> list[MonthlyDownloads_]:
-
         return data + [
             MonthlyDownloads_(
                 month=date(hour.year, hour.month, 1), downloads=total_latest_month
