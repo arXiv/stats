@@ -15,7 +15,9 @@ def url_param_to_date(param: str) -> date:
 
 def url_param_to_arxiv_datetime(param: str) -> datetime:
     """transforms a url datetime param parsed as a string into a datetime object"""
-    return datetime.strptime(param, "%Y%m%d%H").replace(tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"]))
+    return datetime.strptime(param, "%Y%m%d%H").replace(
+        tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
+    )
 
 
 def set_fastly_headers(keys: List[str] = ["stats"]):

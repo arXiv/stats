@@ -1,0 +1,29 @@
+services:
+  app:
+    image: stats-api
+    build:
+      context: ./../
+      dockerfile: stats-api/Dockerfile.api
+      target: runtime
+    container_name: stats-api
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+    volumes:
+      - cloudsql_socket:/cloudsql
+
+  db-proxy:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
+    user: root 
+    command:
+      - "--unix-socket=/cloudsql"
+      - "${INSTANCE_NAME}"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/config/service-account.json
+    volumes:
+      - cloudsql_socket:/cloudsql
+      - ${LOCAL_PATH_TO_CREDS}:/config/service-account.json
+
+volumes:
+  cloudsql_socket:

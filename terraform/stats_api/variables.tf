@@ -17,38 +17,37 @@ variable "image_path" {
   description = "Path to the container image in Artifact Registry"
   type        = string
 }
-
-variable "db_instance" {
-  description = "Database instance name in GCP"
-  type        = string
-}
-
 variable "db_drivername" {
-  description = "Database driver"
+  description = "Dialect+driver for the database connection"
   type        = string
 }
 
 variable "db_username" {
-  description = "Database username"
+  description = "Username for the database data is written to"
   type        = string
 }
 
-variable "db_password_secret_name" {
-  description = "Reference to password in Secret Manager"
+variable "db_pw_secret_name" {
+  description = "Reference to password in Secret Manager for the database data is written to"
   type        = string
 }
 
-variable "db_host" {
-  description = "Database host"
+variable "db_database" {
+  description = "Database name for the database data is written to"
   type        = string
 }
 
-variable "db_port" {
-  description = "Database port"
+variable "db_unix_socket" {
+  description = "Full path to unix socket"
   type        = string
 }
 
-variable "db_name" {
-  description = "Database name"
+variable "db_instance_name" {
+  description = "Instance name for the Cloud SQL instance"
+  type        = string
+}
+
+variable "slack_channel_id" {
+  description = "Channel ID for slack notification channel resource"
   type        = string
 }

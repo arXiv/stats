@@ -1,7 +1,5 @@
-ARG PORT
-
 ################ base ################
-FROM ghcr.io/astral-sh/uv:python3.11-bookworm AS base
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm AS base
 
 ################ builder ################
 FROM base AS builder
@@ -12,21 +10,31 @@ COPY stats-api/stats_api ./stats-api/stats_api
 COPY stats-api/pyproject.toml stats-api/uv.lock ./stats-api
 
 WORKDIR /home/nonroot/stats-api
-RUN uv sync --locked --no-dev
+RUN uv sync --frozen --no-dev
 
 ################ runtime ################
 FROM builder AS runtime
 
-ENV PATH="/home/nonroot/stats-api/.venv/bin:$PATH"
+ENV PATH="/home/nonroot/stats-api/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONNODEBUGRANGES=0
 
 # run as non-root user for security reasons
 RUN useradd nonroot
 RUN chmod -R u+wx /home/nonroot
 USER nonroot
 
-EXPOSE ${PORT}
+EXPOSE 8080
 
-ENTRYPOINT ["python", "stats_api/app.py"]
+ENTRYPOINT ["gunicorn", \
+            "--workers", "2", \
+            "--timeout", "90", \
+            "--bind", "0.0.0.0:8080", \
+            "--worker-tmp-dir", "/dev/shm", \
+            "--control-socket", "/dev/shm/gunicorn.ctl", \
+            "--access-logfile", "-", \
+            "--error-logfile", "-", \
+            "stats_api.app:create_app()"]
 
 ################ test ################
 FROM builder AS test

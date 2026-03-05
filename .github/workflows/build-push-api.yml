@@ -51,7 +51,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v3
 
       - name: Configure Docker
-        run: gcloud auth configure-docker
+        run: gcloud auth configure-docker gcr.io --quiet
 
       - name: Build image, caching from latest
         run: |

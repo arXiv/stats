@@ -1,5 +1,3 @@
-
-
 def test_ui_route_error_on_template_render(app):
     with app.app_context():
         pass
