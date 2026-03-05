@@ -51,7 +51,10 @@
         {% endif %}
         />
     {% else %}
-    <span>{{ digit }}</span>
+    {# Added styling to match image height and center the text vertically #}
+    <span style="font-size: 170px; line-height: 170px; display: inline-block;">
+        {{ digit }}
+    </span>
     {% endif %}
 {%- endmacro %}
 
