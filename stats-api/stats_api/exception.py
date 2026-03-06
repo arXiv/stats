@@ -1,16 +1,16 @@
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, InternalServerError
+from flask import render_template
 
 
-# 500 - use base template
 def handle_non_http_exception(e):
+    """
+    handle non-HTTP (app-side) exceptions without leaking traceback
+    """
     if isinstance(e, HTTPException):
         return e
 
-    # return render_template("500_generic_exception.html", e=e), 500
-    pass
+    return render_template("generic_exception.html", error=InternalServerError()), 500
 
 
-# 400, 404, 405 - use browse template
 def handle_http_exception(e):
-    # return render_template("http_exception.html", e=e), e
-    pass
+    return render_template("generic_exception.html", error=e), e.code
