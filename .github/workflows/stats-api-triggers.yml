@@ -7,9 +7,6 @@ on:
     paths:
       - "stats-api/stats_api/**"
       - "terraform/stats_api/**"
-      - ".github/workflows/lint-test-api.yml"
-      - ".github/workflows/build-push-api.yml"
-      - ".github/workflows/deploy.yml"
   pull_request:
     branches:
       - main
@@ -17,8 +14,6 @@ on:
       - "stats-api/stats_api/**"
       - "terraform/stats_api/**"
       - ".github/workflows/lint-test-api.yml"
-      - ".github/workflows/build-push-api.yml"
-      - ".github/workflows/deploy.yml"
   workflow_dispatch:
     inputs:
       commit_sha:
