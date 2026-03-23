@@ -27,8 +27,8 @@ def set_up_cloud_logging(config: FunctionConfig):
 def get_engine_unix_socket(db: DatabaseConfig) -> Engine:
     """
     Initializes a unix socket connection pool for a Cloud SQL instance of MySQL
-    Must be lazily loaded to allow time for the Cloud Run instance 
-        to be configured with a connection to that Cloud SQL instance
+    Must be lazily loaded to allow time for the Cloud Run instance to be configured with a connection to that Cloud SQL instance
+    Automatically refreshes connections before they reach the 10 minute idle timeout for instance connections to Cloud SQL
 
     Example use:
 
@@ -53,7 +53,9 @@ def get_engine_unix_socket(db: DatabaseConfig) -> Engine:
             password=db.password,
             database=db.database,
             query={"unix_socket": db.query.unix_socket},
-        )
+        ),
+        pool_recycle=300, # recycle connections older than 5 minutes
+        pool_pre_ping=True, # check if a connection is alive before handing it to a session
     )
 
 
