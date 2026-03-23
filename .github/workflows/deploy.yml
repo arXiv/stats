@@ -49,7 +49,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
@@ -61,7 +61,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v3
 
       - name: Set up terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
 
       - name: Check version
         run: terraform --version
