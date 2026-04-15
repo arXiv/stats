@@ -61,6 +61,7 @@ updates:
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
-    directory: "/.github"
+    # check for updates to github actions monthly
+    directory: "/"
     schedule:
       interval: "monthly"
