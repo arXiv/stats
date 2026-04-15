@@ -84,9 +84,10 @@ resource "google_cloudfunctions2_function" "function" {
   }
 
   service_config {
-    min_instance_count    = 0    # cold starts to reduce costs
-    available_memory      = "6G" # cpu scales linearly with RAM, so this is 4 CPU
-    timeout_seconds       = 540  # 9 minutes is the maximum allowed for pubsub triggered functions
+    min_instance_count    = 0 # cold starts to reduce costs
+    available_memory      = "6Gi"
+    available_cpu         = "2" # must be explicitly set if memory>4Gi
+    timeout_seconds       = 540 # 9 minutes is the maximum allowed for pubsub triggered functions
     ingress_settings      = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.account.email
     environment_variables = {
