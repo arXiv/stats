@@ -1,5 +1,5 @@
 from typing import Optional
-from stats_functions.config import FunctionConfig, DatabaseConfig
+from arxiv_functions.config import FunctionConfig, DatabaseConfig
 
 
 class Config(FunctionConfig):
