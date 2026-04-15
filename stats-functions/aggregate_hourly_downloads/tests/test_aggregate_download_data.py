@@ -20,7 +20,6 @@ from models import (
     DownloadData,
     DownloadKey,
     DownloadCounts,
-    AggregationResult,
 )
 from main import (
     process_table_rows,
@@ -38,7 +37,7 @@ from main import (
 
 from arxiv.taxonomy.definitions import CATEGORIES
 from stats_entities.site_usage import SiteUsageBase, HourlyDownloads
-from stats_functions.exception import NoRetryError
+from arxiv_functions.exception import NoRetryError
 
 
 mock_rows_from_bq = [
