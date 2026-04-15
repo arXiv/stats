@@ -1,25 +1,61 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/stats-ui"
+  - package-ecosystem: "uv"
+    directory: "/stats-api"
     schedule:
       interval: "weekly"
+    groups:
+      patch-updates:
+      # group all patches into one PR
+      # these are low risk and a group reduces noise
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
     ignore:
       - dependency-name: "*"
         # only raise PRs for minor version and patch updates,
         # ignore all major version updates
         update-types: ["version-update:semver-major"]
-  - package-ecosystem: "pip"
-    directory: "/"
+
+  - package-ecosystem: "uv"
+    directory: "/stats-db"
     schedule:
       interval: "weekly"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
-  - package-ecosystem: "npm"
-    directory: "/"
+
+  - package-ecosystem: "uv"
+    directory: "/stats-entities"
     schedule:
       interval: "weekly"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "pip"
+    directory: "/stats-functions"
+    schedule:
+      interval: "weekly"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
