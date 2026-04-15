@@ -1,0 +1,9 @@
+functions-framework==3.*
+arxiv-base @ git+https://github.com/arXiv/arxiv-base.git@a1fed38fcae2d8630acc9aa8b53c2f4a1776f5c5#egg=arxiv_base
+google-cloud-logging
+google-cloud-bigquery
+sqlalchemy>=2.0.26
+pydantic==2.*
+stats-entities @ git+https://github.com/arXiv/stats.git@main#subdirectory=stats-entities
+arxiv-functions @ git+https://github.com/arXiv/arxiv-base.git@develop#subdirectory=arxiv-functions
+pymysql>=1.1.0
