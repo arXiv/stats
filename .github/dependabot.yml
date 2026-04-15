@@ -6,8 +6,8 @@ updates:
       interval: "weekly"
     groups:
       patch-updates:
-      # group all patches into one PR
-      # these are low risk and a group reduces noise
+        # group all patches into one PR
+        # these are low risk and a group reduces noise
         patterns:
           - "*"
         update-types:
@@ -59,3 +59,8 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/.github"
+    schedule:
+      interval: "monthly"
