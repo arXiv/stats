@@ -72,32 +72,6 @@ fake_rows_from_bq = [
 ]
 
 
-# @pytest.fixture
-# def fake_row_generator():
-#     rows = [
-#         {
-#             "paper_id": "2301.00001",
-#             "geo_country": "US",
-#             "download_type": "src",
-#             "start_dttm": datetime(2026, 2, 9, 10, 0, 0),
-#             "num_downloads": 10,
-#         },
-#         {
-#             "paper_id": "2301.00002",
-#             "geo_country": "DE",
-#             "download_type": "pdf",
-#             "start_dttm": datetime(2026, 2, 9, 10, 0, 0),
-#             "num_downloads": 5,
-#         },
-#     ]
-
-#     def _generate():
-#         for row in rows:
-#             yield row
-
-#     return _generate
-
-
 @pytest.fixture
 def read_session_factory():
     engine = create_engine("sqlite:///:memory:")
