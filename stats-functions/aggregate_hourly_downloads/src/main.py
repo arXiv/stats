@@ -119,25 +119,6 @@ def get_paper_categories(paper_ids: Set[str]) -> List[Row[Tuple[str, str, int]]]
     return all_paper_cats
 
 
-# def get_paper_categories(paper_ids: Set[str]) -> Dict[str, PaperCategories]:
-#     # get the category data for papers
-#     meta = aliased(Metadata)
-#     dc = aliased(DocumentCategory)
-
-#     with ReadSessionFactory() as session:
-#         logger.info("Executing read database query")
-#         paper_cats = (
-#             session.query(meta.paper_id, dc.category, dc.is_primary)
-#             .join(meta, dc.document_id == meta.document_id)
-#             .filter(meta.paper_id.in_(paper_ids))
-#             .filter(meta.is_current == 1)
-#             .all()
-#         )
-#     logger.info("Read database query successfully executed; session closed")
-
-#     return paper_cats
-
-
 def process_paper_categories(
     data: List[Row[Tuple[str, str, int]]],
 ) -> Dict[str, PaperCategories]:
