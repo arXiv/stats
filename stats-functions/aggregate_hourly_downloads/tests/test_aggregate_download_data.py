@@ -40,7 +40,7 @@ from stats_entities.site_usage import SiteUsageBase, HourlyDownloads
 from arxiv_functions.exception import NoRetryError
 
 
-mock_rows_from_bq = [
+fake_rows_from_bq = [
     {
         "paper_id": "2301.00001",
         "geo_country": "US",
@@ -118,13 +118,13 @@ def write_session_factory():
 
 def test_process_table_rows_success_valid_and_invalid_rows():
     (
-        download_data,
+        download_data_gen,
         paper_ids,
-        time_period_str,
-        bad_id_count,
-        problem_row_count,
         time_periods,
-    ) = process_table_rows(mock_rows_from_bq)
+        counts,
+    ) = process_table_rows(fake_rows_from_bq)
+
+    download_data = list(download_data_gen)
 
     assert len(download_data) == 2
     assert download_data[0].paper_id == "2301.00001"
@@ -135,12 +135,11 @@ def test_process_table_rows_success_valid_and_invalid_rows():
     assert "2301.00002" in paper_ids
     assert len(paper_ids) == 2
 
-    assert bad_id_count == 1  # bad id row
-    assert problem_row_count == 1  # missing key row
+    assert counts["bad_id"] == 1  # bad id row
+    assert counts["problem"] == 1  # missing key row
 
     assert len(time_periods) == 1
-    assert time_periods[0] == datetime(2026, 2, 9, 10, 0)
-    assert "2026-02-09 10:00:00" in time_period_str
+    assert datetime(2026, 2, 9, 10, 0) in time_periods
 
 
 def test_get_paper_categories_success(read_session_factory):
@@ -513,7 +512,7 @@ def test_perform_aggregation_success(read_session_factory, write_session_factory
     with patch("main.ReadSessionFactory", read_session_factory), patch(
         "main.WriteSessionFactory", write_session_factory
     ):
-        result = perform_aggregation(mock_rows_from_bq)
+        result = perform_aggregation(fake_rows_from_bq)
 
         assert result.fetched_count == 2
         assert result.unique_ids_count == 2
@@ -536,7 +535,7 @@ def test_perform_aggregation_no_categories_raises_no_retry(
 ):
     rows_with_no_categories = [
         {
-            "paper_id": "9999.99999",
+            "paper_id": "2304.00003",
             "geo_country": "US",
             "download_type": "pdf",
             "start_dttm": datetime(2026, 2, 9, 10, 0, 0),
@@ -544,9 +543,13 @@ def test_perform_aggregation_no_categories_raises_no_retry(
         }
     ]
 
+    def mock_gen():
+        for row in rows_with_no_categories:
+            yield row
+
     with patch("main.ReadSessionFactory", read_session_factory), patch(
         "main.WriteSessionFactory", write_session_factory
     ):
 
         with pytest.raises(NoRetryError):
-            perform_aggregation(rows_with_no_categories)
+            perform_aggregation(mock_gen())

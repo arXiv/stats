@@ -7,7 +7,7 @@ class Config(FunctionConfig):
     write_db: Optional[DatabaseConfig] = None
 
     max_event_age_in_minutes: int = 50
-    max_query_to_write: int = 1000
+    batch_size_for_category_query: int = 10000
     hour_delay: int = 3
 
     paper_id_regex: str = r"^/[^/]+/([a-zA-Z-]+/[0-9]{7}|[0-9]{4}\.[0-9]{4,5})"
