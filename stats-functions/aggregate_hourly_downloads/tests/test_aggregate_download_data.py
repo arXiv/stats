@@ -122,14 +122,14 @@ def test_process_table_rows_success_valid_and_invalid_rows():
             "paper_id": "2301.00001",
             "download_type": "pdf",
             "geo_country": "US",
-            "start_dttm": datetime.now(),
+            "start_dttm": datetime(2026, 2, 9, 10, 0, 0),
             "num_downloads": 1,
         }
         yield {
             "paper_id": "2301.00002",
             "download_type": "pdf",
             "geo_country": "DE",
-            "start_dttm": datetime.now(),
+            "start_dttm": datetime(2026, 2, 9, 10, 0, 0),
             "num_downloads": 5,
         }
 
@@ -138,7 +138,7 @@ def test_process_table_rows_success_valid_and_invalid_rows():
         paper_ids,
         time_periods,
         counts,
-    ) = process_table_rows(fake_rows_from_bq)
+    ) = process_table_rows(mock_row_generator)
 
     download_data = list(download_data_gen)
 
