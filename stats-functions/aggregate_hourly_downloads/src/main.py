@@ -92,23 +92,50 @@ def process_table_rows(
     return download_data_generator(), paper_ids, time_periods, counts
 
 
-def get_paper_categories(paper_ids: Set[str]) -> Dict[str, PaperCategories]:
-    # get the category data for papers
+def get_paper_categories(paper_ids: Set[str]) -> List[Row[Tuple[str, str, int]]]:
     meta = aliased(Metadata)
     dc = aliased(DocumentCategory)
 
-    with ReadSessionFactory() as session:
-        logger.info("Executing read database query")
-        paper_cats = (
-            session.query(meta.paper_id, dc.category, dc.is_primary)
-            .join(meta, dc.document_id == meta.document_id)
-            .filter(meta.paper_id.in_(paper_ids))
-            .filter(meta.is_current == 1)
-            .all()
-        )
-    logger.info("Read database query successfully executed; session closed")
+    id_list = list(paper_ids)
+    all_paper_cats = []
 
-    return paper_cats
+    with ReadSessionFactory() as session:
+        logger.info(
+            f"Executing read database query for {len(id_list)} papers in batches of {config.batch_size_for_category_query}"
+        )
+        for i in range(0, len(id_list), config.batch_size_for_category_query):
+            batch = id_list[i : i + config.batch_size_for_category_query]
+            results = (
+                session.query(meta.paper_id, dc.category, dc.is_primary)
+                .join(meta, dc.document_id == meta.document_id)
+                .filter(meta.paper_id.in_(batch))
+                .filter(meta.is_current == 1)
+                .all()
+            )
+            all_paper_cats.extend(results)
+
+    logger.info("Read database queries successfully executed; session closed")
+
+    return all_paper_cats
+
+
+# def get_paper_categories(paper_ids: Set[str]) -> Dict[str, PaperCategories]:
+#     # get the category data for papers
+#     meta = aliased(Metadata)
+#     dc = aliased(DocumentCategory)
+
+#     with ReadSessionFactory() as session:
+#         logger.info("Executing read database query")
+#         paper_cats = (
+#             session.query(meta.paper_id, dc.category, dc.is_primary)
+#             .join(meta, dc.document_id == meta.document_id)
+#             .filter(meta.paper_id.in_(paper_ids))
+#             .filter(meta.is_current == 1)
+#             .all()
+#         )
+#     logger.info("Read database query successfully executed; session closed")
+
+#     return paper_cats
 
 
 def process_paper_categories(
@@ -136,16 +163,12 @@ def aggregate_data(
     """
     logger.info("Aggregating download data")
     all_data: Dict[DownloadKey, DownloadCounts] = {}
-    missing_data: List[str] = []
     missing_data_count = 0
+
     for entry in download_data:
-        try:
-            cats = paper_categories[entry.paper_id]
-        except KeyError:
+        cats = paper_categories.get(entry.paper_id)
+        if not cats:
             missing_data_count += 1
-            (
-                missing_data.append(entry.paper_id) if len(missing_data) < 20 else None
-            )  # dont make the list too long
             continue  # dont process this paper
 
         # record primary
@@ -156,9 +179,8 @@ def aggregate_data(
             cats.primary.in_archive,
             cats.primary.id,
         )
-        value = all_data.get(key, DownloadCounts())
-        value.primary += entry.num
-        all_data[key] = value
+        counts = all_data.setdefault(key, DownloadCounts())
+        counts.primary += entry.num
 
         # record for each cross
         for cat in cats.crosses:
@@ -169,14 +191,13 @@ def aggregate_data(
                 cat.in_archive,
                 cat.id,
             )
-            value = all_data.get(key, DownloadCounts())
-            value.cross += entry.num
-            all_data[key] = value
+            counts = all_data.setdefault(key, DownloadCounts())
+            counts.cross += entry.num
 
     if missing_data_count > 10:
         time = download_data[0].time if download_data else "Unknown"
         logger.warning(
-            f"{time} Could not find category data for {missing_data_count} paper_ids (may be invalid) \n Example paper_ids with no category data: {missing_data}"
+            f"{time}: Could not find category data for {missing_data_count} paper_ids (may be invalid)"
         )
 
     return all_data
@@ -233,7 +254,7 @@ def perform_aggregation(
     problem_row_count = counts["problem"]
 
     time_period_str = ", ".join([t.strftime("%Y-%m-%d %H:%M:%S") for t in time_periods])
-    
+
     if problem_row_count > 30:
         logger.warning(
             f"{time_period_str}: Problem processing {problem_row_count} rows"
@@ -242,7 +263,7 @@ def perform_aggregation(
     # find categories for all the papers
     query_results = get_paper_categories(paper_ids)
     paper_categories = process_paper_categories(query_results)
-    
+
     if fetched_count > 0 and not paper_categories:
         logger.error(f"{time_period_str}: No category data retrieved from database!")
         raise NoRetryError
