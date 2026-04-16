@@ -57,7 +57,7 @@ jobs:
         run: |
           docker pull gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:latest
 
-          BRANCH_TAG="$(printf "%.128s" "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" | sed 's/^[.-]*//')"
+          BRANCH_TAG="$(echo "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" | sed 's/[^a-zA-Z0-9._-]/-/g' | sed 's/^[.-]*//' | cut -c 1-128)"
 
           docker build --target ${{ inputs.target }} --build-arg PORT=${{ inputs.port }} -f ${{ inputs.dockerfile }} \
           --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:latest \

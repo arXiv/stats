@@ -14,6 +14,7 @@ on:
       - "stats-api/**"
       - "terraform/stats_api/**"
       - ".github/workflows/lint-test-api.yml"
+      - ".github/workflows/build-push-api.yml"
   workflow_dispatch:
     inputs:
       commit_sha:
