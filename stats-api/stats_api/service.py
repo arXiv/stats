@@ -102,7 +102,7 @@ class StatsService:
             hour, total_latest_month, data
         )
 
-        return format_as_csv(monthly_downloads)  # type: ignore
+        return format_as_csv(monthly_downloads)
 
     @staticmethod
     def _combine_monthly_downloads(
@@ -118,4 +118,4 @@ class StatsService:
     def get_monthly_submissions() -> str:
         monthly_submissions = SiteUsageRepository.get_monthly_submissions()
 
-        return format_as_csv(monthly_submissions)  # type: ignore
+        return format_as_csv(monthly_submissions)
