@@ -18,9 +18,9 @@ class BaseConfig(BaseSettings):
 
 
 class Url(BaseConfig):
-    name: Optional[str]
-    rel_path: Optional[str]
-    domain: Optional[str]
+    name: str
+    rel_path: str
+    domain: str
 
 
 class Query(BaseConfig):

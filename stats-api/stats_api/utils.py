@@ -2,7 +2,7 @@ from flask import current_app
 import io
 import csv
 from pydantic import BaseModel
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Sequence
 from datetime import date, datetime, timezone
 from zoneinfo import ZoneInfo
 from functools import wraps
@@ -63,7 +63,7 @@ def get_utc_start_and_end_times(date: date) -> Tuple[datetime, datetime]:
     return start, end
 
 
-def format_as_csv(models: List[BaseModel]) -> str:
+def format_as_csv(models: Sequence[BaseModel]) -> str:
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=models[0].model_dump().keys())
     writer.writeheader()
