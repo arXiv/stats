@@ -347,11 +347,11 @@ def aggregate_hourly_downloads(cloud_event: CloudEvent):
     global read_engine, ReadSessionFactory, write_engine, WriteSessionFactory
 
     if config.env != "TEST":
-        if ReadSessionFactory is None:
+        if read_engine is None:
             logger.info("Initializing read engine and sessionmaker")
             read_engine = get_engine_unix_socket(config.read_db)
             ReadSessionFactory = sessionmaker(bind=read_engine)
-        if WriteSessionFactory is None:
+        if write_engine is None:
             logger.info("Initializing write engine and sessionmaker")
             write_engine = get_engine_unix_socket(config.write_db)
             WriteSessionFactory = sessionmaker(bind=write_engine)
@@ -370,3 +370,29 @@ def aggregate_hourly_downloads(cloud_event: CloudEvent):
             "A NoRetry exception has been raised! Will not retry. Fix the problem and manually run the function to patch data as needed."
         )
         return
+
+    except Exception as e:
+        # pubsub will retry with a warm start
+        # clean engine pools to prevent a memory leak inside the warm container
+        logger.info("Disposing engine pools to release memory")
+
+        if read_engine:
+            try:
+                read_engine.dispose()
+            except Exception as dispose_err:
+                logger.warning(f"Failed to dispose read_engine: {dispose_err}")
+            finally:
+                read_engine = None
+                ReadSessionFactory = None
+
+        if write_engine:
+            try:
+                write_engine.dispose()
+            except Exception as dispose_err:
+                logger.warning(f"Failed to dispose write_engine: {dispose_err}")
+            finally:
+                write_engine = None
+                WriteSessionFactory = None
+
+        # reraise to log traceback
+        raise e
