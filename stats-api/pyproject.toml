@@ -19,7 +19,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.4.2,<9",
-    "ruff>=0.15.20,<0.16",
+    "ruff>=0.15.20,<0.17",
     "ty>=0.0.56",
 ]
 
@@ -28,6 +28,14 @@ default-groups = ["dev"]
 
 [tool.uv.sources]
 stats-entities = { path = "../stats-entities", editable = true }
+
+[tool.ruff.lint]
+ignore = [
+    "DTZ001", # datetime() without tzinfo
+    "DTZ005", # datetime.now() without tz
+    "DTZ007", # strptime() without %z
+    "B006",   # mutable argument default
+]
 
 [build-system]
 requires = ["hatchling"]

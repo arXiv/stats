@@ -1,16 +1,17 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from zoneinfo import ZoneInfo
+
 from flask import Response
 
+from stats_api.models import HourlyRequests_
 from stats_api.utils import (
-    url_param_to_date,
-    url_param_to_arxiv_datetime,
-    set_fastly_headers,
-    get_utc_start_and_end_times,
     format_as_csv,
+    get_utc_start_and_end_times,
+    set_fastly_headers,
+    url_param_to_arxiv_datetime,
+    url_param_to_date,
     utc_to_arxiv_local,
 )
-from stats_api.models import HourlyRequests_
 
 
 def test_url_param_to_date(app):
@@ -44,16 +45,16 @@ def test_get_utc_start_and_end_times_est(app):
     with app.app_context():
         start, end = get_utc_start_and_end_times(date(2025, 11, 11))
 
-        assert start == datetime(2025, 11, 11, 5, tzinfo=timezone.utc)
-        assert end == datetime(2025, 11, 12, 4, tzinfo=timezone.utc)
+        assert start == datetime(2025, 11, 11, 5, tzinfo=UTC)
+        assert end == datetime(2025, 11, 12, 4, tzinfo=UTC)
 
 
 def test_get_utc_start_and_end_times_edt(app):
     with app.app_context():
         start, end = get_utc_start_and_end_times(date(2025, 4, 1))
 
-        assert start == datetime(2025, 4, 1, 4, tzinfo=timezone.utc)
-        assert end == datetime(2025, 4, 2, 3, tzinfo=timezone.utc)
+        assert start == datetime(2025, 4, 1, 4, tzinfo=UTC)
+        assert end == datetime(2025, 4, 2, 3, tzinfo=UTC)
 
 
 def test_format_as_csv():

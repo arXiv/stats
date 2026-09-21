@@ -1,8 +1,8 @@
-from unittest.mock import patch
 from datetime import date, datetime
+from unittest.mock import patch
 
-from stats_api.service import StatsService
 from stats_api.models import MonthlyDownloads_
+from stats_api.service import StatsService
 
 
 @patch("stats_api.service.SiteUsageRepository")

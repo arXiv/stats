@@ -1,20 +1,21 @@
-from flask import current_app
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from zoneinfo import ZoneInfo
-from dateutil.relativedelta import relativedelta
 
-from stats_api.repository import SiteUsageRepository
-from stats_api.utils import (
-    get_utc_start_and_end_times,
-    format_as_csv,
-    utc_to_arxiv_local,
-)
+from dateutil.relativedelta import relativedelta
+from flask import current_app
+
 from stats_api.models import (
-    TodayPageData,
     DownloadsPageData,
-    SubmissionsPageData,
     HourlyRequests_,
     MonthlyDownloads_,
+    SubmissionsPageData,
+    TodayPageData,
+)
+from stats_api.repository import SiteUsageRepository
+from stats_api.utils import (
+    format_as_csv,
+    get_utc_start_and_end_times,
+    utc_to_arxiv_local,
 )
 
 
@@ -60,7 +61,7 @@ class StatsService:
     @staticmethod
     def get_downloads_page_data() -> DownloadsPageData:
         latest_hour = SiteUsageRepository.get_latest_hour_for_downloads()
-        arxiv_latest_hour = latest_hour.replace(tzinfo=timezone.utc).astimezone(
+        arxiv_latest_hour = latest_hour.replace(tzinfo=UTC).astimezone(
             ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
         )
 

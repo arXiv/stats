@@ -1,6 +1,6 @@
-from unittest.mock import patch
+from datetime import date, datetime
 from http import HTTPStatus
-from datetime import datetime, date
+from unittest.mock import patch
 
 from stats_api.models import TodayPageData
 

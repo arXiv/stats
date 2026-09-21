@@ -1,9 +1,10 @@
 from datetime import date, datetime
+
 from stats_entities.site_usage import (
-    HourlyRequests,
-    MonthlySubmissions,
     HourlyDownloads,
+    HourlyRequests,
     MonthlyDownloads,
+    MonthlySubmissions,
 )
 
 """

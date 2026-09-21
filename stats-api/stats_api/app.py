@@ -1,4 +1,5 @@
 import os
+
 from flask import Flask
 from flask_cors import CORS
 from sqlalchemy import URL
@@ -6,8 +7,8 @@ from werkzeug.exceptions import HTTPException
 
 from stats_api.config.app import config_map
 from stats_api.config.database import db
-from stats_api.routes import stats_ui, stats_api
-from stats_api.exception import handle_non_http_exception, handle_http_exception
+from stats_api.exception import handle_http_exception, handle_non_http_exception
+from stats_api.routes import stats_api, stats_ui
 
 
 def create_app() -> Flask:
