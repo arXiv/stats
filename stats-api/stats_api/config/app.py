@@ -1,9 +1,8 @@
-from typing import Type
 from datetime import date
-from typing import Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator, Field
+
+from pydantic import Field, field_validator
 from pydantic_core.core_schema import ValidationInfo
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from stats_api.config.urls import _URLS
 
@@ -29,12 +28,12 @@ class Query(BaseConfig):
 
 class Database(BaseConfig):
     drivername: str
-    username: Optional[str] = None
-    password: Optional[str] = None
-    host: Optional[str] = None
-    port: Optional[int] = None
+    username: str | None = None
+    password: str | None = None
+    host: str | None = None
+    port: int | None = None
     database: str
-    query: Optional[Query] = None
+    query: Query | None = None
 
 
 class Config(BaseConfig):
@@ -57,7 +56,7 @@ class Config(BaseConfig):
     BASE_SERVER: str = SERVER_NAME
     HELP_SERVER: str = "info.arxiv.org"
     AUTH_SERVER: str = BASE_SERVER
-    URLS: Optional[dict[str, str]] = None
+    URLS: dict[str, str] | None = None
 
     @field_validator("URLS")
     def construct_urls(cls, v, info: ValidationInfo):
@@ -96,7 +95,7 @@ class ProdConfig(Config):
     pass
 
 
-config_map: dict[str, Type[Config]] = {
+config_map: dict[str, type[Config]] = {
     "TEST": TestConfig,
     "DEV": DevConfig,
     "PROD": ProdConfig,

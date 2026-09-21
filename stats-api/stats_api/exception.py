@@ -1,5 +1,5 @@
-from werkzeug.exceptions import HTTPException, InternalServerError
 from flask import render_template
+from werkzeug.exceptions import HTTPException, InternalServerError
 
 
 def handle_non_http_exception(e):

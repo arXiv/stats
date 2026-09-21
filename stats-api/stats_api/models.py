@@ -1,5 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field
 from datetime import date, datetime
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class OrmBase(BaseModel):

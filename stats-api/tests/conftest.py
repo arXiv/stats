@@ -1,10 +1,11 @@
 import pytest
+
 from stats_api.app import create_app
 from tests.data.site_usage import (
-    mock_hourly_requests,
-    mock_monthly_submissions,
     mock_hourly_downloads,
+    mock_hourly_requests,
     mock_monthly_downloads,
+    mock_monthly_submissions,
 )
 
 

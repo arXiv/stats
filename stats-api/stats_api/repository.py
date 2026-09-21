@@ -1,15 +1,15 @@
 from datetime import date, datetime
-from typing import List
-from sqlalchemy import func
 
-from stats_api.config.database import db
-from stats_api.models import MonthlyDownloads_, HourlyRequests_, MonthlySubmissions_
+from sqlalchemy import func
 from stats_entities.site_usage import (
     HourlyDownloads,
+    HourlyRequests,
     MonthlyDownloads,
     MonthlySubmissions,
-    HourlyRequests,
 )
+
+from stats_api.config.database import db
+from stats_api.models import HourlyRequests_, MonthlyDownloads_, MonthlySubmissions_
 
 
 class SiteUsageRepository:
@@ -26,7 +26,7 @@ class SiteUsageRepository:
         ).scalar()
 
     @staticmethod
-    def get_hourly_requests(start: datetime, end: datetime) -> List[HourlyRequests_]:
+    def get_hourly_requests(start: datetime, end: datetime) -> list[HourlyRequests_]:
         results = (
             db.session.execute(
                 db.select(HourlyRequests).where(
@@ -50,7 +50,7 @@ class SiteUsageRepository:
         ).scalar()
 
     @staticmethod
-    def get_monthly_submissions() -> List[MonthlySubmissions_]:
+    def get_monthly_submissions() -> list[MonthlySubmissions_]:
         results = db.session.execute(db.select(MonthlySubmissions)).scalars().all()
 
         return [MonthlySubmissions_.model_validate(row) for row in results]
@@ -81,7 +81,7 @@ class SiteUsageRepository:
         ).scalar()
 
     @staticmethod
-    def get_monthly_downloads(month: date) -> List[MonthlyDownloads_]:
+    def get_monthly_downloads(month: date) -> list[MonthlyDownloads_]:
         """month object should represent the first day of that month"""
         results = db.session.execute(
             db.select(MonthlyDownloads.month, MonthlyDownloads.downloads)

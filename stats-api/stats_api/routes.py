@@ -1,19 +1,20 @@
 from http import HTTPStatus
-from werkzeug.exceptions import BadRequest
+
 from flask import (
     Blueprint,
-    render_template,
     make_response,
+    render_template,
     request,
 )
 from flask.typing import ResponseReturnValue
+from werkzeug.exceptions import BadRequest
 
 from stats_api.service import StatsService
 from stats_api.utils import (
-    set_fastly_headers,
     get_arxiv_current_time,
-    url_param_to_date,
+    set_fastly_headers,
     url_param_to_arxiv_datetime,
+    url_param_to_date,
 )
 
 stats_ui = Blueprint("stats_ui", __name__, url_prefix="/")
