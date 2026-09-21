@@ -66,7 +66,7 @@ class Config(BaseConfig):
             "help": info.data.get("HELP_SERVER"),
             "auth": info.data.get("AUTH_SERVER"),
         }
-        urls = [Url(**i) for i in _URLS]
+        urls = [Url.model_validate(i) for i in _URLS]
 
         return {
             url.name: f"{info.data.get('PREFERRED_URL_SCHEME')}://{domain_map[url.domain]}{url.rel_path}"
