@@ -14,6 +14,7 @@ dependencies = [
     "pytest>=8.4.2",
     "python-dateutil>=2.9.0.post0",
     "stats-entities",
+    "arxiv-brand-templates",
 ]
 
 [dependency-groups]
@@ -28,6 +29,9 @@ default-groups = ["dev"]
 
 [tool.uv.sources]
 stats-entities = { path = "../stats-entities", editable = true }
+# The shared head/header/footer from the design system; uv.lock pins the SHA. Tracks the
+# design-system PR branch (arXiv/design-system#6) until it merges, then master.
+arxiv-brand-templates = { git = "https://github.com/arXiv/design-system.git", branch = "brand-templates-pr", subdirectory = "templates" }
 
 [tool.ruff.lint]
 ignore = [

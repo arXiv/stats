@@ -58,6 +58,11 @@ class Config(BaseConfig):
     AUTH_SERVER: str = BASE_SERVER
     URLS: dict[str, str] | None = None
 
+    # Root URL of the design-system asset route (CSS, fonts, logos, chrome JS). None is the
+    # templates' default, the production route; DevConfig sets the dev route, and the
+    # BRAND_STATIC_BASE variable overrides either (a local preview).
+    BRAND_STATIC_BASE: str | None = None
+
     @field_validator("URLS")
     def construct_urls(cls, v, info: ValidationInfo):
         domain_map = {
@@ -89,6 +94,9 @@ class DevConfig(Config):
     DEBUG: bool = True
     SERVER_NAME: str = "dev.arxiv.org"
     HELP_SERVER: str = "info.dev.arxiv.org"
+    BRAND_STATIC_BASE: str | None = (
+        "https://static.dev.arxiv.org/static/design-system/latest/"
+    )
 
 
 class ProdConfig(Config):
