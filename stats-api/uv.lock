@@ -12,6 +12,14 @@ wheels = [
 ]
 
 [[package]]
+name = "arxiv-brand-templates"
+version = "0.1.0"
+source = { git = "https://github.com/arXiv/design-system.git?subdirectory=templates&branch=master#7ec03781ebda6edf2ee74c3a9fc672ce7317779a" }
+dependencies = [
+    { name = "jinja2" },
+]
+
+[[package]]
 name = "blinker"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -429,6 +437,7 @@ name = "stats-api"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "arxiv-brand-templates" },
     { name = "flask" },
     { name = "flask-cors" },
     { name = "flask-sqlalchemy" },
@@ -450,6 +459,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "arxiv-brand-templates", git = "https://github.com/arXiv/design-system.git?subdirectory=templates&branch=master" },
     { name = "flask", specifier = ">=3.1.2,<4" },
     { name = "flask-cors", specifier = ">=6.0.5,<7" },
     { name = "flask-sqlalchemy", specifier = ">=3.1.1,<4" },
