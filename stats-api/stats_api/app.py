@@ -1,5 +1,6 @@
 import os
 
+import arxiv_brand
 from flask import Flask
 from flask_cors import CORS
 from sqlalchemy import URL
@@ -22,6 +23,9 @@ def create_app() -> Flask:
     db.init_app(app)
 
     CORS(app)
+
+    # The shared head/header/footer; links and assets follow this app's config.
+    arxiv_brand.init_app(app)
 
     app.register_blueprint(stats_ui)
     app.register_blueprint(stats_api)
