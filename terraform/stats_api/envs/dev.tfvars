@@ -8,3 +8,5 @@ db_database       = "site_usage"
 db_unix_socket    = "/cloudsql/arxiv-development:us-central1:stats-db"
 db_instance_name  = "arxiv-development:us-central1:stats-db"
 slack_channel_id  = "14064810228694129403"
+
+brand_static_base = "https://static.dev.arxiv.org/static/design-system/latest/"

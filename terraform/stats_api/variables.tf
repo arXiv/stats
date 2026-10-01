@@ -51,3 +51,8 @@ variable "slack_channel_id" {
   description = "Channel ID for slack notification channel resource"
   type        = string
 }
+
+variable "brand_static_base" {
+  description = "Design-system asset route the shared header and footer load (CSS, fonts, logos, chrome JS)"
+  type        = string
+}
