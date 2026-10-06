@@ -9,7 +9,7 @@ from tests.data.site_usage import (
 )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def app():
     app = create_app()
     assert (

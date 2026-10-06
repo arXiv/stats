@@ -1,12 +1,12 @@
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 
 from stats_api.repository import SiteUsageRepository
 
 
 def test_get_total_requests(app):
     with app.app_context():
-        start = datetime(2025, 11, 10, 10, tzinfo=UTC)
-        end = datetime(2025, 11, 12, 0, tzinfo=UTC)
+        start = datetime(2025, 11, 10, 10)
+        end = datetime(2025, 11, 12, 0)
 
         result = SiteUsageRepository.get_total_requests(start, end)
 
@@ -15,8 +15,8 @@ def test_get_total_requests(app):
 
 def test_get_hourly_requests(app):
     with app.app_context():
-        start = datetime(2025, 11, 10, 10, tzinfo=UTC)
-        end = datetime(2025, 11, 11, 4, tzinfo=UTC)
+        start = datetime(2025, 11, 10, 10)
+        end = datetime(2025, 11, 11, 4)
 
         result = SiteUsageRepository.get_hourly_requests(start, end)
 

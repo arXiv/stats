@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from unittest.mock import patch
+from zoneinfo import ZoneInfo
 
 from stats_api.models import MonthlyDownloads_
 from stats_api.service import StatsService
@@ -67,3 +68,23 @@ def test_combine_monthly_downloads(MockSiteUsageRepository, app):
             MonthlyDownloads_(month=date(2025, 11, 1), downloads=15000),
             MonthlyDownloads_(month=date(2025, 12, 1), downloads=20000),
         ]
+
+
+@patch("stats_api.service.SiteUsageRepository")
+def test_get_monthly_downloads_uses_utc_month(MockSiteUsageRepository, app):
+    with app.app_context():
+        MockSiteUsageRepository.get_total_downloads_for_hour_range.return_value = 7
+        MockSiteUsageRepository.get_monthly_downloads.return_value = []
+
+        # 2025-12-01 03:00 utc, still november in arxiv local time
+        result = StatsService.get_monthly_downloads(
+            datetime(2025, 11, 30, 22, tzinfo=ZoneInfo("America/New_York"))
+        )
+
+        MockSiteUsageRepository.get_total_downloads_for_hour_range.assert_called_once_with(
+            datetime(2025, 12, 1), datetime(2025, 12, 1, 3)
+        )
+        MockSiteUsageRepository.get_monthly_downloads.assert_called_once_with(
+            date(2025, 12, 1)
+        )
+        assert result == "month,downloads\r\n2025-12-01,7\r\n"
