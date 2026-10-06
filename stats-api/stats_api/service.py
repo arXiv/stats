@@ -3,6 +3,7 @@ from zoneinfo import ZoneInfo
 
 from dateutil.relativedelta import relativedelta
 from flask import current_app
+from werkzeug.exceptions import ServiceUnavailable
 
 from stats_api.models import (
     DownloadsPageData,
@@ -61,6 +62,9 @@ class StatsService:
     @staticmethod
     def get_downloads_page_data() -> DownloadsPageData:
         latest_hour = SiteUsageRepository.get_latest_hour_for_downloads()
+        if latest_hour is None:
+            raise ServiceUnavailable("No hourly download data is available yet.")
+
         arxiv_latest_hour = latest_hour.replace(tzinfo=UTC).astimezone(
             ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
         )
