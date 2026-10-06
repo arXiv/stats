@@ -50,3 +50,12 @@ def test_handle_non_http_exception_500(mock_service, client):
     assert response.status_code == 500
     assert b"Internal Server Error" in response.data
     assert "Generic sensitive runtime error" not in html
+
+
+def test_mobile_stats_home_link(client):
+    response = client.get("/stats/main")
+
+    assert (
+        '<a href="/stats/main" class="mobile-button is-hidden-desktop">'
+        in response.get_data(as_text=True)
+    )
