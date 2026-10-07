@@ -50,3 +50,45 @@ def test_handle_non_http_exception_500(mock_service, client):
     assert response.status_code == 500
     assert b"Internal Server Error" in response.data
     assert "Generic sensitive runtime error" not in html
+
+
+def test_main_route_cached_long(client):
+    response = client.get("/stats/main")
+
+    assert response.headers["Surrogate-Control"].startswith("max-age=31557600,")
+
+
+@patch("stats_api.service.StatsService.get_today_page_data")
+def test_today_route_cache_depends_on_date(mock_service, client):
+    mock_service.return_value = TodayPageData(
+        arxiv_current_time=datetime.now(),
+        arxiv_requested_date=date(2000, 1, 1),
+        arxiv_timezone="",
+        total_requests=10,
+    )
+
+    past = client.get("/stats/today?date=20000101")
+    current = client.get("/stats/today")
+
+    assert past.headers["Surrogate-Control"].startswith("max-age=31557600,")
+    assert current.headers["Surrogate-Control"].startswith("max-age=3600,")
+
+
+def test_error_responses_are_not_cached(client):
+    response = client.get("/stats/get_monthly_downloads")
+
+    assert response.status_code == 400
+    assert "Surrogate-Control" not in response.headers
+
+
+def test_static_files_cached_a_day(app, client):
+    static = app.static_url_path
+
+    response = client.get(f"{static}/css/arXiv.css")
+    missing = client.get(f"{static}/css/missing.css")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.headers["Surrogate-Control"].startswith("max-age=86400,")
+    assert response.headers["Surrogate-Key"] == "stats static"
+    assert missing.status_code == HTTPStatus.NOT_FOUND
+    assert "Surrogate-Control" not in missing.headers

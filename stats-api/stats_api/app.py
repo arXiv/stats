@@ -10,6 +10,7 @@ from stats_api.config.app import config_map
 from stats_api.config.database import db
 from stats_api.exception import handle_http_exception, handle_non_http_exception
 from stats_api.routes import stats_api, stats_ui
+from stats_api.utils import set_static_fastly_headers
 
 
 def create_app() -> Flask:
@@ -29,6 +30,8 @@ def create_app() -> Flask:
 
     app.register_blueprint(stats_ui)
     app.register_blueprint(stats_api)
+
+    app.after_request(set_static_fastly_headers)
 
     app.register_error_handler(Exception, handle_non_http_exception)
     app.register_error_handler(HTTPException, handle_http_exception)

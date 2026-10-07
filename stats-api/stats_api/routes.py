@@ -11,7 +11,10 @@ from werkzeug.exceptions import BadRequest
 
 from stats_api.service import StatsService
 from stats_api.utils import (
+    DAY,
+    HOUR,
     get_arxiv_current_time,
+    max_age_for_requested_date,
     set_fastly_headers,
     url_param_to_arxiv_datetime,
     url_param_to_date,
@@ -28,7 +31,7 @@ def main() -> ResponseReturnValue:
 
 
 @stats_ui.route("stats/today", methods=["GET"])
-@set_fastly_headers(keys=["stats", "today"])
+@set_fastly_headers(keys=["stats", "today"], max_age=max_age_for_requested_date)
 def today() -> ResponseReturnValue:
     """assumes supplied date is arxiv local"""
     current_time = get_arxiv_current_time()
@@ -42,7 +45,7 @@ def today() -> ResponseReturnValue:
 
 
 @stats_ui.route("stats/monthly_submissions", methods=["GET"])
-@set_fastly_headers(keys=["stats", "submissions", "monthly"])
+@set_fastly_headers(keys=["stats", "submissions", "monthly"], max_age=DAY)
 def monthly_submissions() -> ResponseReturnValue:
     data = StatsService.get_submissions_page_data(get_arxiv_current_time().date())
 
@@ -52,7 +55,7 @@ def monthly_submissions() -> ResponseReturnValue:
 
 
 @stats_ui.route("stats/monthly_downloads", methods=["GET"])
-@set_fastly_headers(keys=["stats", "downloads", "monthly"])
+@set_fastly_headers(keys=["stats", "downloads", "monthly"], max_age=HOUR)
 def monthly_downloads() -> ResponseReturnValue:
     data = StatsService.get_downloads_page_data()
 
@@ -62,7 +65,9 @@ def monthly_downloads() -> ResponseReturnValue:
 
 
 @stats_api.route("stats/get_hourly_requests", methods=["GET"])
-@set_fastly_headers(keys=["stats", "requests", "hourly"])
+@set_fastly_headers(
+    keys=["stats", "requests", "hourly"], max_age=max_age_for_requested_date
+)
 def get_hourly_requests() -> ResponseReturnValue:
     """assumes supplied date is arxiv local"""
     date = request.args.get(
@@ -78,7 +83,7 @@ def get_hourly_requests() -> ResponseReturnValue:
 
 
 @stats_api.route("stats/get_monthly_submissions", methods=["GET"])
-@set_fastly_headers(keys=["stats", "submissions", "monthly"])
+@set_fastly_headers(keys=["stats", "submissions", "monthly"], max_age=DAY)
 def get_monthly_submissions() -> ResponseReturnValue:
     data = StatsService.get_monthly_submissions()
 
