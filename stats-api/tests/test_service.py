@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 from werkzeug.exceptions import ServiceUnavailable
 
-from stats_api.models import MonthlyDownloads_
+from stats_api.models import HourlyRequests_, MonthlyDownloads_
 from stats_api.service import StatsService
 
 
@@ -79,3 +79,22 @@ def test_get_downloads_page_data_no_data(MockSiteUsageRepository, app):
 
         with pytest.raises(ServiceUnavailable):
             StatsService.get_downloads_page_data()
+
+
+@patch("stats_api.service.SiteUsageRepository")
+def test_get_hourly_requests_csv_hours_are_arxiv_local(MockSiteUsageRepository, app):
+    """today_js.html labels each bar with characters 11-12 of the hour, as written"""
+    with app.app_context():
+        # 2025-11-02 is the end of dst; 01:00 happens twice in arxiv local time
+        MockSiteUsageRepository.get_hourly_requests.return_value = [
+            HourlyRequests_(start_dttm=datetime(2025, 11, 2, 5), request_count=1),
+            HourlyRequests_(start_dttm=datetime(2025, 11, 2, 6), request_count=2),
+        ]
+
+        result = StatsService.get_hourly_requests(date(2025, 11, 2))
+
+        assert result.splitlines() == [
+            "hour,requests",
+            "2025-11-02 01:00:00-04:00,1",
+            "2025-11-02 01:00:00-05:00,2",
+        ]

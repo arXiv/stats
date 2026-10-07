@@ -30,6 +30,10 @@ jobs:
         run: |
           uv run --directory stats-api ruff check --output-format=github .
 
+      - name: Format check
+        run: |
+          uv run --directory stats-api ruff format --check .
+
       - name: Type check
         run: |
           uv run --directory stats-api ty check --output-format=github .

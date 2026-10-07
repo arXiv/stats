@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import Field, field_validator
+from pydantic import field_validator
 from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -37,7 +37,6 @@ class Database(BaseConfig):
 
 
 class Config(BaseConfig):
-    ENV: str = Field(...)
     HOST: str = "0.0.0.0"
     PORT: int = 8080
     DEBUG: bool = False
@@ -45,21 +44,20 @@ class Config(BaseConfig):
     ARXIV_START_DATE: date = date(1991, 8, 1)
     ARXIV_TIMEZONE: str = "America/New_York"
     TOTAL_MIGRATED_PAPERS: int = 2431
-    TOTAL_DELETED_PAPERS: int = 156  # TODO add to tfvars for easier updates
+    TOTAL_DELETED_PAPERS: int
 
     FASTLY_MAX_AGE: int = 31557600
 
-    DB: Database = Field(...)
+    DB: Database
 
     PREFERRED_URL_SCHEME: str = "https"  # Flask configuration
-    SERVER_NAME: str = "arxiv.org"  # Flask configuration
-    BASE_SERVER: str = SERVER_NAME
-    HELP_SERVER: str = "info.arxiv.org"
-    AUTH_SERVER: str = BASE_SERVER
+    SERVER_NAME: str  # Flask configuration
+    BASE_SERVER: str
+    HELP_SERVER: str
+    AUTH_SERVER: str
     URLS: dict[str, str] | None = None
 
-    # Root URL of the design-system asset route (CSS, fonts, logos, chrome JS), set per
-    # deployment from terraform (envs/*.tfvars); None is the templates' default, production.
+    # Root URL of the design-system asset route (CSS, fonts, logos, chrome JS)
     BRAND_STATIC_BASE: str | None = None
 
     @field_validator("URLS")
@@ -75,32 +73,3 @@ class Config(BaseConfig):
             url.name: f"{info.data.get('PREFERRED_URL_SCHEME')}://{domain_map[url.domain]}{url.rel_path}"
             for url in urls
         }
-
-
-class TestConfig(Config):
-    model_config = SettingsConfigDict(
-        env_file=None,
-    )
-
-    ENV: str = "TEST"
-    DEBUG: bool = True
-    TESTING: bool = True  # Flask configuration
-
-    DB: Database = Database(drivername="sqlite", database=":memory:")
-
-
-class DevConfig(Config):
-    DEBUG: bool = True
-    SERVER_NAME: str = "dev.arxiv.org"
-    HELP_SERVER: str = "info.dev.arxiv.org"
-
-
-class ProdConfig(Config):
-    pass
-
-
-config_map: dict[str, type[Config]] = {
-    "TEST": TestConfig,
-    "DEV": DevConfig,
-    "PROD": ProdConfig,
-}

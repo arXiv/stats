@@ -79,6 +79,26 @@ def test_get_hourly_requests_csv_future_date(client):
     assert "Surrogate-Control" not in response.headers
 
 
+@patch("stats_api.service.StatsService.get_downloads_page_data")
+def test_handle_non_http_exception_logs_traceback(mock_service, client, caplog):
+    mock_service.side_effect = RuntimeError("Generic sensitive runtime error")
+
+    client.get("/stats/monthly_downloads")
+
+    [record] = [r for r in caplog.records if r.levelname == "ERROR"]
+    assert record.exc_info[0] is RuntimeError
+    assert "Generic sensitive runtime error" in caplog.text
+
+
+def test_mobile_stats_home_link(client):
+    response = client.get("/stats/main")
+
+    assert (
+        '<a href="/stats/main" class="mobile-button is-hidden-desktop">'
+        in response.get_data(as_text=True)
+    )
+
+
 def test_static_files_are_served_under_stats(client):
     page = client.get("/stats/main").get_data(as_text=True)
 
