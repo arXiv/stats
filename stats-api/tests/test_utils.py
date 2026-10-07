@@ -1,13 +1,10 @@
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
-from flask import Response
-
 from stats_api.models import HourlyRequests_
 from stats_api.utils import (
     format_as_csv,
     get_utc_start_and_end_times,
-    set_fastly_headers,
     url_param_to_arxiv_datetime,
     url_param_to_date,
     utc_to_arxiv_local,
@@ -27,18 +24,6 @@ def test_url_param_to_arxiv_datetime(app):
         result = url_param_to_arxiv_datetime("2024121215")
 
         assert result == datetime(2024, 12, 12, 15, tzinfo=ZoneInfo("America/New_York"))
-
-
-def test_set_fastly_headers_with_keys(app):
-    with app.app_context():
-
-        @set_fastly_headers(keys=["first-mock-key", "second-mock-key"])
-        def mock_function():
-            return Response()
-
-        result = mock_function()
-
-        assert result.headers["Surrogate-Key"] == "first-mock-key second-mock-key"
 
 
 def test_get_utc_start_and_end_times_est(app):

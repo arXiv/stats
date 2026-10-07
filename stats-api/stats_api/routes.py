@@ -12,7 +12,6 @@ from werkzeug.exceptions import BadRequest
 from stats_api.service import StatsService
 from stats_api.utils import (
     get_arxiv_current_time,
-    set_fastly_headers,
     url_param_to_arxiv_datetime,
     url_param_to_date,
 )
@@ -22,13 +21,11 @@ stats_api = Blueprint("stats_api", __name__, url_prefix="/")
 
 
 @stats_ui.route("stats/main", methods=["GET"])
-@set_fastly_headers(keys=["stats", "main"])
 def main() -> ResponseReturnValue:
     return make_response(render_template("main.html"), HTTPStatus.OK)
 
 
 @stats_ui.route("stats/today", methods=["GET"])
-@set_fastly_headers(keys=["stats", "today"])
 def today() -> ResponseReturnValue:
     """assumes supplied date is arxiv local"""
     current_time = get_arxiv_current_time()
@@ -45,7 +42,6 @@ def today() -> ResponseReturnValue:
 
 
 @stats_ui.route("stats/monthly_submissions", methods=["GET"])
-@set_fastly_headers(keys=["stats", "submissions", "monthly"])
 def monthly_submissions() -> ResponseReturnValue:
     data = StatsService.get_submissions_page_data(get_arxiv_current_time().date())
 
@@ -55,7 +51,6 @@ def monthly_submissions() -> ResponseReturnValue:
 
 
 @stats_ui.route("stats/monthly_downloads", methods=["GET"])
-@set_fastly_headers(keys=["stats", "downloads", "monthly"])
 def monthly_downloads() -> ResponseReturnValue:
     data = StatsService.get_downloads_page_data()
 
@@ -65,7 +60,6 @@ def monthly_downloads() -> ResponseReturnValue:
 
 
 @stats_api.route("stats/get_hourly_requests", methods=["GET"])
-@set_fastly_headers(keys=["stats", "requests", "hourly"])
 def get_hourly_requests() -> ResponseReturnValue:
     """assumes supplied date is arxiv local"""
     today_ = get_arxiv_current_time().date()
@@ -83,7 +77,6 @@ def get_hourly_requests() -> ResponseReturnValue:
 
 
 @stats_api.route("stats/get_monthly_submissions", methods=["GET"])
-@set_fastly_headers(keys=["stats", "submissions", "monthly"])
 def get_monthly_submissions() -> ResponseReturnValue:
     data = StatsService.get_monthly_submissions()
 
@@ -94,7 +87,6 @@ def get_monthly_submissions() -> ResponseReturnValue:
 
 
 @stats_api.route("stats/get_monthly_downloads", methods=["GET"])
-@set_fastly_headers(keys=["stats", "downloads", "monthly"])
 def get_monthly_downloads() -> ResponseReturnValue:
     """requires latest_hour arg, assumes it is arxiv local"""
     latest_hour = request.args.get(

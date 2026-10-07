@@ -1,8 +1,7 @@
 import csv
 import io
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from datetime import UTC, date, datetime
-from functools import wraps
 from zoneinfo import ZoneInfo
 
 from flask import current_app
@@ -19,23 +18,6 @@ def url_param_to_arxiv_datetime(param: str) -> datetime:
     return datetime.strptime(param, "%Y%m%d%H").replace(
         tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
     )
-
-
-def set_fastly_headers(keys: list[str] = ["stats"]):
-    def decorator(function: Callable) -> Callable:
-        @wraps(function)
-        def decorated_function(*args, **kwargs):
-            response = function(*args, **kwargs)
-            max_age = current_app.config["FASTLY_MAX_AGE"]
-
-            response.headers["Surrogate-Control"] = f"max-age={max_age}"
-            response.headers["Surrogate-Key"] = " ".join(keys)
-
-            return response
-
-        return decorated_function
-
-    return decorator
 
 
 def get_arxiv_current_time() -> datetime:

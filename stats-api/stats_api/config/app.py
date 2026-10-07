@@ -46,8 +46,6 @@ class Config(BaseConfig):
     TOTAL_MIGRATED_PAPERS: int = 2431
     TOTAL_DELETED_PAPERS: int
 
-    FASTLY_MAX_AGE: int = 31557600
-
     DB: Database
 
     PREFERRED_URL_SCHEME: str = "https"  # Flask configuration
