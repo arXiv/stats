@@ -15,10 +15,6 @@ on:
         description: Image name
         required: false
         type: string
-      port:
-        description: Container port
-        required: false
-        type: string
       target:
         description: Multistage build target
         required: false
@@ -59,7 +55,7 @@ jobs:
 
           BRANCH_TAG="$(echo "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" | sed 's/[^a-zA-Z0-9._-]/-/g' | sed 's/^[.-]*//' | cut -c 1-128)"
 
-          docker build --target ${{ inputs.target }} --build-arg PORT=${{ inputs.port }} -f ${{ inputs.dockerfile }} \
+          docker build --target ${{ inputs.target }} -f ${{ inputs.dockerfile }} \
           --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:latest \
           -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:${{ inputs.commit_sha || github.sha }} \
           -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:${BRANCH_TAG} \
