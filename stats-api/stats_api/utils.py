@@ -45,22 +45,30 @@ def get_arxiv_current_time() -> datetime:
 def get_utc_start_and_end_times(date: date) -> tuple[datetime, datetime]:
     """take a non-aware date object, assume arxiv local time,
     return start and end datetimes representing the beginning of the
-    first and last hour of that day, utc
+    first and last hour of that day, as timezone naive utc
     """
-    start = datetime(
-        date.year,
-        date.month,
-        date.day,
-        0,
-        tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"]),
-    ).astimezone(UTC)
-    end = datetime(
-        date.year,
-        date.month,
-        date.day,
-        23,
-        tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"]),
-    ).astimezone(UTC)
+    start = (
+        datetime(
+            date.year,
+            date.month,
+            date.day,
+            0,
+            tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"]),
+        )
+        .astimezone(UTC)
+        .replace(tzinfo=None)
+    )
+    end = (
+        datetime(
+            date.year,
+            date.month,
+            date.day,
+            23,
+            tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"]),
+        )
+        .astimezone(UTC)
+        .replace(tzinfo=None)
+    )
     return start, end
 
 

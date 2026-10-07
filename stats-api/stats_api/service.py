@@ -98,6 +98,8 @@ class StatsService:
 
     @staticmethod
     def get_monthly_downloads(hour: datetime) -> str:
+        hour = hour.astimezone(UTC).replace(tzinfo=None)
+
         total_latest_month = SiteUsageRepository.get_total_downloads_for_hour_range(
             datetime(hour.year, hour.month, 1), hour
         )

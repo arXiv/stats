@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 from http import HTTPStatus
 from unittest.mock import patch
@@ -50,6 +51,21 @@ def test_handle_non_http_exception_500(mock_service, client):
     assert response.status_code == 500
     assert b"Internal Server Error" in response.data
     assert "Generic sensitive runtime error" not in html
+
+
+def test_monthly_downloads_csv_total_matches_page_total(client):
+    page = client.get("/stats/monthly_downloads").get_data(as_text=True)
+    page_total = re.search(r"Total number of downloads.*?= ([\d,]+)", page, re.DOTALL)
+    latest_hour = re.search(r"latest_hour=(\d+)", page)
+    assert page_total
+    assert latest_hour
+
+    csv = client.get(
+        f"/stats/get_monthly_downloads?latest_hour={latest_hour.group(1)}"
+    ).get_data(as_text=True)
+    csv_total = sum(int(row.split(",")[1]) for row in csv.splitlines()[1:])
+
+    assert csv_total == int(page_total.group(1).replace(",", ""))
 
 
 def test_today_route_date_without_data(client):

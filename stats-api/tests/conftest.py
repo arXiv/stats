@@ -25,7 +25,7 @@ def make_test_config(**overrides: Any) -> Config:
     return Config(_env_file=None, **(values | overrides))
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def app():
     app = create_app(make_test_config())
     assert (
