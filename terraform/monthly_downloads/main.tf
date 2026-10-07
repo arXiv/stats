@@ -117,10 +117,14 @@ resource "google_pubsub_topic" "topic" {
   name = "stats-monthly-downloads"
 }
 
+# aggregate-hourly-downloads runs 3 hours behind and finishes within 10 minutes, so on the 1st
+# the previous month's last hour is aggregated by ~2:11am and the stats page starts counting
+# the new month at 3:01am. The 2:30am run stores the complete month between the two; the
+# 1:30am run is a fallback in case it fails.
 resource "google_cloud_scheduler_job" "invoke_cloud_function" {
   name        = "invoke-stats-monthly-downloads"
   description = "Publish a message to invoke the monthly-downloads cloud function"
-  schedule    = "0 1 1-3 * *" # at 1am on the first, second, and third day of each month
+  schedule    = "30 1,2 1-3 * *" # at 1:30am and 2:30am on the first, second, and third day of each month
   time_zone   = "UTC"
 
   pubsub_target {
