@@ -66,3 +66,12 @@ def test_monthly_downloads_csv_total_matches_page_total(client):
     csv_total = sum(int(row.split(",")[1]) for row in csv.splitlines()[1:])
 
     assert csv_total == int(page_total.group(1).replace(",", ""))
+
+
+def test_static_files_are_served_under_stats(client):
+    page = client.get("/stats/main").get_data(as_text=True)
+
+    assert 'href="/stats/static/css/arXiv.css' in page
+    assert 'href="/static/' not in page
+    assert client.get("/stats/static/css/arXiv.css").status_code == HTTPStatus.OK
+    assert client.get("/static/css/arXiv.css").status_code == HTTPStatus.NOT_FOUND
