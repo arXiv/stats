@@ -5,8 +5,7 @@ Application for public usage statistics pages on arXiv.org.
 ## Docker setup (preferred)
 
 1. Install [Docker](https://docs.docker.com/engine/install/)
-1. Export the two values that are specific to you. The dev settings, and a database proxy for the
-   dev `stats-db`, are in `docker-compose.local.yaml`, so no `.env` file is needed.
+1. Export the following environment variables
    ```
    export DB__PASSWORD={password}  # the stats-db readonly password, in GCP Secret Manager
    export LOCAL_PATH_TO_CREDS={path to a GCP service account key json}
@@ -32,9 +31,7 @@ Application for public usage statistics pages on arXiv.org.
 
 ## Environment variables
 
-There is one config, `stats_api.config.app.Config`. Constants are declared there with defaults; values that differ between environments have no default and must be set, or the app will not start. Deployed environments set them in terraform (`terraform/stats_api/envs/*.tfvars`).
-
-For a native setup, set them in a `.env` file or in your local environment (i.e. your shell or terminal session). Docker needs neither: see [Docker setup](#docker-setup-preferred).
+For a native setup, set environment variables in a `.env` file or in your local environment.
 
 1. If using a `.env` file, create a file named `.env` in `stats-api/`
 2. Set the following variables in that file or in your local environment: 
