@@ -52,6 +52,33 @@ def test_handle_non_http_exception_500(mock_service, client):
     assert "Generic sensitive runtime error" not in html
 
 
+def test_today_route_date_without_data(client):
+    response = client.get("/stats/today?date=20000101")
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_today_route_future_date(client):
+    response = client.get("/stats/today?date=20991231")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Surrogate-Control" not in response.headers
+
+
+def test_get_hourly_requests_csv_date_without_data(client):
+    response = client.get("/stats/get_hourly_requests?date=20000101")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_data(as_text=True) == ""
+
+
+def test_get_hourly_requests_csv_future_date(client):
+    response = client.get("/stats/get_hourly_requests?date=20991231")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Surrogate-Control" not in response.headers
+
+
 @patch("stats_api.service.StatsService.get_downloads_page_data")
 def test_handle_non_http_exception_logs_traceback(mock_service, client, caplog):
     mock_service.side_effect = RuntimeError("Generic sensitive runtime error")

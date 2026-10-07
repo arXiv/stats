@@ -1,6 +1,9 @@
 from datetime import date, datetime
 from unittest.mock import patch
 
+import pytest
+from werkzeug.exceptions import ServiceUnavailable
+
 from stats_api.models import HourlyRequests_, MonthlyDownloads_
 from stats_api.service import StatsService
 
@@ -67,6 +70,15 @@ def test_combine_monthly_downloads(MockSiteUsageRepository, app):
             MonthlyDownloads_(month=date(2025, 11, 1), downloads=15000),
             MonthlyDownloads_(month=date(2025, 12, 1), downloads=20000),
         ]
+
+
+@patch("stats_api.service.SiteUsageRepository")
+def test_get_downloads_page_data_no_data(MockSiteUsageRepository, app):
+    with app.app_context():
+        MockSiteUsageRepository.get_latest_hour_for_downloads.return_value = None
+
+        with pytest.raises(ServiceUnavailable):
+            StatsService.get_downloads_page_data()
 
 
 @patch("stats_api.service.SiteUsageRepository")

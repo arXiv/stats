@@ -18,7 +18,7 @@ class SiteUsageRepository:
     @staticmethod
     def get_total_requests(start: datetime, end: datetime) -> int:
         return db.session.execute(
-            db.select(func.sum(HourlyRequests.request_count)).where(
+            db.select(func.coalesce(func.sum(HourlyRequests.request_count), 0)).where(
                 HourlyRequests.source_id == 0,
                 HourlyRequests.start_dttm >= start,
                 HourlyRequests.start_dttm <= end,
@@ -44,7 +44,7 @@ class SiteUsageRepository:
     @staticmethod
     def get_total_submissions(date: date) -> int:
         return db.session.execute(
-            db.select(func.sum(MonthlySubmissions.count)).where(
+            db.select(func.coalesce(func.sum(MonthlySubmissions.count), 0)).where(
                 MonthlySubmissions.month <= date
             )
         ).scalar()
@@ -56,7 +56,7 @@ class SiteUsageRepository:
         return [MonthlySubmissions_.model_validate(row) for row in results]
 
     @staticmethod
-    def get_latest_hour_for_downloads() -> datetime:
+    def get_latest_hour_for_downloads() -> datetime | None:
         return db.session.execute(
             db.select(func.max(HourlyDownloads.start_dttm))
         ).scalar()
@@ -66,7 +66,7 @@ class SiteUsageRepository:
         start_hour: datetime, end_hour: datetime
     ) -> int:
         return db.session.execute(
-            db.select(func.sum(HourlyDownloads.primary_count))
+            db.select(func.coalesce(func.sum(HourlyDownloads.primary_count), 0))
             .where(HourlyDownloads.start_dttm >= start_hour)
             .where(HourlyDownloads.start_dttm <= end_hour)
         ).scalar()
@@ -75,7 +75,7 @@ class SiteUsageRepository:
     def get_total_downloads(month: date) -> int:
         """month object should represent the first day of that month"""
         return db.session.execute(
-            db.select(func.sum(MonthlyDownloads.downloads)).where(
+            db.select(func.coalesce(func.sum(MonthlyDownloads.downloads), 0)).where(
                 MonthlyDownloads.month < month
             )
         ).scalar()
