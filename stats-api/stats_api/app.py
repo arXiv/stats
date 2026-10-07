@@ -11,7 +11,9 @@ from stats_api.routes import stats_api, stats_ui
 
 
 def create_app(config: Config | None = None) -> Flask:
-    app = Flask(__name__)
+    # Under /stats so arxiv.org's /stats/* route reaches these files too; /static/* belongs
+    # to other apps there.
+    app = Flask(__name__, static_url_path="/stats/static")
 
     app.config.from_object(config or Config())
 
