@@ -47,8 +47,6 @@ class Config(BaseConfig):
     TOTAL_MIGRATED_PAPERS: int = 2431
     TOTAL_DELETED_PAPERS: int = 156  # TODO add to tfvars for easier updates
 
-    FASTLY_MAX_AGE: int = 31557600
-
     DB: Database = Field(...)
 
     PREFERRED_URL_SCHEME: str = "https"  # Flask configuration
