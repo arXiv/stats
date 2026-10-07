@@ -61,3 +61,12 @@ def test_handle_non_http_exception_logs_traceback(mock_service, client, caplog):
     [record] = [r for r in caplog.records if r.levelname == "ERROR"]
     assert record.exc_info[0] is RuntimeError
     assert "Generic sensitive runtime error" in caplog.text
+
+
+def test_static_files_are_served_under_stats(client):
+    page = client.get("/stats/main").get_data(as_text=True)
+
+    assert 'href="/stats/static/css/arXiv.css' in page
+    assert 'href="/static/' not in page
+    assert client.get("/stats/static/css/arXiv.css").status_code == HTTPStatus.OK
+    assert client.get("/static/css/arXiv.css").status_code == HTTPStatus.NOT_FOUND
