@@ -92,3 +92,12 @@ def test_static_files_cached_a_day(app, client):
     assert response.headers["Surrogate-Key"] == "stats static"
     assert missing.status_code == HTTPStatus.NOT_FOUND
     assert "Surrogate-Control" not in missing.headers
+
+
+def test_static_files_are_served_under_stats(client):
+    page = client.get("/stats/main").get_data(as_text=True)
+
+    assert 'href="/stats/static/css/arXiv.css' in page
+    assert 'href="/static/' not in page
+    assert client.get("/stats/static/css/arXiv.css").status_code == HTTPStatus.OK
+    assert client.get("/static/css/arXiv.css").status_code == HTTPStatus.NOT_FOUND
