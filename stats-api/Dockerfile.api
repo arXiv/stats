@@ -35,19 +35,3 @@ ENTRYPOINT ["gunicorn", \
             "--access-logfile", "-", \
             "--error-logfile", "-", \
             "stats_api.app:create_app()"]
-
-################ test ################
-FROM builder AS test
-
-ENV PATH="/home/nonroot/stats-api/.venv/bin:$PATH"
-
-# install test dependencies
-WORKDIR /home/nonroot/stats-api
-RUN uv sync --locked
-
-# copy tests
-COPY stats-api/tests ./tests
-
-# run any tests that have dependencies
-# TODO: add integration tests
-ENTRYPOINT ["pytest", "tests"]

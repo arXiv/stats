@@ -31,6 +31,9 @@ def today() -> ResponseReturnValue:
     current_time = get_arxiv_current_time()
     date_ = request.args.get("date", current_time.date(), type=url_param_to_date)
 
+    if date_ > current_time.date():
+        raise BadRequest("The requested date is in the future.")
+
     data = StatsService.get_today_page_data(current_time, date_)
 
     return make_response(
@@ -59,9 +62,11 @@ def monthly_downloads() -> ResponseReturnValue:
 @stats_api.route("stats/get_hourly_requests", methods=["GET"])
 def get_hourly_requests() -> ResponseReturnValue:
     """assumes supplied date is arxiv local"""
-    date = request.args.get(
-        "date", get_arxiv_current_time().date(), type=url_param_to_date
-    )
+    today_ = get_arxiv_current_time().date()
+    date = request.args.get("date", today_, type=url_param_to_date)
+
+    if date > today_:
+        raise BadRequest("The requested date is in the future.")
 
     data = StatsService.get_hourly_requests(date)
 

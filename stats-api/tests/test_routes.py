@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 from http import HTTPStatus
 from unittest.mock import patch
@@ -92,6 +93,68 @@ def test_static_files_cached_a_day(app, client):
     assert response.headers["Surrogate-Key"] == "stats static"
     assert missing.status_code == HTTPStatus.NOT_FOUND
     assert "Surrogate-Control" not in missing.headers
+
+
+def test_monthly_downloads_csv_total_matches_page_total(client):
+    page = client.get("/stats/monthly_downloads").get_data(as_text=True)
+    page_total = re.search(r"Total number of downloads.*?= ([\d,]+)", page, re.DOTALL)
+    latest_hour = re.search(r"latest_hour=(\d+)", page)
+    assert page_total
+    assert latest_hour
+
+    csv = client.get(
+        f"/stats/get_monthly_downloads?latest_hour={latest_hour.group(1)}"
+    ).get_data(as_text=True)
+    csv_total = sum(int(row.split(",")[1]) for row in csv.splitlines()[1:])
+
+    assert csv_total == int(page_total.group(1).replace(",", ""))
+
+
+def test_today_route_date_without_data(client):
+    response = client.get("/stats/today?date=20000101")
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_today_route_future_date(client):
+    response = client.get("/stats/today?date=20991231")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Surrogate-Control" not in response.headers
+
+
+def test_get_hourly_requests_csv_date_without_data(client):
+    response = client.get("/stats/get_hourly_requests?date=20000101")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_data(as_text=True) == ""
+
+
+def test_get_hourly_requests_csv_future_date(client):
+    response = client.get("/stats/get_hourly_requests?date=20991231")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Surrogate-Control" not in response.headers
+
+
+@patch("stats_api.service.StatsService.get_downloads_page_data")
+def test_handle_non_http_exception_logs_traceback(mock_service, client, caplog):
+    mock_service.side_effect = RuntimeError("Generic sensitive runtime error")
+
+    client.get("/stats/monthly_downloads")
+
+    [record] = [r for r in caplog.records if r.levelname == "ERROR"]
+    assert record.exc_info[0] is RuntimeError
+    assert "Generic sensitive runtime error" in caplog.text
+
+
+def test_mobile_stats_home_link(client):
+    response = client.get("/stats/main")
+
+    assert (
+        '<a href="/stats/main" class="mobile-button is-hidden-desktop">'
+        in response.get_data(as_text=True)
+    )
 
 
 def test_static_files_are_served_under_stats(client):

@@ -1,12 +1,12 @@
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 
 from stats_api.repository import SiteUsageRepository
 
 
 def test_get_total_requests(app):
     with app.app_context():
-        start = datetime(2025, 11, 10, 10, tzinfo=UTC)
-        end = datetime(2025, 11, 12, 0, tzinfo=UTC)
+        start = datetime(2025, 11, 10, 10)
+        end = datetime(2025, 11, 12, 0)
 
         result = SiteUsageRepository.get_total_requests(start, end)
 
@@ -15,8 +15,8 @@ def test_get_total_requests(app):
 
 def test_get_hourly_requests(app):
     with app.app_context():
-        start = datetime(2025, 11, 10, 10, tzinfo=UTC)
-        end = datetime(2025, 11, 11, 4, tzinfo=UTC)
+        start = datetime(2025, 11, 10, 10)
+        end = datetime(2025, 11, 11, 4)
 
         result = SiteUsageRepository.get_hourly_requests(start, end)
 
@@ -65,3 +65,19 @@ def test_get_monthly_downloads(app):
         result = SiteUsageRepository.get_monthly_downloads(date(2025, 12, 1))
 
         assert len(result) == 2
+
+
+def test_totals_are_zero_when_no_rows_match(app):
+    with app.app_context():
+        start = datetime(2099, 1, 1)
+        end = datetime(2099, 1, 2)
+
+        assert SiteUsageRepository.get_total_requests(start, end) == 0
+        assert SiteUsageRepository.get_total_submissions(date(1990, 1, 1)) == 0
+        assert (
+            SiteUsageRepository.get_total_downloads_for_hour_range(
+                datetime(2099, 1, 1), datetime(2099, 1, 2)
+            )
+            == 0
+        )
+        assert SiteUsageRepository.get_total_downloads(date(1990, 1, 1)) == 0

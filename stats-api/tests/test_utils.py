@@ -1,4 +1,4 @@
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from stats_api.models import HourlyRequests_
@@ -30,16 +30,16 @@ def test_get_utc_start_and_end_times_est(app):
     with app.app_context():
         start, end = get_utc_start_and_end_times(date(2025, 11, 11))
 
-        assert start == datetime(2025, 11, 11, 5, tzinfo=UTC)
-        assert end == datetime(2025, 11, 12, 4, tzinfo=UTC)
+        assert start == datetime(2025, 11, 11, 5)
+        assert end == datetime(2025, 11, 12, 4)
 
 
 def test_get_utc_start_and_end_times_edt(app):
     with app.app_context():
         start, end = get_utc_start_and_end_times(date(2025, 4, 1))
 
-        assert start == datetime(2025, 4, 1, 4, tzinfo=UTC)
-        assert end == datetime(2025, 4, 2, 3, tzinfo=UTC)
+        assert start == datetime(2025, 4, 1, 4)
+        assert end == datetime(2025, 4, 2, 3)
 
 
 def test_format_as_csv():
@@ -54,6 +54,12 @@ def test_format_as_csv():
         result
         == "hour,requests\r\n2025-10-10 00:00:00,3000000\r\n2025-10-10 01:00:00,4000000\r\n"
     )
+
+
+def test_format_as_csv_empty():
+    result = format_as_csv([])
+
+    assert result == ""
 
 
 def test_utc_to_arxiv_local(app):
