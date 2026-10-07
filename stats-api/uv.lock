@@ -445,7 +445,6 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pymysql", extra = ["rsa"] },
-    { name = "pytest" },
     { name = "python-dateutil" },
     { name = "stats-entities" },
 ]
@@ -467,7 +466,6 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pydantic-settings", specifier = ">=2.14.2" },
     { name = "pymysql", extras = ["rsa"], specifier = ">=1.2.0" },
-    { name = "pytest", specifier = ">=8.4.2" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0" },
     { name = "stats-entities", editable = "../stats-entities" },
 ]
