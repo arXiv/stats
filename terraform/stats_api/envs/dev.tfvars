@@ -1,6 +1,5 @@
 gcp_project_id    = "arxiv-development"
 gcp_region        = "us-central1"
-env               = "DEV"
 db_drivername     = "mysql+pymysql"
 db_username       = "readonly"
 db_pw_secret_name = "stats-db-readonly-pw"
@@ -10,3 +9,9 @@ db_instance_name  = "arxiv-development:us-central1:stats-db"
 slack_channel_id  = "14064810228694129403"
 
 brand_static_base = "https://static.dev.arxiv.org/static/design-system/latest/"
+
+server_name = "dev.arxiv.org"
+base_server = "dev.arxiv.org"
+auth_server = "dev.arxiv.org"
+help_server = "info.dev.arxiv.org"
+debug       = true
