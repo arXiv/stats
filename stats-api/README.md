@@ -23,8 +23,21 @@ Application for public usage statistics pages on arXiv.org.
    ```
    cd stats-api
    uv sync
-   python stats_api/app.py
+   uv run flask --app stats_api.app:create_app run --port 8080
    ```
+
+## Development
+
+`uv sync` installs the dev dependencies (pytest, ruff, ty) alongside the app's; the Docker
+image installs only the app's (`uv sync --no-dev`).
+
+```
+cd stats-api
+make test    # pytest
+make lint    # ruff check
+make type    # ty check
+make format  # ruff format
+```
 
 ## Environment variables
 
