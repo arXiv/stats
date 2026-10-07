@@ -77,3 +77,12 @@ def test_get_hourly_requests_csv_future_date(client):
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Surrogate-Control" not in response.headers
+
+
+def test_static_files_are_served_under_stats(client):
+    page = client.get("/stats/main").get_data(as_text=True)
+
+    assert 'href="/stats/static/css/arXiv.css' in page
+    assert 'href="/static/' not in page
+    assert client.get("/stats/static/css/arXiv.css").status_code == HTTPStatus.OK
+    assert client.get("/static/css/arXiv.css").status_code == HTTPStatus.NOT_FOUND
