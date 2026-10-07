@@ -52,6 +52,17 @@ def test_handle_non_http_exception_500(mock_service, client):
     assert "Generic sensitive runtime error" not in html
 
 
+@patch("stats_api.service.StatsService.get_downloads_page_data")
+def test_handle_non_http_exception_logs_traceback(mock_service, client, caplog):
+    mock_service.side_effect = RuntimeError("Generic sensitive runtime error")
+
+    client.get("/stats/monthly_downloads")
+
+    [record] = [r for r in caplog.records if r.levelname == "ERROR"]
+    assert record.exc_info[0] is RuntimeError
+    assert "Generic sensitive runtime error" in caplog.text
+
+
 def test_mobile_stats_home_link(client):
     response = client.get("/stats/main")
 

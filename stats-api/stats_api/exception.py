@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import current_app, render_template
 from werkzeug.exceptions import HTTPException, InternalServerError
 
 
@@ -8,6 +8,8 @@ def handle_non_http_exception(e):
     """
     if isinstance(e, HTTPException):
         return e
+
+    current_app.logger.exception("Unhandled exception", exc_info=e)
 
     return render_template("generic_exception.html", error=InternalServerError()), 500
 
