@@ -1,6 +1,11 @@
+import os
+
 import pytest
 
 from stats_api.app import create_app
+
+os.environ["ENV"] = "TEST"
+
 from tests.data.site_usage import (
     mock_hourly_downloads,
     mock_hourly_requests,

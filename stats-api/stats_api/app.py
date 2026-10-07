@@ -15,7 +15,12 @@ from stats_api.routes import stats_api, stats_ui
 def create_app() -> Flask:
     app = Flask(__name__)
 
-    environment = os.getenv("ENV", "TEST")
+    # no default: a missing ENV must not silently run the TEST config (sqlite, DEBUG)
+    environment = os.getenv("ENV")
+    if environment not in config_map:
+        raise RuntimeError(
+            f"ENV must be one of {', '.join(config_map)}; got {environment!r}"
+        )
     app.config.from_object(config_map[environment]())
 
     app.config["SQLALCHEMY_DATABASE_URI"] = URL.create(**app.config["DB"].model_dump())

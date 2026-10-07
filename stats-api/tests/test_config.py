@@ -1,3 +1,6 @@
+import pytest
+
+from stats_api.app import create_app
 from stats_api.config.app import Config, Database, DevConfig, ProdConfig
 from stats_api.config.app import TestConfig as _TestConfig  # not a pytest test class
 from stats_api.config.urls import _URLS
@@ -40,3 +43,14 @@ def test_dev_urls_use_the_dev_help_server():
 
     assert urls["help"] == "https://info.dev.arxiv.org/help"
     assert urls["a11y"] == "https://info.dev.arxiv.org/help/web_accessibility.html"
+
+
+@pytest.mark.parametrize("env", [None, "", "STAGING"])
+def test_create_app_requires_a_known_env(monkeypatch, env):
+    if env is None:
+        monkeypatch.delenv("ENV", raising=False)
+    else:
+        monkeypatch.setenv("ENV", env)
+
+    with pytest.raises(RuntimeError, match="ENV must be one of TEST, DEV, PROD"):
+        create_app()
