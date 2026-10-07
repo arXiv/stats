@@ -36,8 +36,7 @@ var w = calcWidth,
     p = [20, 50, 30, 20],
     barColor = "#b55c06",
     x = d3.scale.ordinal().rangeRoundBands([0, w - p[1] - p[3]], 0),
-    y = d3.scale.linear().range([0, h - p[0] - p[2]]),
-    format = d3.time.format("%H");
+    y = d3.scale.linear().range([0, h - p[0] - p[2]]);
 
   var svg = d3.select("div#chart_content").append("svg:svg")
     .attr("width", w)
@@ -46,21 +45,24 @@ var w = calcWidth,
     .attr("transform", "translate(" + p[3] + "," + (h - p[2]) + ")");
 d3.csv("{{ url_for('stats_api.get_hourly_requests') }}?date={{ arxiv_requested_date.strftime('%Y%m%d')}}", function(error, data) {
     
-    // 1. Process data: Parse time and ensure values are numbers
+    // 1. Process data: ensure values are numbers. d.hour is already arxiv local time
+    // ("2025-11-10 05:00:00-05:00"), so label with its hour as written; parsing it into
+    // a Date would relabel it in the viewer's timezone.
     data.forEach(function(d) {
-        d.date = d3.time.format.iso.parse(d.hour);
+        d.label = d.hour.substring(11, 13);
         d.value = +d.requests;
     });
 
-    // 2. Set domains
-    x.domain(data.map(function(d) { return d.date; }));
+    // 2. Set domains; key on the full timestamp, which stays unique when a dst change
+    // repeats an hour
+    x.domain(data.map(function(d) { return d.hour; }));
     y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
     // 3. Add the bars (Rectangles)
     svg.selectAll("rect")
         .data(data)
         .enter().append("svg:rect")
-        .attr("x", function(d) { return x(d.date); })
+        .attr("x", function(d) { return x(d.hour); })
         .attr("y", function(d) { return -y(d.value); }) // SVG draws top-down, so we use negative y
         .attr("height", function(d) { return y(d.value); })
         .attr("width", x.rangeBand())
@@ -69,15 +71,15 @@ d3.csv("{{ url_for('stats_api.get_hourly_requests') }}?date={{ arxiv_requested_d
 
     // Add a label per hour.
     var label = svg.selectAll("text")
-      .data(x.domain())
+      .data(data)
       .enter().append("svg:text")
       .attr("x", function(d) {
-        return x(d) + x.rangeBand() / 2;
+        return x(d.hour) + x.rangeBand() / 2;
       })
       .attr("y", 6)
       .attr("text-anchor", "middle")
       .attr("dy", ".71em")
-      .text(format);
+      .text(function(d) { return d.label; });
 
     // x-axis label
     svg.append("text")

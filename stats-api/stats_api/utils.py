@@ -73,6 +73,9 @@ def get_utc_start_and_end_times(date: date) -> tuple[datetime, datetime]:
 
 
 def format_as_csv(models: Sequence[BaseModel]) -> str:
+    if not models:
+        return ""
+
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=models[0].model_dump().keys())
     writer.writeheader()

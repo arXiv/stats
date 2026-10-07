@@ -8,22 +8,33 @@ services:
     container_name: stats-api
     ports:
       - 8080:8080
-    env_file:
-      - .env
+    environment:
+      SERVER_NAME: dev.arxiv.org
+      BASE_SERVER: dev.arxiv.org
+      AUTH_SERVER: dev.arxiv.org
+      HELP_SERVER: info.dev.arxiv.org
+      DEBUG: "true"
+      BRAND_STATIC_BASE: https://static.dev.arxiv.org/static/design-system/latest/
+      TOTAL_DELETED_PAPERS: 156
+      DB__DRIVERNAME: mysql+pymysql
+      DB__USERNAME: readonly
+      DB__PASSWORD: ${DB__PASSWORD:?export DB__PASSWORD (the stats-db readonly password, in GCP Secret Manager)}
+      DB__DATABASE: site_usage
+      DB__QUERY__UNIX_SOCKET: /cloudsql/arxiv-development:us-central1:stats-db
     volumes:
       - cloudsql_socket:/cloudsql
 
   db-proxy:
     image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
-    user: root 
+    user: root
     command:
       - "--unix-socket=/cloudsql"
-      - "${INSTANCE_NAME}"
+      - "arxiv-development:us-central1:stats-db"
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/config/service-account.json
     volumes:
       - cloudsql_socket:/cloudsql
-      - ${LOCAL_PATH_TO_CREDS}:/config/service-account.json
+      - ${LOCAL_PATH_TO_CREDS:?export LOCAL_PATH_TO_CREDS (path to a GCP service account key)}:/config/service-account.json
 
 volumes:
   cloudsql_socket:

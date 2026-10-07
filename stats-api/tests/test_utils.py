@@ -71,6 +71,12 @@ def test_format_as_csv():
     )
 
 
+def test_format_as_csv_empty():
+    result = format_as_csv([])
+
+    assert result == ""
+
+
 def test_utc_to_arxiv_local(app):
     with app.app_context():
         app.config["ARXIV_TIMEZONE"] = "America/New_York"
