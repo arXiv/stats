@@ -58,8 +58,7 @@ class Config(BaseConfig):
     AUTH_SERVER: str = BASE_SERVER
     URLS: dict[str, str] | None = None
 
-    # Root URL of the design-system asset route (CSS, fonts, logos, chrome JS), set per
-    # deployment from terraform (envs/*.tfvars); None is the templates' default, production.
+    # Root URL of the design-system asset route (CSS, fonts, logos, chrome JS)
     BRAND_STATIC_BASE: str | None = None
 
     @field_validator("URLS")
