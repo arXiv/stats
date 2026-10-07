@@ -50,3 +50,12 @@ def test_handle_non_http_exception_500(mock_service, client):
     assert response.status_code == 500
     assert b"Internal Server Error" in response.data
     assert "Generic sensitive runtime error" not in html
+
+
+def test_static_files_are_served_under_stats(client):
+    page = client.get("/stats/main").get_data(as_text=True)
+
+    assert 'href="/stats/static/css/arXiv.css' in page
+    assert 'href="/static/' not in page
+    assert client.get("/stats/static/css/arXiv.css").status_code == HTTPStatus.OK
+    assert client.get("/static/css/arXiv.css").status_code == HTTPStatus.NOT_FOUND
