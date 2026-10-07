@@ -34,6 +34,11 @@ variable "debug" {
   default     = false
 }
 
+variable "total_deleted_papers" {
+  description = "Number of papers removed from arXiv, subtracted from the submissions total"
+  type        = number
+}
+
 variable "image_path" {
   description = "Path to the container image in Artifact Registry"
   type        = string

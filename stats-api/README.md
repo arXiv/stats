@@ -42,6 +42,7 @@ For a native setup, set environment variables in a `.env` file or in your local 
    HELP_SERVER=info.dev.arxiv.org
    DEBUG=true
    BRAND_STATIC_BASE=https://static.dev.arxiv.org/static/design-system/latest/
+   TOTAL_DELETED_PAPERS=156
    DB__DRIVERNAME=mysql+pymysql
    DB__USERNAME=readonly
    DB__PASSWORD={password}

@@ -20,6 +20,7 @@ def make_test_config(**overrides: Any) -> Config:
         "AUTH_SERVER": "arxiv.org",
         "HELP_SERVER": "info.arxiv.org",
         "DB": Database(drivername="sqlite", database=":memory:"),
+        "TOTAL_DELETED_PAPERS": 156,
     }
     return Config(_env_file=None, **(values | overrides))
 

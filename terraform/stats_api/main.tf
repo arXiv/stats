@@ -95,6 +95,10 @@ resource "google_cloud_run_v2_service" "stats_api" {
         value = tostring(var.debug)
       }
       env {
+        name  = "TOTAL_DELETED_PAPERS"
+        value = tostring(var.total_deleted_papers)
+      }
+      env {
         name  = "DB__DRIVERNAME"
         value = var.db_drivername
       }

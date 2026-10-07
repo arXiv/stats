@@ -15,3 +15,5 @@ base_server = "dev.arxiv.org"
 auth_server = "dev.arxiv.org"
 help_server = "info.dev.arxiv.org"
 debug       = true
+
+total_deleted_papers = 156

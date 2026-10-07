@@ -44,7 +44,7 @@ class Config(BaseConfig):
     ARXIV_START_DATE: date = date(1991, 8, 1)
     ARXIV_TIMEZONE: str = "America/New_York"
     TOTAL_MIGRATED_PAPERS: int = 2431
-    TOTAL_DELETED_PAPERS: int = 156  # TODO add to tfvars for easier updates
+    TOTAL_DELETED_PAPERS: int
 
     FASTLY_MAX_AGE: int = 31557600
 
