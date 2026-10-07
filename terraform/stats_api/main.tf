@@ -75,8 +75,28 @@ resource "google_cloud_run_v2_service" "stats_api" {
     containers {
       image = var.image_path
       env {
-        name  = "ENV"
-        value = var.env
+        name  = "SERVER_NAME"
+        value = var.server_name
+      }
+      env {
+        name  = "BASE_SERVER"
+        value = var.base_server
+      }
+      env {
+        name  = "AUTH_SERVER"
+        value = var.auth_server
+      }
+      env {
+        name  = "HELP_SERVER"
+        value = var.help_server
+      }
+      env {
+        name  = "DEBUG"
+        value = tostring(var.debug)
+      }
+      env {
+        name  = "TOTAL_DELETED_PAPERS"
+        value = tostring(var.total_deleted_papers)
       }
       env {
         name  = "DB__DRIVERNAME"

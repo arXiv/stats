@@ -8,9 +8,35 @@ variable "gcp_region" {
   type        = string
 }
 
-variable "env" {
-  description = "Deployment environment - DEV or PROD"
+variable "server_name" {
+  description = "Host the app serves (Flask SERVER_NAME), e.g. arxiv.org"
   type        = string
+}
+
+variable "base_server" {
+  description = "Host for links to the main site (home, search, create account)"
+  type        = string
+}
+
+variable "auth_server" {
+  description = "Host for login, logout and account links"
+  type        = string
+}
+
+variable "help_server" {
+  description = "Host for help and info links, e.g. info.arxiv.org"
+  type        = string
+}
+
+variable "debug" {
+  description = "Flask DEBUG"
+  type        = bool
+  default     = false
+}
+
+variable "total_deleted_papers" {
+  description = "Number of papers removed from arXiv, subtracted from the submissions total"
+  type        = number
 }
 
 variable "image_path" {
