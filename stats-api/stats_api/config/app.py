@@ -40,7 +40,6 @@ class Config(BaseConfig):
     HOST: str = "0.0.0.0"
     PORT: int = 8080
     DEBUG: bool = False
-    TESTING: bool = False  # Flask configuration
 
     ARXIV_START_DATE: date = date(1991, 8, 1)
     ARXIV_TIMEZONE: str = "America/New_York"
