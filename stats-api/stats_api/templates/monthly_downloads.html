@@ -11,7 +11,7 @@
   <div id="chart_content">
     <div class="chart_text">
       <a class="button is-pulled-right" title="download monthly download CSV data" href="{{ url_for('stats_api.get_monthly_downloads') }}?latest_hour={{ arxiv_latest_hour.strftime('%Y%m%d%H')}}">Download CSV</a>
-      <p>Total number of downloads {% if latest_month %}through {{ latest_month.strftime('%B %Y') }}{% endif %} = {{ "{:,}".format(total_downloads) }}</p>
+      <p>Total number of downloads through {{ arxiv_latest_month.strftime('%B %Y') }} = {{ "{:,}".format(total_downloads) }}</p>
     </div>
     {% include "monthly_downloads_js.html" %}
   </div>
