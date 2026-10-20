@@ -8,3 +8,4 @@ arxiv-functions @ git+https://github.com/arXiv/arxiv-base.git@develop#subdirecto
 pytest
 pytest-cov
 ruff
+tzdata

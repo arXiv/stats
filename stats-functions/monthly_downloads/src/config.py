@@ -7,6 +7,8 @@ class Config(FunctionConfig):
 
     max_event_age_in_minutes: int = 50
 
+    arxiv_timezone: str = "America/New_York"
+
 
 class TestConfig(Config):
     log_locally: bool = True

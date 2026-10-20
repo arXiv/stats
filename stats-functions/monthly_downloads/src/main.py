@@ -1,6 +1,7 @@
 import logging
 import os
-from datetime import date, datetime
+from datetime import UTC, date, datetime
+from zoneinfo import ZoneInfo
 
 import functions_framework
 from arxiv_functions.exception import NoRetryError
@@ -28,13 +29,15 @@ engine = None
 SessionFactory = None
 
 
-def get_first_and_last_hour(month: date) -> tuple[datetime, datetime]:
-    # naive UTC, to match the naive start_dttm column in the DB
-    first_hour = datetime(month.year, month.month, month.day)  # noqa: DTZ001
-    last_day = (month + relativedelta(months=1)) - relativedelta(days=1)
+def get_month_range(month: date) -> tuple[datetime, datetime]:
+    """the arXiv-local month as a [start, end) range of naive UTC datetimes, to match the
+    naive UTC start_dttm column in the DB"""
+    start = datetime(month.year, month.month, 1, tzinfo=ZoneInfo(config.arxiv_timezone))
+    end = start + relativedelta(months=1)
 
-    return first_hour, datetime(  # noqa: DTZ001
-        last_day.year, last_day.month, last_day.day, 23
+    return (
+        start.astimezone(UTC).replace(tzinfo=None),
+        end.astimezone(UTC).replace(tzinfo=None),
     )
 
 
@@ -45,7 +48,7 @@ def get_download_count(start: datetime, end: datetime):
         return session.execute(
             select(func.sum(HourlyDownloads.primary_count))
             .where(HourlyDownloads.start_dttm >= start)
-            .where(HourlyDownloads.start_dttm <= end)
+            .where(HourlyDownloads.start_dttm < end)
         ).scalar()
 
 
@@ -77,7 +80,7 @@ def validate_cloud_event(cloud_event: CloudEvent) -> date:
 def validate_month(cloud_event: CloudEvent) -> date:
     month = cloud_event.data["message"]["attributes"]["month"]
 
-    # naive UTC; feeds both the Date and naive DateTime columns in the DB
+    # the arXiv-local month, stored as-is in the Date column
     return datetime.strptime(month, "%Y-%m-%d").replace(day=1).date()  # noqa: DTZ007
 
 
@@ -108,7 +111,7 @@ def get_monthly_downloads(cloud_event: CloudEvent):
 
     try:
         month = validate_inputs(cloud_event)
-        start, end = get_first_and_last_hour(month)
+        start, end = get_month_range(month)
         count = get_download_count(start, end)
         write_to_db(month, count)
 

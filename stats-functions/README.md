@@ -39,7 +39,7 @@ gcloud pubsub topics publish stats-monthly-submissions --message="" --attribute=
 
 ## Monthly Downloads
 
-The monthly downloads job queries for the count of downloads in the past month and writes that sum to a database.
+The monthly downloads job queries for the count of downloads in the past month and writes that sum to a database. Months are arXiv-local (America/New_York): a month runs from local midnight on the 1st to local midnight on the 1st of the next month, converted to UTC for the query.
 
 ### To run manually
 ```
