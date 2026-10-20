@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 from stats_api.models import HourlyRequests_
 from stats_api.utils import (
     format_as_csv,
+    get_utc_month_start,
     get_utc_start_and_end_times,
     url_param_to_arxiv_datetime,
     url_param_to_date,
@@ -70,3 +71,9 @@ def test_utc_to_arxiv_local(app):
         result = utc_to_arxiv_local(mock_datetime)
 
         assert result == datetime(2025, 10, 1, 10, tzinfo=ZoneInfo("America/New_York"))
+
+
+def test_get_utc_month_start(app):
+    with app.app_context():
+        assert get_utc_month_start(date(2025, 12, 1)) == datetime(2025, 12, 1, 5)
+        assert get_utc_month_start(date(2025, 7, 1)) == datetime(2025, 7, 1, 4)

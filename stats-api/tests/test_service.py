@@ -42,7 +42,14 @@ def test_get_downloads_page_data_crossover(MockSiteUsageRepository, app):
 
         result = StatsService.get_downloads_page_data()
 
+        # 2025-10-31 23:00 in arxiv local time: the october total counts from local midnight
         assert result.arxiv_latest_month == date(2025, 10, 1)
+        MockSiteUsageRepository.get_total_downloads_for_hour_range.assert_called_once_with(
+            datetime(2025, 10, 1, 4), datetime(2025, 11, 1, 3)
+        )
+        MockSiteUsageRepository.get_total_downloads.assert_called_once_with(
+            date(2025, 10, 1)
+        )
 
 
 @patch("stats_api.service.SiteUsageRepository")
@@ -63,7 +70,7 @@ def test_combine_monthly_downloads(MockSiteUsageRepository, app):
         )
 
         result = StatsService._combine_monthly_downloads(
-            datetime(2025, 12, 1, 12), mock_total_downloads, mock_monthly_downloads
+            date(2025, 12, 1), mock_total_downloads, mock_monthly_downloads
         )
 
         assert result == [
@@ -74,7 +81,7 @@ def test_combine_monthly_downloads(MockSiteUsageRepository, app):
 
 
 @patch("stats_api.service.SiteUsageRepository")
-def test_get_monthly_downloads_uses_utc_month(MockSiteUsageRepository, app):
+def test_get_monthly_downloads_uses_arxiv_local_month(MockSiteUsageRepository, app):
     with app.app_context():
         MockSiteUsageRepository.get_total_downloads_for_hour_range.return_value = 7
         MockSiteUsageRepository.get_monthly_downloads.return_value = []
@@ -85,12 +92,12 @@ def test_get_monthly_downloads_uses_utc_month(MockSiteUsageRepository, app):
         )
 
         MockSiteUsageRepository.get_total_downloads_for_hour_range.assert_called_once_with(
-            datetime(2025, 12, 1), datetime(2025, 12, 1, 3)
+            datetime(2025, 11, 1, 4), datetime(2025, 12, 1, 3)
         )
         MockSiteUsageRepository.get_monthly_downloads.assert_called_once_with(
-            date(2025, 12, 1)
+            date(2025, 11, 1)
         )
-        assert result == "month,downloads\r\n2025-12-01,7\r\n"
+        assert result == "month,downloads\r\n2025-11-01,7\r\n"
 
 
 @patch("stats_api.service.SiteUsageRepository")
