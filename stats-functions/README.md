@@ -45,3 +45,5 @@ The monthly downloads job queries for the count of downloads in the past month a
 ```
 gcloud pubsub topics publish stats-monthly-downloads --message="" --attribute="month=2025-12-01"
 ```
+
+To rerun a range of months (e.g. after changing how months are counted), use `scripts/backfill_monthly_downloads.sh`; run it with `--help` for usage.
