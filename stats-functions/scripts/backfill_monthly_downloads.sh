@@ -53,10 +53,15 @@ while [[ $# -gt 0 ]]; do
       sed -n '2,33p' "$0"
       exit 0
       ;;
+    -*) echo "Unknown option: $1 (see --help)" >&2; exit 1 ;;
     *) POSITIONAL+=("$1"); shift ;;
   esac
 done
 
+if [[ "${#POSITIONAL[@]}" -gt 2 ]]; then
+  echo "Expected at most START_MONTH and END_MONTH, got: ${POSITIONAL[*]}" >&2
+  exit 1
+fi
 if [[ "${#POSITIONAL[@]}" -lt 1 ]]; then
   echo "START_MONTH (YYYY-MM) is required. See --help." >&2
   exit 1
