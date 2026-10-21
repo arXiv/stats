@@ -54,6 +54,20 @@ def get_utc_start_and_end_times(date: date) -> tuple[datetime, datetime]:
     return start, end
 
 
+def get_utc_month_start(month: date) -> datetime:
+    """the start of an arxiv local month, as timezone naive utc"""
+    return (
+        datetime(
+            month.year,
+            month.month,
+            1,
+            tzinfo=ZoneInfo(current_app.config["ARXIV_TIMEZONE"]),
+        )
+        .astimezone(UTC)
+        .replace(tzinfo=None)
+    )
+
+
 def format_as_csv(models: Sequence[BaseModel]) -> str:
     if not models:
         return ""

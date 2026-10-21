@@ -1,5 +1,4 @@
 from datetime import UTC, date, datetime
-from zoneinfo import ZoneInfo
 
 from dateutil.relativedelta import relativedelta
 from flask import current_app
@@ -15,6 +14,7 @@ from stats_api.models import (
 from stats_api.repository import SiteUsageRepository
 from stats_api.utils import (
     format_as_csv,
+    get_utc_month_start,
     get_utc_start_and_end_times,
     utc_to_arxiv_local,
 )
@@ -65,20 +65,17 @@ class StatsService:
         if latest_hour is None:
             raise ServiceUnavailable("No hourly download data is available yet.")
 
-        arxiv_latest_hour = latest_hour.replace(tzinfo=UTC).astimezone(
-            ZoneInfo(current_app.config["ARXIV_TIMEZONE"])
-        )
+        arxiv_latest_hour = utc_to_arxiv_local(latest_hour)
+        arxiv_latest_month = date(arxiv_latest_hour.year, arxiv_latest_hour.month, 1)
 
         total_latest_month = SiteUsageRepository.get_total_downloads_for_hour_range(
-            datetime(latest_hour.year, latest_hour.month, 1), latest_hour
+            get_utc_month_start(arxiv_latest_month), latest_hour
         )
-        total_historical = SiteUsageRepository.get_total_downloads(
-            date(latest_hour.year, latest_hour.month, 1)
-        )
+        total_historical = SiteUsageRepository.get_total_downloads(arxiv_latest_month)
 
         return DownloadsPageData(
             arxiv_latest_hour=arxiv_latest_hour,
-            arxiv_latest_month=date(arxiv_latest_hour.year, arxiv_latest_hour.month, 1),
+            arxiv_latest_month=arxiv_latest_month,
             total_downloads=total_latest_month + total_historical,
         )
 
@@ -98,28 +95,24 @@ class StatsService:
 
     @staticmethod
     def get_monthly_downloads(hour: datetime) -> str:
-        hour = hour.astimezone(UTC).replace(tzinfo=None)
+        month = date(hour.year, hour.month, 1)
 
         total_latest_month = SiteUsageRepository.get_total_downloads_for_hour_range(
-            datetime(hour.year, hour.month, 1), hour
+            get_utc_month_start(month), hour.astimezone(UTC).replace(tzinfo=None)
         )
-        data = SiteUsageRepository.get_monthly_downloads(date(hour.year, hour.month, 1))
+        data = SiteUsageRepository.get_monthly_downloads(month)
 
         monthly_downloads = StatsService._combine_monthly_downloads(
-            hour, total_latest_month, data
+            month, total_latest_month, data
         )
 
         return format_as_csv(monthly_downloads)
 
     @staticmethod
     def _combine_monthly_downloads(
-        hour: datetime, total_latest_month: int, data: list[MonthlyDownloads_]
+        month: date, total_latest_month: int, data: list[MonthlyDownloads_]
     ) -> list[MonthlyDownloads_]:
-        return data + [
-            MonthlyDownloads_(
-                month=date(hour.year, hour.month, 1), downloads=total_latest_month
-            )
-        ]
+        return data + [MonthlyDownloads_(month=month, downloads=total_latest_month)]
 
     @staticmethod
     def get_monthly_submissions() -> str:
