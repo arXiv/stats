@@ -175,6 +175,8 @@ typing-inspection==0.4.4
     # via
     #   pydantic
     #   pydantic-settings
+tzdata==2026.5
+    # via -r requirements.in
 urllib3==2.7.0
     # via requests
 uvicorn==0.52.1

@@ -15,7 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from main import (
-    get_first_and_last_hour,
+    get_month_range,
     get_download_count,
     write_to_db,
     validate_cloud_event,
@@ -73,11 +73,28 @@ def session_factory():
     engine.dispose()
 
 
-def test_get_first_and_last_hour_success():
-    first_hour, last_hour = get_first_and_last_hour(date(2025, 12, 1))
+@pytest.mark.parametrize(
+    "month, expected_start, expected_end",
+    [
+        # EST all month: local midnight is 05:00 UTC
+        (date(2025, 12, 1), datetime(2025, 12, 1, 5), datetime(2026, 1, 1, 5)),
+        # EDT all month: local midnight is 04:00 UTC
+        (date(2025, 7, 1), datetime(2025, 7, 1, 4), datetime(2025, 8, 1, 4)),
+        # starts in EDT, ends in EST
+        (date(2025, 11, 1), datetime(2025, 11, 1, 4), datetime(2025, 12, 1, 5)),
+        # starts in EST, ends in EDT
+        (date(2026, 3, 1), datetime(2026, 3, 1, 5), datetime(2026, 4, 1, 4)),
+    ],
+)
+def test_get_month_range(month, expected_start, expected_end):
+    assert get_month_range(month) == (expected_start, expected_end)
 
-    assert first_hour == datetime(2025, 12, 1, 0, 0)
-    assert last_hour == datetime(2025, 12, 31, 23, 0)
+
+def test_get_download_count_excludes_end(session_factory):
+    with patch("main.SessionFactory", session_factory):
+        count = get_download_count(datetime(2025, 11, 2, 10), datetime(2025, 11, 4, 9))
+
+    assert count == 1500
 
 
 def test_get_download_count_success(session_factory):
