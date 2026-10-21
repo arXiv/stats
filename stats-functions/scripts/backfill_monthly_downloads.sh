@@ -22,7 +22,7 @@
 # current month is refused, since it isn't over yet.
 #
 # Env vars (all optional, shown with defaults):
-#   PROJECT=arxiv-production
+#   PROJECT=arxiv-development
 #   TOPIC=stats-monthly-downloads
 #   SERVICE_NAME=stats-monthly-downloads
 #   SLEEP_SECONDS=60   (also settable via --sleep-seconds)
@@ -30,11 +30,11 @@
 # Examples:
 #   ./backfill_monthly_downloads.sh --dry-run 2024-01
 #   ./backfill_monthly_downloads.sh --yes 2024-01 2026-09
-#   PROJECT=arxiv-development ./backfill_monthly_downloads.sh 2025-06 2025-08
+#   PROJECT=arxiv-production ./backfill_monthly_downloads.sh 2025-06 2025-08
 
 set -euo pipefail
 
-PROJECT="${PROJECT:-arxiv-production}"
+PROJECT="${PROJECT:-arxiv-development}"
 TOPIC="${TOPIC:-stats-monthly-downloads}"
 SERVICE_NAME="${SERVICE_NAME:-stats-monthly-downloads}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-60}"
@@ -149,9 +149,9 @@ for MONTH in $MONTHS; do
   fi
 done
 
-LOG_FILTER="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"${SERVICE_NAME}\" AND (textPayload=~\"Downloads for month|NoRetry\" OR jsonPayload.message=~\"Downloads for month|NoRetry\") AND timestamp>=\"${STARTED_AT}\""
+LOG_FILTER="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"${SERVICE_NAME}\" AND (textPayload=~\"Downloads for month|NoRetry\" OR jsonPayload.message=~\"Downloads for month|NoRetry\" OR severity>=ERROR) AND timestamp>=\"${STARTED_AT}\""
 
 echo
 echo "Done. Published $MONTH_COUNT message(s)."
-echo "In a few minutes, check that each month logged its new total (and nothing failed):"
-echo "  gcloud logging read '${LOG_FILTER}' --project=$PROJECT --order=asc --format='value(timestamp,textPayload,jsonPayload.message)'"
+echo "In a few minutes, check that each month logged its new total, and that there are no errors:"
+echo "  gcloud logging read '${LOG_FILTER}' --project=$PROJECT --order=asc --format='value(timestamp,severity,textPayload,jsonPayload.message)'"
