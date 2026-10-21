@@ -14,7 +14,7 @@ wheels = [
 [[package]]
 name = "arxiv-brand-templates"
 version = "0.1.0"
-source = { git = "https://github.com/arXiv/design-system.git?subdirectory=templates&branch=master#b82af76ecc4ac15abbfba9cdbef6c5dd0577f5d6" }
+source = { git = "https://github.com/arXiv/design-system.git?subdirectory=templates&branch=master#a9f7252c6b77b55a06cb5a14dc1c0aa6ad2daa56" }
 dependencies = [
     { name = "jinja2" },
 ]
