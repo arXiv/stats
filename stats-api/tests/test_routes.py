@@ -164,3 +164,15 @@ def test_static_files_are_served_under_stats(client):
     assert 'href="/static/' not in page
     assert client.get("/stats/static/css/arXiv.css").status_code == HTTPStatus.OK
     assert client.get("/static/css/arXiv.css").status_code == HTTPStatus.NOT_FOUND
+
+
+def test_icon_links_resolve(client):
+    page = client.get("/stats/main").get_data(as_text=True)
+    hrefs = re.findall(
+        r'<link rel="(?:apple-touch-icon|icon|manifest|mask-icon)"[^>]*href="([^"]+)"',
+        page,
+    )
+
+    assert len(hrefs) == 5
+    for href in hrefs:
+        assert client.get(href).status_code == HTTPStatus.OK, href
