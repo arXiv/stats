@@ -41,7 +41,7 @@ def get_month_range(month: date) -> tuple[datetime, datetime]:
     )
 
 
-def get_download_count(start: datetime, end: datetime):
+def get_download_count(start: datetime, end: datetime) -> int | None:
     with SessionFactory() as session:
         logger.info("Beginning database session")
 
@@ -113,6 +113,14 @@ def get_monthly_downloads(cloud_event: CloudEvent):
         month = validate_inputs(cloud_event)
         start, end = get_month_range(month)
         count = get_download_count(start, end)
+
+        # no hourly rows: SUM is NULL. Writing it would replace the stored total with NULL
+        if count is None:
+            logger.error(
+                f"No hourly downloads for month {month}; stored total left unchanged"
+            )
+            raise NoRetryError
+
         write_to_db(month, count)
 
     except NoRetryError:

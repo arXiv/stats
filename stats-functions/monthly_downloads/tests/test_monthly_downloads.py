@@ -15,6 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from main import (
+    get_monthly_downloads,
     get_month_range,
     get_download_count,
     write_to_db,
@@ -228,3 +229,37 @@ def test_validate_month_invalid():
 
     with pytest.raises(ValueError):
         validate_month(mock_cloud_event)
+
+
+def _month_event(month: str) -> CloudEvent:
+    attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-12-01T12:00:00Z",
+    }
+    data = {"message": {"data": "", "attributes": {"month": month}}}
+    return CloudEvent(attributes=attributes, data=data)
+
+
+def test_get_monthly_downloads_writes_total(session_factory):
+    with patch("main.SessionFactory", session_factory):
+        get_monthly_downloads(_month_event("2025-11-01"))
+
+    with session_factory() as session:
+        row = session.query(MonthlyDownloads).filter_by(month=date(2025, 11, 1)).one()
+
+        assert row.downloads == 3000
+
+
+def test_get_monthly_downloads_keeps_total_without_hourly_data(session_factory):
+    with session_factory() as session:
+        session.add(MonthlyDownloads(month=date(2024, 1, 1), downloads=12345))
+        session.commit()
+
+    with patch("main.SessionFactory", session_factory):
+        get_monthly_downloads(_month_event("2024-01-01"))
+
+    with session_factory() as session:
+        row = session.query(MonthlyDownloads).filter_by(month=date(2024, 1, 1)).one()
+
+        assert row.downloads == 12345
