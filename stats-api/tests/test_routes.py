@@ -166,6 +166,13 @@ def test_static_files_are_served_under_stats(client):
     assert client.get("/static/css/arXiv.css").status_code == HTTPStatus.NOT_FOUND
 
 
+def test_monthly_downloads_total_names_the_latest_month(client):
+    # latest hourly data is 2025-12-02 06:00 utc, 01:00 in arxiv local time
+    page = client.get("/stats/monthly_downloads").get_data(as_text=True)
+
+    assert "Total number of downloads through December 2025 = 5,500,010" in page
+
+
 def test_icon_links_resolve(client):
     page = client.get("/stats/main").get_data(as_text=True)
     hrefs = re.findall(
