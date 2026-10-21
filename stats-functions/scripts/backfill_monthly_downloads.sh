@@ -19,7 +19,8 @@
 #   ./backfill_monthly_downloads.sh [--dry-run] [--yes] [--sleep-seconds N] START_MONTH [END_MONTH]
 #
 # START_MONTH and END_MONTH are YYYY-MM. END_MONTH defaults to last month; the
-# current month is refused, since it isn't over yet.
+# current month is refused, since it isn't over yet. Months before 2024-03 are
+# refused, so their stored totals are never overwritten.
 #
 # Env vars (all optional, shown with defaults):
 #   PROJECT=arxiv-development
@@ -28,8 +29,8 @@
 #   SLEEP_SECONDS=60   (also settable via --sleep-seconds)
 #
 # Examples:
-#   ./backfill_monthly_downloads.sh --dry-run 2024-01
-#   ./backfill_monthly_downloads.sh --yes 2024-01 2026-09
+#   ./backfill_monthly_downloads.sh --dry-run 2024-03
+#   ./backfill_monthly_downloads.sh --yes 2024-03 2026-09
 #   PROJECT=arxiv-production ./backfill_monthly_downloads.sh 2025-06 2025-08
 
 set -euo pipefail
@@ -50,7 +51,7 @@ while [[ $# -gt 0 ]]; do
     --sleep-seconds=*) SLEEP_SECONDS="${1#*=}"; shift ;;
     --sleep-seconds) SLEEP_SECONDS="$2"; shift 2 ;;
     -h|--help)
-      sed -n '2,33p' "$0"
+      awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"
       exit 0
       ;;
     -*) echo "Unknown option: $1 (see --help)" >&2; exit 1 ;;
@@ -82,6 +83,8 @@ def parse(value):
     except ValueError:
         sys.exit(f"expected a month as YYYY-MM, got {value!r}")
 
+EARLIEST = date(2024, 3, 1)
+
 now = datetime.now(ZoneInfo("America/New_York"))
 current = date(now.year, now.month, 1)
 last = date(current.year - (current.month == 1), (current.month - 2) % 12 + 1, 1)
@@ -91,6 +94,8 @@ end = parse(sys.argv[2]) if sys.argv[2] else last
 
 if end >= current:
     sys.exit(f"{end:%Y-%m} isn't over yet in arXiv local time; the latest month allowed is {last:%Y-%m}")
+if start < EARLIEST:
+    sys.exit(f"{start:%Y-%m} is before {EARLIEST:%Y-%m}; earlier months are never rerun")
 if start > end:
     sys.exit(f"START_MONTH {start:%Y-%m} is after END_MONTH {end:%Y-%m}")
 
