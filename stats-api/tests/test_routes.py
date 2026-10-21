@@ -171,3 +171,15 @@ def test_monthly_downloads_total_names_the_latest_month(client):
     page = client.get("/stats/monthly_downloads").get_data(as_text=True)
 
     assert "Total number of downloads through December 2025 = 5,500,010" in page
+
+
+def test_icon_links_resolve(client):
+    page = client.get("/stats/main").get_data(as_text=True)
+    hrefs = re.findall(
+        r'<link rel="(?:apple-touch-icon|icon|manifest|mask-icon)"[^>]*href="([^"]+)"',
+        page,
+    )
+
+    assert len(hrefs) == 5
+    for href in hrefs:
+        assert client.get(href).status_code == HTTPStatus.OK, href
