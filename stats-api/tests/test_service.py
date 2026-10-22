@@ -16,7 +16,7 @@ def test_get_submissions_page_data(MockSiteUsageRepository, app):
 
         result = StatsService.get_submissions_page_data(date(2025, 11, 11))
 
-        assert result.arxiv_age_in_years == 34
+        assert result.arxiv_age_in_years == 34.25
         assert result.total_submissions == 1999844
         assert result.total_submissions_adjusted == 2002275
 
