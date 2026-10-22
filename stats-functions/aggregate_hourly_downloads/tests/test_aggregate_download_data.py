@@ -438,6 +438,25 @@ def test_validate_cloud_event(mock_config, mock_retry_check):
     assert result == datetime(2025, 9, 12, 13, 0, tzinfo=timezone.utc)
 
 
+@patch("main.event_time_exceeds_retry_window")
+@patch("main.config")
+def test_validate_cloud_event_drops_fractional_seconds(mock_config, mock_retry_check):
+    mock_config.hour_delay = 3
+    mock_retry_check.return_value = False
+
+    mock_attributes = {
+        "type": "mock_type",
+        "source": "mock_source",
+        "time": "2025-09-12T16:00:00.612345Z",
+    }
+
+    mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
+
+    result = validate_cloud_event(mock_cloud_event)
+
+    assert result == datetime(2025, 9, 12, 13, 0, tzinfo=timezone.utc)
+
+
 def test_validate_hour_valid():
     mock_attributes = {
         "type": "mock_type",
