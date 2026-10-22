@@ -92,6 +92,8 @@
     .x(x2)
     .on("brush", brushed);
 
+  var downloads = [];
+
   var area = d3.svg.area()
     .interpolate("step-before")
     .x(function(d) {
@@ -136,6 +138,7 @@
       d.month = d3.time.format("%Y-%m-%d").parse(d.month);
       d.downloads = +d.downloads;
     });
+    downloads = data;
 
     x.domain(d3.extent(data.map(function(d) {
       return d.month;
@@ -178,10 +181,24 @@
       .attr("height", height2 + 7);
   });
 
+  //months drawn in the zoomed range; with step-before, a month's value is drawn
+  //up to its date, so the first month after the range shows too
+  function visibleMonths() {
+    var start = x.domain()[0],
+      end = x.domain()[1];
+    return downloads.filter(function(d, i) {
+      return d.month >= start && (d.month <= end || (i > 0 && downloads[i - 1].month < end));
+    });
+  }
+
   function brushed() {
     x.domain(brush.empty() ? x2.domain() : brush.extent());
+    y.domain([0, d3.max(visibleMonths(), function(d) {
+      return d.downloads;
+    }) || y2.domain()[1]]);
     focus.select("path").attr("d", area);
     focus.select(".x.axis").call(xAxis);
+    focus.select(".y.axis").call(yAxis);
   }
   document.getElementById("chart").insertAdjacentHTML("afterbegin","<defs><linearGradient id='gradientFill' x1='0%' y1='0%' x2='0%' y2='100%'><stop offset='45%' style='stop-color:rgb(255,204,0);stop-opacity:1' /><stop offset='100%' style='stop-color:rgb(181,92,6);stop-opacity:1' /></linearGradient></defs>");
 </script>
