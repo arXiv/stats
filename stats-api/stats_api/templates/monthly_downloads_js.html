@@ -143,9 +143,7 @@
     x.domain(d3.extent(data.map(function(d) {
       return d.month;
     })));
-    y.domain([0, d3.max(data.map(function(d) {
-      return d.downloads;
-    }))]);
+    setYDomain(data);
     x2.domain(x.domain());
     y2.domain(y.domain());
 
@@ -191,11 +189,17 @@
     });
   }
 
+  //leave headroom above the tallest month, then round up to the next tick
+  function setYDomain(months) {
+    y.domain([0, 1.05 * d3.max(months, function(d) {
+      return d.downloads;
+    })]).nice();
+  }
+
   function brushed() {
     x.domain(brush.empty() ? x2.domain() : brush.extent());
-    y.domain([0, d3.max(visibleMonths(), function(d) {
-      return d.downloads;
-    }) || y2.domain()[1]]);
+    var months = visibleMonths();
+    setYDomain(months.length ? months : downloads);
     focus.select("path").attr("d", area);
     focus.select(".x.axis").call(xAxis);
     focus.select(".y.axis").call(yAxis);
