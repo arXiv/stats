@@ -52,7 +52,7 @@ class StatsService:
         return SubmissionsPageData(
             arxiv_current_date=date,
             arxiv_start_date=current_app.config["ARXIV_START_DATE"],
-            arxiv_age_in_years=time_delta.years,
+            arxiv_age_in_years=time_delta.years + time_delta.months / 12,
             total_submissions=total_submissions,
             total_migrated=current_app.config["TOTAL_MIGRATED_PAPERS"],
             total_deleted=current_app.config["TOTAL_DELETED_PAPERS"],

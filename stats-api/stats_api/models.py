@@ -25,7 +25,7 @@ class DownloadsPageData(BaseModel):
 class SubmissionsPageData(BaseModel):
     arxiv_current_date: date
     arxiv_start_date: date
-    arxiv_age_in_years: int
+    arxiv_age_in_years: float
     total_submissions: int
     total_migrated: int
     total_deleted: int
