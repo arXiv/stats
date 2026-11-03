@@ -64,6 +64,8 @@ resource "google_project_iam_member" "cloud_sql_client" {
 resource "google_cloud_run_v2_service" "stats_api" {
   name     = "stats-api"
   location = var.gcp_region
+  # Only the load balancer (and the VPC) can reach the service; its run.app URL returns 404.
+  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   labels = {
     arxiv-system    = "reporting"
@@ -144,6 +146,15 @@ resource "google_cloud_run_v2_service" "stats_api" {
     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
   }
+}
+
+# The load balancer sends requests without an identity token, so the service must allow
+# unauthenticated invokes. Ingress above keeps the run.app URL closed to the internet.
+resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
+  name     = google_cloud_run_v2_service.stats_api.name
+  location = google_cloud_run_v2_service.stats_api.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
 ### alerting ###
