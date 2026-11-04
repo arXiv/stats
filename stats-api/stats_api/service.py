@@ -60,16 +60,22 @@ class StatsService:
         )
 
     @staticmethod
-    def get_downloads_page_data() -> DownloadsPageData:
+    def get_latest_download_hour() -> datetime:
+        """the newest hour with download data, in arxiv local time"""
         latest_hour = SiteUsageRepository.get_latest_hour_for_downloads()
         if latest_hour is None:
             raise ServiceUnavailable("No hourly download data is available yet.")
 
-        arxiv_latest_hour = utc_to_arxiv_local(latest_hour)
+        return utc_to_arxiv_local(latest_hour)
+
+    @staticmethod
+    def get_downloads_page_data() -> DownloadsPageData:
+        arxiv_latest_hour = StatsService.get_latest_download_hour()
         arxiv_latest_month = date(arxiv_latest_hour.year, arxiv_latest_hour.month, 1)
 
         total_latest_month = SiteUsageRepository.get_total_downloads_for_hour_range(
-            get_utc_month_start(arxiv_latest_month), latest_hour
+            get_utc_month_start(arxiv_latest_month),
+            arxiv_latest_hour.astimezone(UTC).replace(tzinfo=None),
         )
         total_historical = SiteUsageRepository.get_total_downloads(arxiv_latest_month)
 

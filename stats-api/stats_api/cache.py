@@ -27,6 +27,12 @@ def _max_age_for_requested_date() -> int:
     return max_age_for_date(requested, get_arxiv_current_time())
 
 
+def _max_age_for_monthly_downloads() -> int:
+    # if the request provides latest_hour, cache for a year. if not, cache it for an
+    # hour, as a new hour of data is added every hour, which changes the answer.
+    return YEAR if "latest_hour" in request.args else HOUR
+
+
 # endpoint -> (surrogate keys, max age in seconds or a function returning it)
 CACHE_POLICY: dict[str, tuple[list[str], int | Callable[[], int]]] = {
     "stats_ui.main": (["stats", "main"], YEAR),
@@ -37,8 +43,15 @@ CACHE_POLICY: dict[str, tuple[list[str], int | Callable[[], int]]] = {
         ["stats", "requests", "hourly"],
         _max_age_for_requested_date,
     ),
+    # get_hourly was browse's name for get_hourly_requests. it redirects there so old
+    # links and scripts keep working. the same request always redirects to the same
+    # place, so the redirect can be cached for a day.
+    "stats_api.get_hourly": (["stats", "requests", "hourly"], DAY),
     "stats_api.get_monthly_submissions": (["stats", "submissions", "monthly"], DAY),
-    "stats_api.get_monthly_downloads": (["stats", "downloads", "monthly"], YEAR),
+    "stats_api.get_monthly_downloads": (
+        ["stats", "downloads", "monthly"],
+        _max_age_for_monthly_downloads,
+    ),
     "static": (["stats", "static"], DAY),
 }
 

@@ -1,10 +1,13 @@
 from http import HTTPStatus
 
+import dateutil.parser
 from flask import (
     Blueprint,
     make_response,
+    redirect,
     render_template,
     request,
+    url_for,
 )
 from flask.typing import ResponseReturnValue
 from werkzeug.exceptions import BadRequest
@@ -76,6 +79,24 @@ def get_hourly_requests() -> ResponseReturnValue:
     return response
 
 
+@stats_api.route("stats/get_hourly", methods=["GET"])
+def get_hourly() -> ResponseReturnValue:
+    """browse's name for get_hourly_requests, kept so existing links and scripts work.
+    browse read the date loosely (e.g. 2026-11-03 or 20261103), so this does too."""
+    args = {}
+    if "date" in request.args:
+        try:
+            args["date"] = dateutil.parser.parse(request.args["date"]).strftime(
+                "%Y%m%d"
+            )
+        except (ValueError, OverflowError) as e:
+            raise BadRequest("The requested date is not valid.") from e
+
+    return redirect(
+        url_for("stats_api.get_hourly_requests", **args), HTTPStatus.MOVED_PERMANENTLY
+    )
+
+
 @stats_api.route("stats/get_monthly_submissions", methods=["GET"])
 def get_monthly_submissions() -> ResponseReturnValue:
     data = StatsService.get_monthly_submissions()
@@ -88,13 +109,15 @@ def get_monthly_submissions() -> ResponseReturnValue:
 
 @stats_api.route("stats/get_monthly_downloads", methods=["GET"])
 def get_monthly_downloads() -> ResponseReturnValue:
-    """requires latest_hour arg, assumes it is arxiv local"""
-    latest_hour = request.args.get(
-        "latest_hour", None, type=url_param_to_arxiv_datetime
-    )
-
-    if not latest_hour:
-        raise BadRequest
+    """latest_hour is optional and assumed arxiv local; without it, the newest hour
+    stored is used (browse's version of this endpoint took no arguments)"""
+    if "latest_hour" in request.args:
+        try:
+            latest_hour = url_param_to_arxiv_datetime(request.args["latest_hour"])
+        except ValueError as e:
+            raise BadRequest("latest_hour must be YYYYMMDDHH.") from e
+    else:
+        latest_hour = StatsService.get_latest_download_hour()
 
     data = StatsService.get_monthly_downloads(latest_hour)
 
