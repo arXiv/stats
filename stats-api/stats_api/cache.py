@@ -43,7 +43,9 @@ CACHE_POLICY: dict[str, tuple[list[str], int | Callable[[], int]]] = {
         ["stats", "requests", "hourly"],
         _max_age_for_requested_date,
     ),
-    # a redirect to get_hourly_requests, whose URL never changes for a given request
+    # get_hourly was browse's name for get_hourly_requests. it redirects there so old
+    # links and scripts keep working. the same request always redirects to the same
+    # place, so the redirect can be cached for a day.
     "stats_api.get_hourly": (["stats", "requests", "hourly"], DAY),
     "stats_api.get_monthly_submissions": (["stats", "submissions", "monthly"], DAY),
     "stats_api.get_monthly_downloads": (
