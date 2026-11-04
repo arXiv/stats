@@ -29,7 +29,7 @@ def _max_age_for_requested_date() -> int:
 
 def _max_age_for_monthly_downloads() -> int:
     # if the request provides latest_hour, cache for a year. if not, cache it for an
-    # hour, as the data for the hour is not complete yet.
+    # hour, as a new hour of data is added every hour, which changes the answer.
     return YEAR if "latest_hour" in request.args else HOUR
 
 
