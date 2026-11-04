@@ -27,6 +27,11 @@ def _max_age_for_requested_date() -> int:
     return max_age_for_date(requested, get_arxiv_current_time())
 
 
+def _max_age_for_monthly_downloads() -> int:
+    # a given latest_hour never changes; without one, the latest hour moves every hour
+    return YEAR if "latest_hour" in request.args else HOUR
+
+
 # endpoint -> (surrogate keys, max age in seconds or a function returning it)
 CACHE_POLICY: dict[str, tuple[list[str], int | Callable[[], int]]] = {
     "stats_ui.main": (["stats", "main"], YEAR),
@@ -37,8 +42,13 @@ CACHE_POLICY: dict[str, tuple[list[str], int | Callable[[], int]]] = {
         ["stats", "requests", "hourly"],
         _max_age_for_requested_date,
     ),
+    # a redirect to get_hourly_requests, whose URL never changes for a given request
+    "stats_api.get_hourly": (["stats", "requests", "hourly"], DAY),
     "stats_api.get_monthly_submissions": (["stats", "submissions", "monthly"], DAY),
-    "stats_api.get_monthly_downloads": (["stats", "downloads", "monthly"], YEAR),
+    "stats_api.get_monthly_downloads": (
+        ["stats", "downloads", "monthly"],
+        _max_age_for_monthly_downloads,
+    ),
     "static": (["stats", "static"], DAY),
 }
 

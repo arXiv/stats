@@ -45,6 +45,17 @@ def test_every_route_has_a_cache_policy(app):
             200,
             ("max-age=86400,", "stats submissions monthly"),
         ),
+        (
+            "/stats/get_monthly_downloads?latest_hour=2025110100",
+            200,
+            ("max-age=31557600,", "stats downloads monthly"),
+        ),
+        (
+            "/stats/get_monthly_downloads",
+            200,
+            ("max-age=3600,", "stats downloads monthly"),
+        ),
+        ("/stats/get_hourly", 301, ("max-age=86400,", "stats requests hourly")),
         ("/stats/monthly_downloads", 500, None),
         ("/stats/not-a-route", 200, None),
     ],

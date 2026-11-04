@@ -3,6 +3,8 @@ from datetime import date, datetime
 from http import HTTPStatus
 from unittest.mock import patch
 
+import pytest
+
 from stats_api.models import TodayPageData
 
 
@@ -30,7 +32,7 @@ def test_get_monthly_downloads_csv_success(mock_service, client):
 
 
 def test_handle_http_exception_400(client):
-    response = client.get("/stats/get_monthly_downloads")
+    response = client.get("/stats/get_monthly_downloads?latest_hour=not-an-hour")
 
     assert response.status_code == 400
 
@@ -76,7 +78,7 @@ def test_today_route_cache_depends_on_date(mock_service, client):
 
 
 def test_error_responses_are_not_cached(client):
-    response = client.get("/stats/get_monthly_downloads")
+    response = client.get("/stats/get_monthly_downloads?latest_hour=not-an-hour")
 
     assert response.status_code == 400
     assert "Surrogate-Control" not in response.headers
@@ -183,3 +185,45 @@ def test_icon_links_resolve(client):
     assert len(hrefs) == 5
     for href in hrefs:
         assert client.get(href).status_code == HTTPStatus.OK, href
+
+
+def test_get_monthly_downloads_without_latest_hour_uses_newest_hour(client):
+    # browse's version of this endpoint took no arguments
+    page = client.get("/stats/monthly_downloads").get_data(as_text=True)
+    latest_hour = re.search(r"latest_hour=(\d+)", page)
+    assert latest_hour
+
+    without = client.get("/stats/get_monthly_downloads")
+    explicit = client.get(
+        f"/stats/get_monthly_downloads?latest_hour={latest_hour.group(1)}"
+    )
+
+    assert without.status_code == HTTPStatus.OK
+    assert without.headers["Content-Type"] == "text/csv"
+    assert without.get_data(as_text=True) == explicit.get_data(as_text=True)
+    assert without.headers["Surrogate-Control"].startswith("max-age=3600,")
+    assert explicit.headers["Surrogate-Control"].startswith("max-age=31557600,")
+
+
+@pytest.mark.parametrize(
+    ("query", "location"),
+    [
+        ("", "/stats/get_hourly_requests"),
+        ("?date=20261103", "/stats/get_hourly_requests?date=20261103"),
+        ("?date=2026-11-03", "/stats/get_hourly_requests?date=20261103"),
+    ],
+)
+def test_get_hourly_redirects_to_get_hourly_requests(client, query, location):
+    # browse's name for the endpoint, which read the date loosely
+    response = client.get(f"/stats/get_hourly{query}")
+
+    assert response.status_code == HTTPStatus.MOVED_PERMANENTLY
+    assert response.headers["Location"] == location
+    assert response.headers["Surrogate-Control"].startswith("max-age=86400,")
+
+
+def test_get_hourly_invalid_date(client):
+    response = client.get("/stats/get_hourly?date=not-a-date")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Surrogate-Control" not in response.headers

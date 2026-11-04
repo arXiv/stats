@@ -101,6 +101,27 @@ def test_get_monthly_downloads_uses_arxiv_local_month(MockSiteUsageRepository, a
 
 
 @patch("stats_api.service.SiteUsageRepository")
+def test_get_latest_download_hour_is_arxiv_local(MockSiteUsageRepository, app):
+    with app.app_context():
+        MockSiteUsageRepository.get_latest_hour_for_downloads.return_value = datetime(
+            2025, 11, 1, 3
+        )
+
+        result = StatsService.get_latest_download_hour()
+
+        assert result == datetime(2025, 10, 31, 23, tzinfo=ZoneInfo("America/New_York"))
+
+
+@patch("stats_api.service.SiteUsageRepository")
+def test_get_latest_download_hour_no_data(MockSiteUsageRepository, app):
+    with app.app_context():
+        MockSiteUsageRepository.get_latest_hour_for_downloads.return_value = None
+
+        with pytest.raises(ServiceUnavailable):
+            StatsService.get_latest_download_hour()
+
+
+@patch("stats_api.service.SiteUsageRepository")
 def test_get_downloads_page_data_no_data(MockSiteUsageRepository, app):
     with app.app_context():
         MockSiteUsageRepository.get_latest_hour_for_downloads.return_value = None
