@@ -227,3 +227,23 @@ def test_get_hourly_invalid_date(client):
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Surrogate-Control" not in response.headers
+
+
+@pytest.mark.parametrize(
+    "page", ["/stats/monthly_submissions", "/stats/monthly_downloads"]
+)
+def test_chart_parses_the_months_in_its_csv(client, page):
+    # d3 3.x returns null unless the format matches the whole string, which leaves
+    # the chart empty; d3 and strptime share these %-directives
+    html = client.get(page).get_data(as_text=True)
+    csv_url = re.search(r'd3\.csv\("([^"]+)"', html)
+    d3_format = re.search(r'd3\.time\.format\("([^"]+)"\)\.parse', html)
+    assert csv_url
+    assert d3_format
+
+    rows = client.get(csv_url.group(1)).get_data(as_text=True).splitlines()
+    assert rows[0].startswith("month,")
+    assert len(rows) > 1
+
+    for row in rows[1:]:
+        datetime.strptime(row.split(",")[0], d3_format.group(1))
