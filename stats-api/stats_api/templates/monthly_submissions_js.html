@@ -81,7 +81,7 @@
     width = calcWidth - margin.left - margin.right,
     height = calcHeight - margin.top - margin.bottom;
 
-  var parseDate = d3.time.format("%Y-%m").parse,
+  var parseDate = d3.time.format("%Y-%m-%d").parse,
     bisectDate = d3.bisector(function(d) {
       return d.month;
     }).left,
