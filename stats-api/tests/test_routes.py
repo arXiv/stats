@@ -247,3 +247,14 @@ def test_chart_parses_the_months_in_its_csv(client, page):
 
     for row in rows[1:]:
         datetime.strptime(row.split(",")[0], d3_format.group(1))
+
+
+def test_submissions_chart_shows_the_last_csv_month(client):
+    # the CSV has no partial current month, so its last row is a complete month
+    html = client.get("/stats/monthly_submissions").get_data(as_text=True)
+    domain = re.search(
+        r"x\.domain\(\[data\[1\]\.month, data\[data\.length - (\d)\]", html
+    )
+
+    assert domain
+    assert domain.group(1) == "1"

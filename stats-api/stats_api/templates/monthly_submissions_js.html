@@ -142,8 +142,9 @@
       d.submissions = +d.submissions;
     });
 
-    // Don't include 1991-07 (index 0) in graph
-    x.domain([data[1].month, data[data.length - 2].month]);
+    // Don't include 1991-07 (index 0) in graph. The CSV ends with the last complete
+    // month (browse's ended with a partial current month, which this used to skip).
+    x.domain([data[1].month, data[data.length - 1].month]);
     y.domain(d3.extent(data, function(d) {
       return d.submissions;
     }));
