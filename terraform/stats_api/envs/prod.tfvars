@@ -17,3 +17,6 @@ help_server = "info.arxiv.org"
 debug       = false
 
 total_deleted_papers = 156
+
+# keep one instance warm: /stats gets about one request a minute, and a cold start takes 10-15s
+min_instance_count = 1
