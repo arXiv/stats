@@ -30,7 +30,7 @@ gcloud pubsub topics publish stats-hourly-edge-requests --message="" --attribute
 
 ## Monthly Submissions
 
-The monthly submissions job queries for the count of submissions in the past month and writes that sum to a database.
+The monthly submissions job counts submissions (by paper ID prefix) and writes each month's count to a database. It runs daily, and each scheduled run recounts both the previous month and the current month so far. A manual run with a `month` attribute writes only that month.
 
 ### To run manually
 ```
