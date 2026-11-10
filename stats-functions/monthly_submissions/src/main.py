@@ -62,14 +62,20 @@ def write_to_db(month: date, count: int):
     logger.info("Write database transaction successfully committed; session closed")
 
 
-def validate_cloud_event(cloud_event: CloudEvent) -> date:
+def validate_cloud_event(cloud_event: CloudEvent) -> list[date]:
+    """Scheduled runs recount the previous month and the current month so far.
+
+    Recounting the previous month every day keeps it correct after the
+    month-end announcement, which can land after midnight UTC on the 1st.
+    """
     event_time = parse_cloud_event_time(cloud_event)
 
     if event_time_exceeds_retry_window(config, event_time):
         logger.exception("Event time exceeds retry window!")
         raise NoRetryError
 
-    return (event_time - relativedelta(months=1)).replace(day=1).date()
+    current_month = event_time.replace(day=1).date()
+    return [current_month - relativedelta(months=1), current_month]
 
 
 def validate_month(cloud_event: CloudEvent) -> date:
@@ -79,20 +85,20 @@ def validate_month(cloud_event: CloudEvent) -> date:
     return datetime.strptime(month, "%Y-%m-%d").replace(day=1).date()  # noqa: DTZ007
 
 
-def validate_inputs(cloud_event: CloudEvent) -> date:
+def validate_inputs(cloud_event: CloudEvent) -> list[date]:
     try:
-        month = validate_month(cloud_event)
+        months = [validate_month(cloud_event)]
         logger.info("Received valid month as attribute")
 
     except (KeyError, ValueError):
-        month = validate_cloud_event(cloud_event)
+        months = validate_cloud_event(cloud_event)
         logger.info("Received valid event time")
 
     except NoRetryError:
         raise
 
-    logger.info(f"Parameters for job: month={month}")
-    return month
+    logger.info(f"Parameters for job: months={[str(m) for m in months]}")
+    return months
 
 
 @functions_framework.cloud_event
@@ -110,9 +116,9 @@ def get_monthly_submissions(cloud_event: CloudEvent):
             WriteSessionFactory = sessionmaker(bind=write_engine)
 
     try:
-        month = validate_inputs(cloud_event=cloud_event)
-        count = get_submission_count(month)
-        write_to_db(month, count)
+        for month in validate_inputs(cloud_event=cloud_event):
+            count = get_submission_count(month)
+            write_to_db(month, count)
 
     except NoRetryError:
         logger.exception(

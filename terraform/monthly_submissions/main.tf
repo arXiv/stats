@@ -136,7 +136,7 @@ resource "google_pubsub_topic" "topic" {
 resource "google_cloud_scheduler_job" "invoke_cloud_function" {
   name        = "invoke-stats-monthly-submissions"
   description = "Publish a message to invoke the monthly-submissions cloud function"
-  schedule    = "0 1 1-3 * *" # at 1am on the first, second, and third day of each month
+  schedule    = "0 1 * * *" # daily at 1am; each run recounts the previous and current month
   time_zone   = "UTC"
 
   pubsub_target {

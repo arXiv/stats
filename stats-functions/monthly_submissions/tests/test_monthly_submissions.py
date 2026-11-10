@@ -15,6 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from main import (
+    get_monthly_submissions,
     get_submission_count,
     write_to_db,
     validate_cloud_event,
@@ -98,7 +99,7 @@ def test_validate_cloud_event(mock_retry_check, mock_parse_time):
 
     result = validate_cloud_event(mock_cloud_event)
 
-    assert result == date(2025, 8, 1)
+    assert result == [date(2025, 8, 1), date(2025, 9, 1)]
 
 
 @patch("main.parse_cloud_event_time")
@@ -115,7 +116,7 @@ def test_validate_cloud_event_january(mock_retry_check, mock_parse_time):
 
     result = validate_cloud_event(mock_cloud_event)
 
-    assert result == date(2025, 12, 1)
+    assert result == [date(2025, 12, 1), date(2026, 1, 1)]
 
 
 @patch("main.parse_cloud_event_time")
@@ -148,7 +149,7 @@ def test_validate_inputs_from_attributes():
 
     result = validate_inputs(mock_cloud_event)
 
-    assert result == date(2025, 10, 1)
+    assert result == [date(2025, 10, 1)]
 
 
 @patch("main.validate_cloud_event")
@@ -159,11 +160,11 @@ def test_validate_inputs_fallback_to_event_time(mock_val_cloud):
         "time": "2025-11-01T12:00:00Z",
     }
     mock_cloud_event = CloudEvent(attributes=mock_attributes, data={})
-    mock_val_cloud.return_value = date(2025, 8, 1)
+    mock_val_cloud.return_value = [date(2025, 8, 1), date(2025, 9, 1)]
 
     result = validate_inputs(mock_cloud_event)
 
-    assert result == date(2025, 8, 1)
+    assert result == [date(2025, 8, 1), date(2025, 9, 1)]
     mock_val_cloud.assert_called_once()
 
 
@@ -208,3 +209,86 @@ def test_validate_month_invalid():
 
     with pytest.raises(ValueError):
         validate_month(mock_cloud_event)
+
+
+@pytest.mark.parametrize(
+    "event_time, expected",
+    [
+        # first run of the month: recount the month that just ended
+        (
+            datetime(2026, 12, 1, 1, tzinfo=timezone.utc),
+            [date(2026, 11, 1), date(2026, 12, 1)],
+        ),
+        (
+            datetime(2026, 12, 3, 1, tzinfo=timezone.utc),
+            [date(2026, 11, 1), date(2026, 12, 1)],
+        ),
+        # mid-month
+        (
+            datetime(2026, 11, 10, 1, tzinfo=timezone.utc),
+            [date(2026, 10, 1), date(2026, 11, 1)],
+        ),
+        # last day of the month
+        (
+            datetime(2026, 11, 30, 1, tzinfo=timezone.utc),
+            [date(2026, 10, 1), date(2026, 11, 1)],
+        ),
+    ],
+)
+@patch("main.parse_cloud_event_time")
+@patch("main.event_time_exceeds_retry_window")
+def test_validate_cloud_event_months(
+    mock_retry_check, mock_parse_time, event_time, expected
+):
+    mock_parse_time.return_value = event_time
+    mock_retry_check.return_value = False
+    mock_cloud_event = CloudEvent(
+        attributes={"type": "mock_type", "source": "mock_source"}, data={}
+    )
+
+    assert validate_cloud_event(mock_cloud_event) == expected
+
+
+@patch("main.parse_cloud_event_time")
+@patch("main.event_time_exceeds_retry_window")
+def test_scheduled_run_writes_previous_and_current_month(
+    mock_retry_check, mock_parse_time, read_session_factory, write_session_factory
+):
+    mock_parse_time.return_value = datetime(2025, 11, 10, 1, tzinfo=timezone.utc)
+    mock_retry_check.return_value = False
+    mock_cloud_event = CloudEvent(
+        attributes={"type": "mock_type", "source": "mock_source"}, data={}
+    )
+
+    with (
+        patch("main.ReadSessionFactory", read_session_factory),
+        patch("main.WriteSessionFactory", write_session_factory),
+    ):
+        get_monthly_submissions(mock_cloud_event)
+        # a second run the next day replaces the rows rather than adding to them
+        get_monthly_submissions(mock_cloud_event)
+
+    with write_session_factory() as session:
+        rows = {r.month: r.count for r in session.query(MonthlySubmissions).all()}
+
+    assert rows == {date(2025, 10, 1): 2, date(2025, 11, 1): 1}
+
+
+def test_manual_run_writes_only_given_month(
+    read_session_factory, write_session_factory
+):
+    mock_data = {"message": {"data": "", "attributes": {"month": "2025-10-01"}}}
+    mock_cloud_event = CloudEvent(
+        attributes={"type": "mock_type", "source": "mock_source"}, data=mock_data
+    )
+
+    with (
+        patch("main.ReadSessionFactory", read_session_factory),
+        patch("main.WriteSessionFactory", write_session_factory),
+    ):
+        get_monthly_submissions(mock_cloud_event)
+
+    with write_session_factory() as session:
+        rows = {r.month: r.count for r in session.query(MonthlySubmissions).all()}
+
+    assert rows == {date(2025, 10, 1): 2}
