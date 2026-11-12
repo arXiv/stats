@@ -49,11 +49,6 @@ class Config(BaseConfig):
 
     DB: Database
 
-    # Flask-SQLAlchemy engine options. Pooled connections get closed while idle (seen
-    # in prod after minutes, not MySQL's 8-hour wait_timeout), and reusing a closed one
-    # fails the request with "Lost connection to MySQL server during query". Pre-ping
-    # checks each connection before use and replaces it if it's dead; recycling
-    # replaces connections before they sit idle long enough to be closed.
     SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = {
         "pool_pre_ping": True,
         "pool_recycle": 300,
