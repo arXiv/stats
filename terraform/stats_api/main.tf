@@ -74,6 +74,9 @@ resource "google_cloud_run_v2_service" "stats_api" {
 
   template {
     service_account = google_service_account.account.email
+    scaling {
+      min_instance_count = 1
+    }
     containers {
       image = var.image_path
       env {
