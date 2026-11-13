@@ -47,3 +47,13 @@ def test_dev_urls_use_the_dev_servers():
     assert urls["login"] == "https://dev.arxiv.org/login"
     assert urls["help"] == "https://info.dev.arxiv.org/help"
     assert urls["a11y"] == "https://info.dev.arxiv.org/help/web_accessibility.html"
+
+
+def test_db_pool_checks_and_recycles_connections(app):
+    from stats_api.config.database import db
+
+    with app.app_context():
+        pool = db.engine.pool
+
+    assert pool._pre_ping is True
+    assert pool._recycle == 300

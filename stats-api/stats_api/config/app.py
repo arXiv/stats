@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Any
 
 from pydantic import field_validator
 from pydantic_core.core_schema import ValidationInfo
@@ -47,6 +48,11 @@ class Config(BaseConfig):
     TOTAL_DELETED_PAPERS: int
 
     DB: Database
+
+    SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
 
     PREFERRED_URL_SCHEME: str = "https"  # Flask configuration
     SERVER_NAME: str  # Flask configuration
