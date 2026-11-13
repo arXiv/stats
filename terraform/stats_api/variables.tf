@@ -34,12 +34,6 @@ variable "debug" {
   default     = false
 }
 
-variable "min_instance_count" {
-  description = "Instances kept running so requests don't wait for a cold start"
-  type        = number
-  default     = 0
-}
-
 variable "total_deleted_papers" {
   description = "Number of papers removed from arXiv, subtracted from the submissions total"
   type        = number
